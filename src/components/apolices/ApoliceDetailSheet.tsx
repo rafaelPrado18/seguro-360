@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
 
 interface ApoliceData {
   id: string;
@@ -21,6 +23,9 @@ interface ApoliceDetailSheetProps {
 }
 
 export function ApoliceDetailSheet({ open, onOpenChange, apolice }: ApoliceDetailSheetProps) {
+  const [arquivoApolice, setArquivoApolice] = useState<File | null>(null);
+  const [arquivoProposta, setArquivoProposta] = useState<File | null>(null);
+
   if (!apolice) return null;
 
   return (
@@ -90,6 +95,15 @@ export function ApoliceDetailSheet({ open, onOpenChange, apolice }: ApoliceDetai
               </div>
             </div>
           </div>
+
+          <Separator />
+
+          <DocumentUploadSection
+            arquivoApolice={arquivoApolice}
+            setArquivoApolice={setArquivoApolice}
+            arquivoProposta={arquivoProposta}
+            setArquivoProposta={setArquivoProposta}
+          />
         </div>
       </SheetContent>
     </Sheet>
