@@ -1,4 +1,4 @@
-import { Bell, Search, Plus, Sun, Moon, Check, Menu } from "lucide-react";
+import { Bell, Search, Plus, Sun, Moon, Check, Menu, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,13 +15,32 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ onMenuToggle }: AppHeaderProps) {
-  const { role, switchRole } = useRole();
+  const { role, switchRole, brokerStatus, setBrokerStatus } = useRole();
   const { theme, toggleTheme } = useTheme();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
   const allRoles: UserRole[] = ["admin", "corretor_novo", "corretor_renovacao", "corretor_sinistro", "corretor_financeiro"];
 
   return (
+    <div>
+      {brokerStatus === "offline" && (
+        <div className="flex items-center justify-between gap-2 bg-destructive/10 border-b border-destructive/20 px-4 py-2">
+          <div className="flex items-center gap-2">
+            <WifiOff className="h-4 w-4 text-destructive" />
+            <span className="text-xs font-medium text-destructive">
+              Você está offline — leads e mensagens não serão recebidos
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-6 text-[10px] border-destructive/30 text-destructive hover:bg-destructive/10"
+            onClick={() => setBrokerStatus("online")}
+          >
+            Ficar Online
+          </Button>
+        </div>
+      )}
     <header className="flex h-14 sm:h-16 items-center justify-between border-b border-border bg-card px-3 sm:px-6 gap-2">
       {/* Left: hamburger + search */}
       <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -110,5 +129,6 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
         </Popover>
       </div>
     </header>
+    </div>
   );
 }

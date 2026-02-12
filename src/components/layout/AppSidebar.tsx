@@ -4,10 +4,11 @@ import logoHataseg from "@/assets/logo-hataseg.png";
 import {
   LayoutDashboard, Users, FileText, AlertTriangle, DollarSign,
   RefreshCw, CalendarCheck, Settings, BarChart3, Target,
-  MessageSquare, FileStack, Workflow, X,
+  MessageSquare, FileStack, Workflow, X, Circle,
 } from "lucide-react";
 import { useRole, ROLE_LABELS } from "@/contexts/RoleContext";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/", adminOnly: false, scope: null },
@@ -31,7 +32,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ onClose }: AppSidebarProps) {
   const location = useLocation();
-  const { isAdmin, currentUser, hasScope } = useRole();
+  const { isAdmin, currentUser, hasScope, brokerStatus, setBrokerStatus } = useRole();
   const { unreadCount } = useNotifications();
 
   const visibleItems = menuItems.filter(item => {
@@ -89,10 +90,26 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
       </nav>
 
       {/* User */}
-      <div className="border-t border-sidebar-border p-4">
+      <div className="border-t border-sidebar-border p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Circle className={`h-2.5 w-2.5 fill-current ${brokerStatus === "online" ? "text-success" : "text-destructive"}`} />
+            <span className={`text-xs font-medium ${brokerStatus === "online" ? "text-success" : "text-destructive"}`}>
+              {brokerStatus === "online" ? "Online" : "Offline"}
+            </span>
+          </div>
+          <Switch
+            checked={brokerStatus === "online"}
+            onCheckedChange={(checked) => setBrokerStatus(checked ? "online" : "offline")}
+            className="scale-75"
+          />
+        </div>
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-xs font-semibold text-sidebar-accent-foreground">
-            {currentUser.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}
+          <div className="relative">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-xs font-semibold text-sidebar-accent-foreground">
+              {currentUser.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}
+            </div>
+            <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-sidebar-border ${brokerStatus === "online" ? "bg-success" : "bg-destructive"}`} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-sidebar-accent-foreground truncate">{currentUser.nome}</p>
