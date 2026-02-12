@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ const origemLabels: Record<string, string> = {
 };
 
 export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onLeadClick }: LeadKanbanProps) {
+  const navigate = useNavigate();
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
 
@@ -130,10 +132,10 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                         {lead.corretor_responsavel || "Sem corretor"}
                       </span>
                       <div className="flex gap-0.5">
-                        <Button variant="ghost" size="icon" className="h-5 w-5">
+                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); window.open(`tel:${lead.telefone}`); }}>
                           <Phone className="h-3 w-3 text-muted-foreground" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-5 w-5">
+                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); navigate("/whatsapp"); }}>
                           <MessageSquare className="h-3 w-3 text-muted-foreground" />
                         </Button>
                       </div>
