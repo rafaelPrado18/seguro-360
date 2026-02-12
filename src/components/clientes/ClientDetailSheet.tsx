@@ -1,7 +1,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Car, Mail, Phone, MapPin } from "lucide-react";
+import { Car } from "lucide-react";
 
 interface ClientData {
   id: number;
@@ -14,6 +14,16 @@ interface ClientData {
   status: string;
   premio: string;
   veiculos: { modelo: string; ano: string; placa: string }[];
+  endereco?: string;
+  cep?: string;
+  premioLiquido?: string;
+  numeroParcelas?: number;
+  valorParcela?: string;
+  numeroProposta?: string;
+  numeroApolice?: string;
+  codigoCi?: string;
+  vigencia?: string;
+  comissao?: string;
 }
 
 interface ClientDetailSheetProps {
@@ -24,6 +34,23 @@ interface ClientDetailSheetProps {
 
 export function ClientDetailSheet({ open, onOpenChange, client }: ClientDetailSheetProps) {
   if (!client) return null;
+
+  const fields = [
+    { label: "Nome", value: client.nome },
+    { label: "CPF/CNPJ", value: client.cpf },
+    { label: "Telefone", value: client.telefone },
+    { label: "Endereço", value: client.endereco || "—" },
+    { label: "CEP", value: client.cep || "—" },
+    { label: "Prêmio", value: client.premio },
+    { label: "Prêmio Líquido", value: client.premioLiquido || "—" },
+    { label: "Nº de Parcelas", value: client.numeroParcelas?.toString() || "—" },
+    { label: "Valor da Parcela", value: client.valorParcela || "—" },
+    { label: "Nº da Proposta", value: client.numeroProposta || "—" },
+    { label: "Nº da Apólice", value: client.numeroApolice || "—" },
+    { label: "Código C.I", value: client.codigoCi || "—" },
+    { label: "Vigência", value: client.vigencia || "—" },
+    { label: "Comissão", value: client.comissao || "—" },
+  ];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -51,36 +78,14 @@ export function ClientDetailSheet({ open, onOpenChange, client }: ClientDetailSh
 
         <div className="space-y-5 py-5">
           <div>
-            <h4 className="text-sm font-semibold text-foreground mb-3">Dados Pessoais</h4>
+            <h4 className="text-sm font-semibold text-foreground mb-3">Dados do Cliente</h4>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">CPF/CNPJ</span>
-                <span className="font-mono">{client.cpf}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> Email</span>
-                <span>{client.email}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> Telefone</span>
-                <span>{client.telefone}</span>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          <div>
-            <h4 className="text-sm font-semibold text-foreground mb-3">Resumo do Seguro</h4>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-border p-3 text-center">
-                <p className="text-2xl font-bold text-primary">{client.apolices}</p>
-                <p className="text-xs text-muted-foreground">Apólices</p>
-              </div>
-              <div className="rounded-lg border border-border p-3 text-center">
-                <p className="text-2xl font-bold text-foreground">{client.premio}</p>
-                <p className="text-xs text-muted-foreground">Prêmio Total</p>
-              </div>
+              {fields.map((f) => (
+                <div key={f.label} className="flex justify-between py-1">
+                  <span className="text-muted-foreground">{f.label}</span>
+                  <span className="font-medium text-right max-w-[60%]">{f.value}</span>
+                </div>
+              ))}
             </div>
           </div>
 
