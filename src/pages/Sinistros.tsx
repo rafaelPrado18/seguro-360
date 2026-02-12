@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Search, Plus, Filter, MoreHorizontal, Eye, Pencil, Trash2, FileText, Phone, MessageSquare } from "lucide-react";
+import { SinistroDetailSheet } from "@/components/sinistros/SinistroDetailSheet";
 import { toast } from "@/hooks/use-toast";
 
 const sinistrosData = [
@@ -21,7 +23,11 @@ const sinistrosData = [
 ];
 
 const Sinistros = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedSinistro, setSelectedSinistro] = useState<typeof sinistrosData[0] | null>(null);
+
   const filtered = sinistrosData.filter(s => s.cliente.toLowerCase().includes(search.toLowerCase()) || s.id.includes(search));
 
   const statusColor = (s: string) => {
@@ -42,6 +48,11 @@ const Sinistros = () => {
       case "Média": return "bg-info text-info-foreground";
       default: return "bg-secondary text-secondary-foreground";
     }
+  };
+
+  const handleView = (s: typeof sinistrosData[0]) => {
+    setSelectedSinistro(s);
+    setDetailOpen(true);
   };
 
   return (
@@ -107,7 +118,7 @@ const Sinistros = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="min-w-[160px]">
-                            <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Ver sinistro", description: `Sinistro ${s.id} - ${s.cliente}` })}>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleView(s)}>
                               <Eye className="h-3.5 w-3.5" /> Ver detalhes
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Editar sinistro", description: s.id })}>
@@ -120,7 +131,7 @@ const Sinistros = () => {
                             <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`tel:${s.telefone}`)}>
                               <Phone className="h-3.5 w-3.5" /> Ligar cliente
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`https://wa.me/55${s.telefone.replace(/\D/g, "")}`, "_blank")}>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => navigate("/whatsapp")}>
                               <MessageSquare className="h-3.5 w-3.5" /> WhatsApp
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
@@ -138,6 +149,8 @@ const Sinistros = () => {
           </CardContent>
         </Card>
       </div>
+
+      <SinistroDetailSheet open={detailOpen} onOpenChange={setDetailOpen} sinistro={selectedSinistro} />
     </AppLayout>
   );
 };

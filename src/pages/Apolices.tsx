@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Search, Plus, Filter, MoreHorizontal, Eye, Pencil, Trash2, FileText, Download, RefreshCw } from "lucide-react";
+import { ApoliceDetailSheet } from "@/components/apolices/ApoliceDetailSheet";
 import { toast } from "@/hooks/use-toast";
 
 const apolicesData = [
@@ -22,13 +24,21 @@ const apolicesData = [
 ];
 
 const Apolices = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedApolice, setSelectedApolice] = useState<typeof apolicesData[0] | null>(null);
 
   const filtered = apolicesData.filter(a =>
     a.cliente.toLowerCase().includes(search.toLowerCase()) ||
     a.id.includes(search) ||
     a.ramo.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleView = (a: typeof apolicesData[0]) => {
+    setSelectedApolice(a);
+    setDetailOpen(true);
+  };
 
   return (
     <AppLayout>
@@ -97,7 +107,7 @@ const Apolices = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="min-w-[160px]">
-                            <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Ver apólice", description: `Apólice ${a.id} - ${a.cliente}` })}>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleView(a)}>
                               <Eye className="h-3.5 w-3.5" /> Ver detalhes
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Editar apólice", description: a.id })}>
@@ -128,6 +138,8 @@ const Apolices = () => {
           </CardContent>
         </Card>
       </div>
+
+      <ApoliceDetailSheet open={detailOpen} onOpenChange={setDetailOpen} apolice={selectedApolice} />
     </AppLayout>
   );
 };

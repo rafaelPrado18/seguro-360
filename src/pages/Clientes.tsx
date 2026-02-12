@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Search, Plus, Filter, MoreHorizontal, Mail, Car, Eye, Pencil, Trash2, Phone, MessageSquare } from "lucide-react";
 import { NewClientDialog } from "@/components/clientes/NewClientDialog";
+import { ClientDetailSheet } from "@/components/clientes/ClientDetailSheet";
 import { toast } from "@/hooks/use-toast";
 
 const clientesData = [
@@ -23,14 +25,44 @@ const clientesData = [
 ];
 
 const Clientes = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<typeof clientesData[0] | null>(null);
+  const [editData, setEditData] = useState<any>(null);
 
   const filtered = clientesData.filter(c =>
     c.nome.toLowerCase().includes(search.toLowerCase()) ||
     c.cpf.includes(search) ||
     c.email.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleView = (c: typeof clientesData[0]) => {
+    setSelectedClient(c);
+    setDetailOpen(true);
+  };
+
+  const handleEdit = (c: typeof clientesData[0]) => {
+    setEditData({
+      nome: c.nome,
+      cpf: c.cpf,
+      telefone: c.telefone,
+      endereco: "",
+      cep: "",
+      premio: c.premio,
+      premio_liquido: "",
+      numero_parcelas: 1,
+      valor_parcela: "",
+      veiculos: c.veiculos.length > 0 ? c.veiculos : [{ modelo: "", ano: "", placa: "" }],
+    });
+    setDialogOpen(true);
+  };
+
+  const handleNewClient = () => {
+    setEditData(null);
+    setDialogOpen(true);
+  };
 
   return (
     <AppLayout>
@@ -40,7 +72,7 @@ const Clientes = () => {
             <h2 className="text-xl sm:text-2xl font-bold text-foreground">Clientes</h2>
             <p className="text-xs sm:text-sm text-muted-foreground">{clientesData.length} clientes cadastrados</p>
           </div>
-          <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 self-start sm:self-auto" onClick={() => setDialogOpen(true)}>
+          <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 self-start sm:self-auto" onClick={handleNewClient}>
             <Plus className="h-4 w-4" />
             Novo Cliente
           </Button>
@@ -123,17 +155,17 @@ const Clientes = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="min-w-[160px]">
-                            <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Ver detalhes", description: c.nome })}>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleView(c)}>
                               <Eye className="h-3.5 w-3.5" /> Ver detalhes
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Editar cliente", description: c.nome })}>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleEdit(c)}>
                               <Pencil className="h-3.5 w-3.5" /> Editar
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`tel:${c.telefone}`)}>
                               <Phone className="h-3.5 w-3.5" /> Ligar
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`https://wa.me/55${c.telefone.replace(/\D/g, "")}`, "_blank")}>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => navigate("/whatsapp")}>
                               <MessageSquare className="h-3.5 w-3.5" /> WhatsApp
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`mailto:${c.email}`)}>
@@ -155,7 +187,8 @@ const Clientes = () => {
         </Card>
       </div>
 
-      <NewClientDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <NewClientDialog open={dialogOpen} onOpenChange={setDialogOpen} editData={editData} />
+      <ClientDetailSheet open={detailOpen} onOpenChange={setDetailOpen} client={selectedClient} />
     </AppLayout>
   );
 };

@@ -41,9 +41,12 @@ interface NewClientDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onClientCreated?: (client: ClientFormData) => void;
+  editData?: Partial<ClientFormData> | null;
 }
 
-export function NewClientDialog({ open, onOpenChange, onClientCreated }: NewClientDialogProps) {
+export function NewClientDialog({ open, onOpenChange, onClientCreated, editData }: NewClientDialogProps) {
+  const isEditing = !!editData;
+
   const form = useForm<ClientFormData>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
@@ -51,7 +54,21 @@ export function NewClientDialog({ open, onOpenChange, onClientCreated }: NewClie
       premio: "", premio_liquido: "", numero_parcelas: 1, valor_parcela: "",
       numero_proposta: "", numero_apolice: "", codigo_ci: "",
       veiculos: [{ modelo: "", ano: "", placa: "" }],
+      ...editData,
     },
+  });
+
+  // Reset form when editData changes
+  useState(() => {
+    if (editData) {
+      form.reset({
+        nome: "", cpf: "", telefone: "", endereco: "", cep: "",
+        premio: "", premio_liquido: "", numero_parcelas: 1, valor_parcela: "",
+        numero_proposta: "", numero_apolice: "", codigo_ci: "",
+        veiculos: [{ modelo: "", ano: "", placa: "" }],
+        ...editData,
+      });
+    }
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -62,11 +79,11 @@ export function NewClientDialog({ open, onOpenChange, onClientCreated }: NewClie
   const onSubmit = (data: ClientFormData) => {
     try {
       onClientCreated?.(data);
-      toast({ title: "Cliente cadastrado!", description: `${data.nome} adicionado com sucesso.` });
+      toast({ title: isEditing ? "Cliente atualizado!" : "Cliente cadastrado!", description: `${data.nome} ${isEditing ? "atualizado" : "adicionado"} com sucesso.` });
       form.reset();
       onOpenChange(false);
     } catch {
-      toast({ title: "Erro ao cadastrar cliente", variant: "destructive" });
+      toast({ title: "Erro ao salvar cliente", variant: "destructive" });
     }
   };
 
@@ -74,8 +91,8 @@ export function NewClientDialog({ open, onOpenChange, onClientCreated }: NewClie
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[640px] max-h-[90vh] p-0">
         <DialogHeader className="px-6 pt-6 pb-2">
-          <DialogTitle>Novo Cliente</DialogTitle>
-          <DialogDescription>Preencha os dados do cliente e seus veículos.</DialogDescription>
+          <DialogTitle>{isEditing ? "Editar Cliente" : "Novo Cliente"}</DialogTitle>
+          <DialogDescription>{isEditing ? "Atualize os dados do cliente." : "Preencha os dados do cliente e seus veículos."}</DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[calc(90vh-140px)] px-6">
           <Form {...form}>
@@ -239,7 +256,7 @@ export function NewClientDialog({ open, onOpenChange, onClientCreated }: NewClie
 
               <DialogFooter className="pt-2">
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/90">Cadastrar Cliente</Button>
+                <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/90">{isEditing ? "Salvar Alterações" : "Cadastrar Cliente"}</Button>
               </DialogFooter>
             </form>
           </Form>
