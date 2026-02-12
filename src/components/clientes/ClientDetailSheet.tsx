@@ -13,7 +13,7 @@ interface ClientData {
   apolices: number;
   status: string;
   premio: string;
-  veiculos: { modelo: string; ano: string; placa: string }[];
+  veiculos: { modelo: string; ano: string; placa: string; apolice?: string; proposta?: string }[];
   endereco?: string;
   cep?: string;
   premioLiquido?: string;
@@ -100,12 +100,24 @@ export function ClientDetailSheet({ open, onOpenChange, client }: ClientDetailSh
             ) : (
               <div className="space-y-2">
                 {client.veiculos.map((v, i) => (
-                  <div key={i} className="rounded-lg border border-border bg-muted/30 p-3 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">{v.modelo}</p>
-                      <p className="text-xs text-muted-foreground">Ano: {v.ano}</p>
+                  <div key={i} className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium">{v.modelo}</p>
+                        <p className="text-xs text-muted-foreground">Ano: {v.ano}</p>
+                      </div>
+                      <Badge variant="outline" className="font-mono text-xs">{v.placa}</Badge>
                     </div>
-                    <Badge variant="outline" className="font-mono text-xs">{v.placa}</Badge>
+                    <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-border">
+                      <div>
+                        <span className="text-muted-foreground">Apólice: </span>
+                        <span className="font-medium">{v.apolice || "—"}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Proposta: </span>
+                        <span className="font-medium">{v.proposta || "—"}</span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
