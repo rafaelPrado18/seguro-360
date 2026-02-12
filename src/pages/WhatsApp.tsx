@@ -6,15 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Search, Send, Paperclip, Smile, MoreVertical, Phone,
   Image, FileText, Mic, Check, CheckCheck, Clock, Archive, Tag, Link2,
   MessageSquare, User, Plus, Pencil, Trash2, Heart, ThumbsUp,
   Laugh, MicOff, Play, Pause, X, Target, Square, FileStack,
 } from "lucide-react";
-import { Popover as TemplatePopover, PopoverContent as TemplatePopoverContent, PopoverTrigger as TemplatePopoverTrigger } from "@/components/ui/popover";
 import { LeadDetailsPanel } from "@/components/whatsapp/LeadDetailsPanel";
 import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
 import { toast } from "@/hooks/use-toast";
@@ -66,6 +62,7 @@ const WhatsApp = () => {
   const [allMessages, setAllMessages] = useState<ExtMessage[]>(INITIAL_MESSAGES);
   const [editingMsg, setEditingMsg] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const [activeAction, setActiveAction] = useState<{ msgId: string; type: "reactions" | "menu" } | null>(null);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const [showMobileContacts, setShowMobileContacts] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
@@ -374,34 +371,35 @@ const WhatsApp = () => {
                         {/* Actions on hover */}
                         {!msg.deleted && !editingMsg && (
                           <div className={`absolute top-0 ${msg.direcao === "enviada" ? "-left-20" : "-right-20"} hidden group-hover:flex items-center gap-0.5`}>
-                            {/* Reactions */}
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-6 w-6"><Smile className="h-3 w-3 text-muted-foreground" /></Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-1 flex gap-0.5" side="top">
-                                {REACTIONS.map(r => (
-                                  <button key={r} className="text-lg hover:scale-125 transition-transform px-0.5" onClick={() => handleReact(msg.id, r)}>{r}</button>
-                                ))}
-                              </PopoverContent>
-                            </Popover>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setActiveAction(prev => prev?.msgId === msg.id && prev.type === "reactions" ? null : { msgId: msg.id, type: "reactions" })}>
+                              <Smile className="h-3 w-3 text-muted-foreground" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setActiveAction(prev => prev?.msgId === msg.id && prev.type === "menu" ? null : { msgId: msg.id, type: "menu" })}>
+                              <MoreVertical className="h-3 w-3 text-muted-foreground" />
+                            </Button>
+                          </div>
+                        )}
 
-                            {/* More actions */}
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-6 w-6"><MoreVertical className="h-3 w-3 text-muted-foreground" /></Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align={msg.direcao === "enviada" ? "end" : "start"} className="min-w-[140px]">
-                                {msg.direcao === "enviada" && msg.tipo === "text" && (
-                                  <DropdownMenuItem onClick={() => startEdit(msg)} className="text-xs gap-2">
-                                    <Pencil className="h-3 w-3" /> Editar
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem onClick={() => handleDelete(msg.id)} className="text-xs gap-2 text-destructive">
-                                  <Trash2 className="h-3 w-3" /> Apagar
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                        {/* Reactions panel */}
+                        {activeAction?.msgId === msg.id && activeAction.type === "reactions" && (
+                          <div className={`absolute -top-9 ${msg.direcao === "enviada" ? "right-0" : "left-0"} z-50 flex gap-0.5 bg-card border border-border rounded-lg shadow-lg p-1`}>
+                            {REACTIONS.map(r => (
+                              <button key={r} className="text-lg hover:scale-125 transition-transform px-0.5" onClick={() => { handleReact(msg.id, r); setActiveAction(null); }}>{r}</button>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Menu panel */}
+                        {activeAction?.msgId === msg.id && activeAction.type === "menu" && (
+                          <div className={`absolute -top-1 ${msg.direcao === "enviada" ? "-left-36" : "-right-36"} z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[150px]`}>
+                            {msg.direcao === "enviada" && msg.tipo === "text" && (
+                              <button className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-muted transition-colors" onClick={() => { startEdit(msg); setActiveAction(null); }}>
+                                <Pencil className="h-3 w-3" /> Editar
+                              </button>
+                            )}
+                            <button className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-destructive hover:bg-muted transition-colors" onClick={() => { handleDelete(msg.id); setActiveAction(null); }}>
+                              <Trash2 className="h-3 w-3" /> Apagar para todos
+                            </button>
                           </div>
                         )}
                       </div>
@@ -438,13 +436,13 @@ const WhatsApp = () => {
                     <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0" onClick={() => fileInputRef.current?.click()}>
                       <Paperclip className="h-5 w-5 text-muted-foreground" />
                     </Button>
-                    <TemplatePopover>
-                      <TemplatePopoverTrigger asChild>
+                    <Popover>
+                      <PopoverTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0" title="Templates">
                           <FileStack className="h-5 w-5 text-muted-foreground" />
                         </Button>
-                      </TemplatePopoverTrigger>
-                      <TemplatePopoverContent className="w-72 p-0" side="top" align="start">
+                      </PopoverTrigger>
+                      <PopoverContent className="w-72 p-0" side="top" align="start">
                         <div className="p-2 border-b border-border">
                           <p className="text-xs font-semibold text-foreground">Templates Rápidos</p>
                         </div>
@@ -472,8 +470,8 @@ const WhatsApp = () => {
                             ))}
                           </div>
                         </ScrollArea>
-                      </TemplatePopoverContent>
-                    </TemplatePopover>
+                      </PopoverContent>
+                    </Popover>
                     <Input
                       placeholder="Digite uma mensagem..."
                       className="flex-1 h-9 text-sm bg-muted border-0"
