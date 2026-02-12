@@ -19,6 +19,7 @@ import WhatsApp from "./pages/WhatsApp";
 import WhatsAppTemplates from "./pages/WhatsAppTemplates";
 import GerenciarStatus from "./pages/GerenciarStatus";
 import Usuarios from "./pages/Usuarios";
+import WhatsAppInstancias from "./pages/WhatsAppInstancias";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/whatsapp" element={<ScopeGuard scope="whatsapp"><WhatsApp /></ScopeGuard>} />
           <Route path="/whatsapp/templates" element={<ScopeGuard scope="whatsapp"><WhatsAppTemplates /></ScopeGuard>} />
           <Route path="/gerenciar-status" element={<AdminGuard><GerenciarStatus /></AdminGuard>} />
+          <Route path="/whatsapp/instancias" element={<AdminGuard><WhatsAppInstancias /></AdminGuard>} />
           <Route path="/clientes" element={<ScopeGuard scope="clientes"><Clientes /></ScopeGuard>} />
           <Route path="/apolices" element={<ScopeGuard scope="apolices"><Apolices /></ScopeGuard>} />
           <Route path="/sinistros" element={<ScopeGuard scope="sinistros"><Sinistros /></ScopeGuard>} />

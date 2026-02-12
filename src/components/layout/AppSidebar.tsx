@@ -4,7 +4,7 @@ import logoHataseg from "@/assets/logo-hataseg.png";
 import {
   LayoutDashboard, Users, FileText, AlertTriangle, DollarSign,
   RefreshCw, CalendarCheck, Settings, BarChart3, Target,
-  MessageSquare, FileStack, Workflow, X, Circle,
+  MessageSquare, FileStack, Workflow, X, Circle, Smartphone,
 } from "lucide-react";
 import { useRole, ROLE_LABELS } from "@/contexts/RoleContext";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ const menuItems = [
   { icon: Target, label: "Leads", path: "/leads", adminOnly: false, scope: "leads" },
   { icon: MessageSquare, label: "WhatsApp", path: "/whatsapp", adminOnly: false, scope: "whatsapp" },
   { icon: FileStack, label: "Templates", path: "/whatsapp/templates", adminOnly: false, scope: "whatsapp" },
+  { icon: Smartphone, label: "Instâncias WA", path: "/whatsapp/instancias", adminOnly: true, scope: null },
   { icon: Users, label: "Clientes", path: "/clientes", adminOnly: false, scope: "clientes" },
   { icon: FileText, label: "Apólices", path: "/apolices", adminOnly: false, scope: "apolices" },
   { icon: AlertTriangle, label: "Sinistros", path: "/sinistros", adminOnly: false, scope: "sinistros" },
