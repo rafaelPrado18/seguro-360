@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -126,6 +127,8 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
   const [editData, setEditData] = useState<Partial<Lead>>({});
   const [notes, setNotes] = useState<NoteEntry[]>([]);
   const [newNote, setNewNote] = useState("");
+  const [arquivoApolice, setArquivoApolice] = useState<File | null>(null);
+  const [arquivoProposta, setArquivoProposta] = useState<File | null>(null);
 
   if (!lead) return null;
 
@@ -354,7 +357,15 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
 
             <Separator />
 
-            {/* Add Note */}
+            {/* Document Upload */}
+            <DocumentUploadSection
+              arquivoApolice={arquivoApolice}
+              setArquivoApolice={setArquivoApolice}
+              arquivoProposta={arquivoProposta}
+              setArquivoProposta={setArquivoProposta}
+            />
+
+            <Separator />
             <div>
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Adicionar Nota</h4>
               <div className="flex gap-2">

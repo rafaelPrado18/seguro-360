@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useCreateLead } from "@/hooks/useLeads";
 import { toast } from "@/hooks/use-toast";
+import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
+import { Separator } from "@/components/ui/separator";
 import type { Lead } from "@/services/leadsService";
 
 const leadSchema = z.object({
@@ -49,6 +51,8 @@ interface NewLeadDialogProps {
 
 export function NewLeadDialog({ open, onOpenChange, onLeadCreated }: NewLeadDialogProps) {
   const createLead = useCreateLead();
+  const [arquivoApolice, setArquivoApolice] = useState<File | null>(null);
+  const [arquivoProposta, setArquivoProposta] = useState<File | null>(null);
   const form = useForm<LeadFormData>({
     resolver: zodResolver(leadSchema),
     defaultValues: {
@@ -75,6 +79,8 @@ export function NewLeadDialog({ open, onOpenChange, onLeadCreated }: NewLeadDial
       onLeadCreated?.(payload);
       toast({ title: "Lead cadastrado!", description: `${data.nome} adicionado com sucesso.` });
       form.reset();
+      setArquivoApolice(null);
+      setArquivoProposta(null);
       onOpenChange(false);
     } catch {
       toast({ title: "Erro ao cadastrar lead", variant: "destructive" });
@@ -151,6 +157,13 @@ export function NewLeadDialog({ open, onOpenChange, onLeadCreated }: NewLeadDial
                 <FormMessage />
               </FormItem>
             )} />
+            <Separator />
+            <DocumentUploadSection
+              arquivoApolice={arquivoApolice}
+              setArquivoApolice={setArquivoApolice}
+              arquivoProposta={arquivoProposta}
+              setArquivoProposta={setArquivoProposta}
+            />
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
               <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/90">Cadastrar Lead</Button>
