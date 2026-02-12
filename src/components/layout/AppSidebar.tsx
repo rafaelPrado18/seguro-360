@@ -23,6 +23,7 @@ const menuItems = [
   { icon: CalendarCheck, label: "Agenda", path: "/agenda", adminOnly: false, scope: null },
   { icon: BarChart3, label: "Relatórios", path: "/relatorios", adminOnly: false, scope: "relatorios" },
   { icon: Workflow, label: "Ger. Status", path: "/gerenciar-status", adminOnly: true, scope: null },
+  { icon: Users, label: "Usuários", path: "/usuarios", adminOnly: true, scope: null },
   { icon: Settings, label: "Configurações", path: "/configuracoes", adminOnly: true, scope: null },
 ];
 

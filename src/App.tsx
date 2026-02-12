@@ -18,6 +18,7 @@ import Leads from "./pages/Leads";
 import WhatsApp from "./pages/WhatsApp";
 import WhatsAppTemplates from "./pages/WhatsAppTemplates";
 import GerenciarStatus from "./pages/GerenciarStatus";
+import Usuarios from "./pages/Usuarios";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/renovacoes" element={<ScopeGuard scope="renovacoes"><Renovacoes /></ScopeGuard>} />
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/relatorios" element={<ScopeGuard scope="relatorios"><Relatorios /></ScopeGuard>} />
+          <Route path="/usuarios" element={<AdminGuard><Usuarios /></AdminGuard>} />
           <Route path="/configuracoes" element={<AdminGuard><Configuracoes /></AdminGuard>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
