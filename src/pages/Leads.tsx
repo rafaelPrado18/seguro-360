@@ -13,6 +13,7 @@ import {
 import { LeadKanban, type KanbanColumn } from "@/components/leads/LeadKanban";
 import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
 import { LeadDetailSheet } from "@/components/leads/LeadDetailSheet";
+import { RedistribuirLeadsDialog } from "@/components/leads/RedistribuirLeadsDialog";
 import { useRole } from "@/contexts/RoleContext";
 import { Link } from "react-router-dom";
 import type { Lead } from "@/services/leadsService";
@@ -76,6 +77,7 @@ const Leads = () => {
   const [leads, setLeads] = useState(PLACEHOLDER_LEADS);
   const [corretorFilter, setCorretorFilter] = useState<string>("all");
   const [newLeadOpen, setNewLeadOpen] = useState(false);
+  const [redistribuirOpen, setRedistribuirOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const stats = PLACEHOLDER_STATS;
@@ -114,7 +116,7 @@ const Leads = () => {
                     <Settings2 className="h-4 w-4" /> <span className="hidden sm:inline">Status</span>
                   </Button>
                 </Link>
-                <Button variant="outline" className="gap-2" size="sm">
+                <Button variant="outline" className="gap-2" size="sm" onClick={() => setRedistribuirOpen(true)}>
                   <Shuffle className="h-4 w-4" /> <span className="hidden sm:inline">Distribuir</span>
                 </Button>
               </>
@@ -332,6 +334,32 @@ const Leads = () => {
           onLeadDelete={(id) => {
             setLeads(prev => prev.filter(l => l.id !== id));
             setSelectedLead(null);
+          }}
+        />
+
+        <RedistribuirLeadsDialog
+          open={redistribuirOpen}
+          onOpenChange={setRedistribuirOpen}
+          corretores={distribution.map(d => ({ id: d.corretor_id, nome: d.corretor_nome }))}
+          onRedistribuir={({ horarioPartir, corretorOrigem }) => {
+            // Filter leads from the given time and corretor, then redistribute
+            const today = new Date().toISOString().split("T")[0];
+            const cutoff = new Date(`${today}T${horarioPartir}:00`).getTime();
+            setLeads(prev => {
+              const corretorNames = distribution.map(d => d.corretor_nome);
+              let idx = 0;
+              return prev.map(l => {
+                const leadTime = new Date(l.created_at).getTime();
+                if (leadTime < cutoff) return l;
+                if (corretorOrigem !== "all") {
+                  const corretorNome = distribution.find(d => d.corretor_id === corretorOrigem)?.corretor_nome;
+                  if (l.corretor_responsavel !== corretorNome && l.corretor_responsavel !== null) return l;
+                }
+                const assigned = corretorNames[idx % corretorNames.length];
+                idx++;
+                return { ...l, corretor_responsavel: assigned, updated_at: new Date().toISOString() };
+              });
+            });
           }}
         />
       </div>
