@@ -4,7 +4,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Filter, MoreHorizontal, FileText } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Search, Plus, Filter, MoreHorizontal, Eye, Pencil, Trash2, FileText, Download, RefreshCw } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const apolicesData = [
   { id: "#4521", cliente: "João Silva", ramo: "Auto", seguradora: "Porto Seguro", inicio: "15/01/2026", fim: "15/01/2027", premio: "R$ 3.200", comissao: "R$ 480", status: "Vigente" },
@@ -86,9 +90,35 @@ const Apolices = () => {
                         }`}>{a.status}</Badge>
                       </td>
                       <td className="px-4 py-3">
-                        <Button variant="ghost" size="icon" className="h-7 w-7">
-                          <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="min-w-[160px]">
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Ver apólice", description: `Apólice ${a.id} - ${a.cliente}` })}>
+                              <Eye className="h-3.5 w-3.5" /> Ver detalhes
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Editar apólice", description: a.id })}>
+                              <Pencil className="h-3.5 w-3.5" /> Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Documentos", description: `Documentos da apólice ${a.id}` })}>
+                              <FileText className="h-3.5 w-3.5" /> Documentos
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Download", description: `Baixando apólice ${a.id}` })}>
+                              <Download className="h-3.5 w-3.5" /> Baixar PDF
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Renovar", description: `Iniciar renovação da apólice ${a.id}` })}>
+                              <RefreshCw className="h-3.5 w-3.5" /> Renovar
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-xs gap-2 text-destructive" onClick={() => toast({ title: "Cancelar", description: `Apólice ${a.id} seria cancelada`, variant: "destructive" })}>
+                              <Trash2 className="h-3.5 w-3.5" /> Cancelar apólice
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </td>
                     </tr>
                   ))}

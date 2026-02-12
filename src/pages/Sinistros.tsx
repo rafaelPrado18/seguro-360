@@ -4,16 +4,20 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Filter, MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Search, Plus, Filter, MoreHorizontal, Eye, Pencil, Trash2, FileText, Phone, MessageSquare } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const sinistrosData = [
-  { id: "#892", apolice: "#4521", cliente: "João Silva", tipo: "Colisão", dataAbertura: "10/02/2026", valor: "R$ 15.000", status: "Em Análise", prioridade: "Alta" },
-  { id: "#891", apolice: "#4518", cliente: "Carlos Mendes", tipo: "Furto", dataAbertura: "08/02/2026", valor: "R$ 42.000", status: "Em Análise", prioridade: "Alta" },
-  { id: "#890", apolice: "#4517", cliente: "Fernanda Costa", tipo: "Danos Elétricos", dataAbertura: "05/02/2026", valor: "R$ 3.200", status: "Aprovado", prioridade: "Média" },
-  { id: "#889", apolice: "#4520", cliente: "Empresa ABC Ltda", tipo: "Incêndio", dataAbertura: "01/02/2026", valor: "R$ 120.000", status: "Em Vistoria", prioridade: "Crítica" },
-  { id: "#888", apolice: "#4516", cliente: "Roberto Lima", tipo: "Invalidez", dataAbertura: "28/01/2026", valor: "R$ 80.000", status: "Documentação", prioridade: "Alta" },
-  { id: "#887", apolice: "#4519", cliente: "Maria Santos", tipo: "Hospitalização", dataAbertura: "20/01/2026", valor: "R$ 8.500", status: "Pago", prioridade: "Média" },
-  { id: "#886", apolice: "#4514", cliente: "Indústria XYZ S/A", tipo: "RC Geral", dataAbertura: "15/01/2026", valor: "R$ 250.000", status: "Em Análise", prioridade: "Crítica" },
+  { id: "#892", apolice: "#4521", cliente: "João Silva", tipo: "Colisão", dataAbertura: "10/02/2026", valor: "R$ 15.000", status: "Em Análise", prioridade: "Alta", telefone: "(11) 99999-1234" },
+  { id: "#891", apolice: "#4518", cliente: "Carlos Mendes", tipo: "Furto", dataAbertura: "08/02/2026", valor: "R$ 42.000", status: "Em Análise", prioridade: "Alta", telefone: "(31) 97777-9012" },
+  { id: "#890", apolice: "#4517", cliente: "Fernanda Costa", tipo: "Danos Elétricos", dataAbertura: "05/02/2026", valor: "R$ 3.200", status: "Aprovado", prioridade: "Média", telefone: "(41) 96666-3456" },
+  { id: "#889", apolice: "#4520", cliente: "Empresa ABC Ltda", tipo: "Incêndio", dataAbertura: "01/02/2026", valor: "R$ 120.000", status: "Em Vistoria", prioridade: "Crítica", telefone: "(11) 3333-4567" },
+  { id: "#888", apolice: "#4516", cliente: "Roberto Lima", tipo: "Invalidez", dataAbertura: "28/01/2026", valor: "R$ 80.000", status: "Documentação", prioridade: "Alta", telefone: "(51) 95555-1234" },
+  { id: "#887", apolice: "#4519", cliente: "Maria Santos", tipo: "Hospitalização", dataAbertura: "20/01/2026", valor: "R$ 8.500", status: "Pago", prioridade: "Média", telefone: "(21) 98888-5678" },
+  { id: "#886", apolice: "#4514", cliente: "Indústria XYZ S/A", tipo: "RC Geral", dataAbertura: "15/01/2026", valor: "R$ 250.000", status: "Em Análise", prioridade: "Crítica", telefone: "(11) 4444-7890" },
 ];
 
 const Sinistros = () => {
@@ -95,7 +99,37 @@ const Sinistros = () => {
                       <td className="px-4 py-3 text-center">
                         <Badge variant="outline" className={`text-[10px] ${statusColor(s.status)}`}>{s.status}</Badge>
                       </td>
-                      <td className="px-4 py-3"><Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4 text-muted-foreground" /></Button></td>
+                      <td className="px-4 py-3">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="min-w-[160px]">
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Ver sinistro", description: `Sinistro ${s.id} - ${s.cliente}` })}>
+                              <Eye className="h-3.5 w-3.5" /> Ver detalhes
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Editar sinistro", description: s.id })}>
+                              <Pencil className="h-3.5 w-3.5" /> Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Documentos", description: `Documentos do sinistro ${s.id}` })}>
+                              <FileText className="h-3.5 w-3.5" /> Documentos
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`tel:${s.telefone}`)}>
+                              <Phone className="h-3.5 w-3.5" /> Ligar cliente
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`https://wa.me/55${s.telefone.replace(/\D/g, "")}`, "_blank")}>
+                              <MessageSquare className="h-3.5 w-3.5" /> WhatsApp
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-xs gap-2 text-destructive" onClick={() => toast({ title: "Excluir", description: `Sinistro ${s.id} seria excluído`, variant: "destructive" })}>
+                              <Trash2 className="h-3.5 w-3.5" /> Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

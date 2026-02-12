@@ -4,8 +4,12 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Filter, MoreHorizontal, Mail, Car } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Search, Plus, Filter, MoreHorizontal, Mail, Car, Eye, Pencil, Trash2, Phone, MessageSquare } from "lucide-react";
 import { NewClientDialog } from "@/components/clientes/NewClientDialog";
+import { toast } from "@/hooks/use-toast";
 
 const clientesData = [
   { id: 1, nome: "João Silva", cpf: "123.456.789-00", email: "joao@email.com", telefone: "(11) 99999-1234", tipo: "PF", apolices: 3, status: "Ativo", premio: "R$ 8.500", veiculos: [{ modelo: "Civic 2.0", ano: "2023", placa: "ABC1D23" }, { modelo: "HR-V", ano: "2024", placa: "DEF4G56" }] },
@@ -112,9 +116,35 @@ const Clientes = () => {
                       </td>
                       <td className="px-4 py-3 text-right font-semibold">{c.premio}</td>
                       <td className="px-4 py-3 text-center">
-                        <Button variant="ghost" size="icon" className="h-7 w-7">
-                          <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="min-w-[160px]">
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Ver detalhes", description: c.nome })}>
+                              <Eye className="h-3.5 w-3.5" /> Ver detalhes
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Editar cliente", description: c.nome })}>
+                              <Pencil className="h-3.5 w-3.5" /> Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`tel:${c.telefone}`)}>
+                              <Phone className="h-3.5 w-3.5" /> Ligar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`https://wa.me/55${c.telefone.replace(/\D/g, "")}`, "_blank")}>
+                              <MessageSquare className="h-3.5 w-3.5" /> WhatsApp
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`mailto:${c.email}`)}>
+                              <Mail className="h-3.5 w-3.5" /> Enviar email
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-xs gap-2 text-destructive" onClick={() => toast({ title: "Excluir", description: `${c.nome} seria excluído`, variant: "destructive" })}>
+                              <Trash2 className="h-3.5 w-3.5" /> Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </td>
                     </tr>
                   ))}
