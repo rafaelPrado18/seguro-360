@@ -1,8 +1,13 @@
 import { Bell, Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useRole } from "@/contexts/RoleContext";
+import type { UserRole } from "@/contexts/RoleContext";
 
 export function AppHeader() {
+  const { role, switchRole, isAdmin, currentUser } = useRole();
+
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
       <div className="flex items-center gap-4 flex-1 max-w-md">
@@ -15,7 +20,18 @@ export function AppHeader() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
+        {/* Role Switcher */}
+        <Select value={role} onValueChange={(v) => switchRole(v as UserRole)}>
+          <SelectTrigger className="w-[160px] h-8 text-xs border-dashed">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="admin">👑 Administrador</SelectItem>
+            <SelectItem value="corretor">👤 Corretor</SelectItem>
+          </SelectContent>
+        </Select>
+
         <Button size="sm" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-9 text-sm font-semibold">
           <Plus className="h-4 w-4" />
           Nova Apólice
