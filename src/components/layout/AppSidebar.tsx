@@ -10,10 +10,14 @@ import {
   Settings,
   Shield,
   BarChart3,
+  Target,
+  MessageSquare,
 } from "lucide-react";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+  { icon: Target, label: "Leads", path: "/leads" },
+  { icon: MessageSquare, label: "WhatsApp", path: "/whatsapp" },
   { icon: Users, label: "Clientes", path: "/clientes" },
   { icon: FileText, label: "Apólices", path: "/apolices" },
   { icon: AlertTriangle, label: "Sinistros", path: "/sinistros" },
