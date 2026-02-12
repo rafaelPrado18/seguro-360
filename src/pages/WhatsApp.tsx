@@ -53,6 +53,7 @@ const WhatsApp = () => {
   const [editingMsg, setEditingMsg] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [newLeadOpen, setNewLeadOpen] = useState(false);
+  const [showMobileContacts, setShowMobileContacts] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const recordingRef = useRef<number | null>(null);
@@ -175,9 +176,9 @@ const WhatsApp = () => {
 
   return (
     <AppLayout>
-      <div className="flex h-[calc(100vh-7rem)] gap-0 rounded-lg border border-border overflow-hidden bg-card">
+      <div className="flex h-[calc(100vh-6rem)] sm:h-[calc(100vh-7rem)] gap-0 rounded-lg border border-border overflow-hidden bg-card">
         {/* Contact List */}
-        <div className="w-80 flex-shrink-0 border-r border-border flex flex-col">
+        <div className={`${showMobileContacts ? "flex" : "hidden"} md:flex w-full md:w-80 flex-shrink-0 border-r border-border flex-col`}>
           <div className="px-4 py-3 border-b border-border">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -201,7 +202,7 @@ const WhatsApp = () => {
             {filteredContacts.map((c) => (
               <button
                 key={c.id}
-                onClick={() => setSelectedContact(c)}
+                onClick={() => { setSelectedContact(c); setShowMobileContacts(false); }}
                 className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors border-b border-border/50 ${
                   selectedContact?.id === c.id ? "bg-muted" : "hover:bg-muted/50"
                 }`}
@@ -238,10 +239,13 @@ const WhatsApp = () => {
         {/* Chat Area */}
         {selectedContact ? (
           <>
-            <div className="flex-1 flex flex-col">
+            <div className={`${showMobileContacts ? "hidden" : "flex"} md:flex flex-1 flex-col min-w-0`}>
               {/* Chat Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between px-2 sm:px-4 py-3 border-b border-border bg-card">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 md:hidden flex-shrink-0" onClick={() => setShowMobileContacts(true)}>
+                    <X className="h-4 w-4" />
+                  </Button>
                   <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
                     {selectedContact.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}
                   </div>
@@ -250,15 +254,15 @@ const WhatsApp = () => {
                     <p className="text-[11px] text-muted-foreground">{selectedContact.telefone}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 flex-shrink-0">
                   {selectedContact.lead_id && (
-                    <Badge variant="outline" className="text-[10px] border-accent text-accent mr-2">Lead vinculado</Badge>
+                    <Badge variant="outline" className="text-[10px] border-accent text-accent mr-1 sm:mr-2 hidden sm:inline-flex">Lead vinculado</Badge>
                   )}
                   {selectedContact.cliente_id && (
-                    <Badge variant="outline" className="text-[10px] border-success text-success mr-2">Cliente</Badge>
+                    <Badge variant="outline" className="text-[10px] border-success text-success mr-1 sm:mr-2 hidden sm:inline-flex">Cliente</Badge>
                   )}
                   {!selectedContact.lead_id && (
-                    <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1 mr-2" onClick={() => setNewLeadOpen(true)}>
+                    <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1 mr-1 sm:mr-2 hidden sm:flex" onClick={() => setNewLeadOpen(true)}>
                       <Target className="h-3 w-3" /> Criar Lead
                     </Button>
                   )}
@@ -268,10 +272,10 @@ const WhatsApp = () => {
                   >
                     <User className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" title="Vincular Lead">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hidden sm:flex" title="Vincular Lead">
                     <Link2 className="h-4 w-4 text-muted-foreground" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" title="Tags">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hidden sm:flex" title="Tags">
                     <Tag className="h-4 w-4 text-muted-foreground" />
                   </Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8">

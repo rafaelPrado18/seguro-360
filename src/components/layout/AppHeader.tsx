@@ -1,4 +1,4 @@
-import { Bell, Search, Plus, Sun, Moon, Check } from "lucide-react";
+import { Bell, Search, Plus, Sun, Moon, Check, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,7 +10,11 @@ import type { UserRole } from "@/contexts/RoleContext";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-export function AppHeader() {
+interface AppHeaderProps {
+  onMenuToggle?: () => void;
+}
+
+export function AppHeader({ onMenuToggle }: AppHeaderProps) {
   const { role, switchRole } = useRole();
   const { theme, toggleTheme } = useTheme();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
@@ -18,9 +22,13 @@ export function AppHeader() {
   const allRoles: UserRole[] = ["admin", "corretor_novo", "corretor_renovacao", "corretor_sinistro", "corretor_financeiro"];
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
-      <div className="flex items-center gap-4 flex-1 max-w-md">
-        <div className="relative flex-1">
+    <header className="flex h-14 sm:h-16 items-center justify-between border-b border-border bg-card px-3 sm:px-6 gap-2">
+      {/* Left: hamburger + search */}
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <Button variant="ghost" size="icon" className="h-9 w-9 lg:hidden flex-shrink-0" onClick={onMenuToggle}>
+          <Menu className="h-5 w-5" />
+        </Button>
+        <div className="relative flex-1 max-w-md hidden sm:block">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Buscar clientes, apólices, sinistros..."
@@ -29,9 +37,10 @@ export function AppHeader() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      {/* Right: actions */}
+      <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
         <Select value={role} onValueChange={(v) => switchRole(v as UserRole)}>
-          <SelectTrigger className="w-[200px] h-8 text-xs border-dashed">
+          <SelectTrigger className="w-[120px] sm:w-[200px] h-8 text-xs border-dashed">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -45,9 +54,12 @@ export function AppHeader() {
           {theme === "light" ? <Moon className="h-4 w-4 text-muted-foreground" /> : <Sun className="h-4 w-4 text-muted-foreground" />}
         </Button>
 
-        <Button size="sm" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-9 text-sm font-semibold">
+        <Button size="sm" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-9 text-sm font-semibold hidden md:flex">
           <Plus className="h-4 w-4" />
           Nova Apólice
+        </Button>
+        <Button size="icon" className="h-9 w-9 bg-accent text-accent-foreground hover:bg-accent/90 md:hidden">
+          <Plus className="h-4 w-4" />
         </Button>
 
         <Popover>
