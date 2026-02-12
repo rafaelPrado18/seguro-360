@@ -7,11 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import {
   Phone, Mail, MessageSquare, Calendar, Clock, User,
   Target, DollarSign, FileText, ArrowRight, CheckCircle2,
-  Pencil, Save, X, Send, StickyNote
+  Pencil, Save, X, Send, StickyNote, Trash2
 } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
 
@@ -114,9 +118,10 @@ interface LeadDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onLeadUpdate?: (updatedLead: Lead) => void;
+  onLeadDelete?: (leadId: string) => void;
 }
 
-export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate }: LeadDetailSheetProps) {
+export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLeadDelete }: LeadDetailSheetProps) {
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<Lead>>({});
   const [notes, setNotes] = useState<NoteEntry[]>([]);
@@ -202,9 +207,39 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate }: Lead
               <div className="flex items-center gap-2">
                 <SheetTitle className="text-lg text-left flex-1">{lead.nome}</SheetTitle>
                 {!editing ? (
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={startEdit}>
-                    <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={startEdit}>
+                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7">
+                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir Lead</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir <strong>{lead.nome}</strong>? Esta ação não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            onClick={() => {
+                              onLeadDelete?.(lead.id);
+                              onOpenChange(false);
+                              toast({ title: "Lead excluído", description: `${lead.nome} foi removido.` });
+                            }}
+                          >
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 ) : (
                   <div className="flex gap-1">
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={cancelEdit}>

@@ -329,6 +329,10 @@ const Leads = () => {
             setLeads(prev => prev.map(l => l.id === updated.id ? updated : l));
             setSelectedLead(updated);
           }}
+          onLeadDelete={(id) => {
+            setLeads(prev => prev.filter(l => l.id !== id));
+            setSelectedLead(null);
+          }}
         />
       </div>
     </AppLayout>
