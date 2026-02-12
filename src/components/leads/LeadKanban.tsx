@@ -17,6 +17,7 @@ interface LeadKanbanProps {
   columns: KanbanColumn[];
   onStatusChange: (leadId: string, newStatus: string) => void;
   corretorFilter?: string | null;
+  onLeadClick?: (lead: Lead) => void;
 }
 
 const origemLabels: Record<string, string> = {
@@ -24,7 +25,7 @@ const origemLabels: Record<string, string> = {
   facebook: "Facebook", instagram: "Instagram", google_ads: "Google Ads", outro: "Outro",
 };
 
-export function LeadKanban({ leads, columns, onStatusChange, corretorFilter }: LeadKanbanProps) {
+export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onLeadClick }: LeadKanbanProps) {
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
 
@@ -101,6 +102,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter }: L
                   key={lead.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, lead)}
+                  onClick={() => onLeadClick?.(lead)}
                   className={`cursor-grab active:cursor-grabbing kpi-card-shadow hover:shadow-md transition-all duration-150 ${
                     draggedLead?.id === lead.id ? "opacity-40 scale-95" : ""
                   }`}
