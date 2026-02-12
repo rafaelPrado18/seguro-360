@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Search, Plus, Filter, MoreHorizontal, Eye, Pencil, Trash2, FileText, Download, RefreshCw } from "lucide-react";
 import { ApoliceDetailSheet } from "@/components/apolices/ApoliceDetailSheet";
+import { NovaApoliceDialog } from "@/components/apolices/NovaApoliceDialog";
 import { toast } from "@/hooks/use-toast";
 
 const apolicesData = [
@@ -28,6 +29,7 @@ const Apolices = () => {
   const [search, setSearch] = useState("");
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedApolice, setSelectedApolice] = useState<typeof apolicesData[0] | null>(null);
+  const [novaOpen, setNovaOpen] = useState(false);
 
   const filtered = apolicesData.filter(a =>
     a.cliente.toLowerCase().includes(search.toLowerCase()) ||
@@ -48,7 +50,7 @@ const Apolices = () => {
             <h2 className="text-2xl font-bold text-foreground">Apólices</h2>
             <p className="text-sm text-muted-foreground">{apolicesData.length} apólices registradas</p>
           </div>
-          <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+          <Button onClick={() => setNovaOpen(true)} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
             <Plus className="h-4 w-4" />
             Nova Apólice
           </Button>
@@ -140,6 +142,7 @@ const Apolices = () => {
       </div>
 
       <ApoliceDetailSheet open={detailOpen} onOpenChange={setDetailOpen} apolice={selectedApolice} />
+      <NovaApoliceDialog open={novaOpen} onOpenChange={setNovaOpen} />
     </AppLayout>
   );
 };
