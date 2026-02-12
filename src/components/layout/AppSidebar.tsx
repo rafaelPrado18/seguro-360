@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { useNotifications } from "@/contexts/NotificationContext";
 import {
   LayoutDashboard,
   Users,
@@ -36,6 +37,7 @@ const menuItems = [
 export function AppSidebar() {
   const location = useLocation();
   const { isAdmin, currentUser } = useRole();
+  const { unreadCount } = useNotifications();
 
   const visibleItems = menuItems.filter(item => !item.adminOnly || isAdmin);
 
@@ -68,7 +70,12 @@ export function AppSidebar() {
             >
               <item.icon className={`h-4 w-4 ${isActive ? "text-sidebar-primary" : ""}`} />
               {item.label}
-              {isActive && (
+              {item.path === "/leads" && unreadCount > 0 && (
+                <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+              {isActive && !( item.path === "/leads" && unreadCount > 0) && (
                 <div className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary" />
               )}
             </Link>
