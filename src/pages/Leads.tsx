@@ -99,23 +99,23 @@ const Leads = () => {
     <AppLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">Leads</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground">Leads</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {isAdmin ? "Visão do Administrador — Todos os corretores" : `Meus Leads — ${currentUser.nome}`}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {isAdmin && (
               <>
                 <Link to="/gerenciar-status">
                   <Button variant="outline" className="gap-2" size="sm">
-                    <Settings2 className="h-4 w-4" /> Status
+                    <Settings2 className="h-4 w-4" /> <span className="hidden sm:inline">Status</span>
                   </Button>
                 </Link>
                 <Button variant="outline" className="gap-2" size="sm">
-                  <Shuffle className="h-4 w-4" /> Distribuir
+                  <Shuffle className="h-4 w-4" /> <span className="hidden sm:inline">Distribuir</span>
                 </Button>
               </>
             )}
@@ -200,15 +200,15 @@ const Leads = () => {
         )}
 
         {/* View Controls */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative max-w-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <div className="relative flex-1 min-w-[180px] max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Buscar leads..." className="pl-9 h-9 text-sm w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <Input placeholder="Buscar leads..." className="pl-9 h-9 text-sm" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
             {isAdmin && (
               <Select value={corretorFilter} onValueChange={setCorretorFilter}>
-                <SelectTrigger className="w-[180px] h-9 text-sm">
+                <SelectTrigger className="w-[160px] sm:w-[180px] h-9 text-sm">
                   <SelectValue placeholder="Corretor" />
                 </SelectTrigger>
                 <SelectContent>

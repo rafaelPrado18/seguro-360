@@ -2,22 +2,12 @@ import { Link, useLocation } from "react-router-dom";
 import { useNotifications } from "@/contexts/NotificationContext";
 import logoHataseg from "@/assets/logo-hataseg.png";
 import {
-  LayoutDashboard,
-  Users,
-  FileText,
-  AlertTriangle,
-  DollarSign,
-  RefreshCw,
-  CalendarCheck,
-  Settings,
-  Shield,
-  BarChart3,
-  Target,
-  MessageSquare,
-  FileStack,
-  Workflow,
+  LayoutDashboard, Users, FileText, AlertTriangle, DollarSign,
+  RefreshCw, CalendarCheck, Settings, BarChart3, Target,
+  MessageSquare, FileStack, Workflow, X,
 } from "lucide-react";
 import { useRole, ROLE_LABELS } from "@/contexts/RoleContext";
+import { Button } from "@/components/ui/button";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/", adminOnly: false },
@@ -35,7 +25,11 @@ const menuItems = [
   { icon: Settings, label: "Configurações", path: "/configuracoes", adminOnly: true },
 ];
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  onClose?: () => void;
+}
+
+export function AppSidebar({ onClose }: AppSidebarProps) {
   const location = useLocation();
   const { isAdmin, currentUser } = useRole();
   const { unreadCount } = useNotifications();
@@ -43,14 +37,21 @@ export function AppSidebar() {
   const visibleItems = menuItems.filter(item => !item.adminOnly || isAdmin);
 
   return (
-    <aside className="sidebar-gradient flex w-64 flex-col border-r border-sidebar-border">
+    <aside className="sidebar-gradient flex w-64 flex-col border-r border-sidebar-border h-full">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 px-4 border-b border-sidebar-border">
-        <img src={logoHataseg} alt="HataSeg" className="h-10 w-10 object-contain rounded" />
-        <div>
-          <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-wide">HataSeg</h1>
-          <p className="text-[10px] text-sidebar-muted uppercase tracking-widest">Seguros & Previdência</p>
+      <div className="flex h-16 items-center justify-between px-4 border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <img src={logoHataseg} alt="HataSeg" className="h-10 w-10 object-contain rounded" />
+          <div>
+            <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-wide">HataSeg</h1>
+            <p className="text-[10px] text-sidebar-muted uppercase tracking-widest">Seguros & Previdência</p>
+          </div>
         </div>
+        {onClose && (
+          <Button variant="ghost" size="icon" className="h-8 w-8 lg:hidden text-sidebar-foreground" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {/* Navigation */}
@@ -61,6 +62,7 @@ export function AppSidebar() {
             <Link
               key={item.path}
               to={item.path}
+              onClick={onClose}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                 isActive
                   ? "bg-sidebar-accent text-sidebar-primary"
@@ -74,7 +76,7 @@ export function AppSidebar() {
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
-              {isActive && !( item.path === "/leads" && unreadCount > 0) && (
+              {isActive && !(item.path === "/leads" && unreadCount > 0) && (
                 <div className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary" />
               )}
             </Link>
