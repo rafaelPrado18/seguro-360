@@ -268,7 +268,7 @@ const Leads = () => {
                   </thead>
                   <tbody>
                     {displayLeads.map((l, i) => (
-                      <tr key={l.id} className="border-b border-border hover:bg-muted/30 transition-colors animate-fade-in" style={{ animationDelay: `${i * 40}ms` }}>
+                      <tr key={l.id} className="border-b border-border hover:bg-muted/30 transition-colors animate-fade-in cursor-pointer" style={{ animationDelay: `${i * 40}ms` }} onClick={() => setSelectedLead(l)}>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <div className="h-7 w-7 rounded-full bg-accent/15 flex items-center justify-center text-[10px] font-semibold text-accent">
@@ -325,6 +325,10 @@ const Leads = () => {
           lead={selectedLead}
           open={!!selectedLead}
           onOpenChange={(open) => { if (!open) setSelectedLead(null); }}
+          onLeadUpdate={(updated) => {
+            setLeads(prev => prev.map(l => l.id === updated.id ? updated : l));
+            setSelectedLead(updated);
+          }}
         />
       </div>
     </AppLayout>
