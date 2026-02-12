@@ -17,7 +17,7 @@ import {
   FileStack,
   Workflow,
 } from "lucide-react";
-import { useRole } from "@/contexts/RoleContext";
+import { useRole, ROLE_LABELS } from "@/contexts/RoleContext";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/", adminOnly: false },
@@ -90,7 +90,7 @@ export function AppSidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-sidebar-accent-foreground truncate">{currentUser.nome}</p>
-            <p className="text-[11px] text-sidebar-muted truncate">{isAdmin ? "Administrador" : "Corretor"}</p>
+            <p className="text-[11px] text-sidebar-muted truncate">{ROLE_LABELS[currentUser.role]}</p>
           </div>
         </div>
       </div>
