@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  Search, Send, Paperclip, Smile, MoreVertical, Phone,
+  Search, Send, Paperclip, Smile, MoreVertical, Phone, Download,
   Image, FileText, Mic, Check, CheckCheck, Clock, Archive, Tag, Link2,
   MessageSquare, User, Plus, Pencil, Trash2, Heart, ThumbsUp,
   Laugh, MicOff, Play, Pause, X, Target, Square, FileStack,
@@ -338,10 +338,23 @@ const WhatsApp = () => {
                                   </div>
                                 </div>
                               ) : msg.tipo === "document" ? (
-                                <div className="flex items-center gap-2 py-1 px-1 bg-background/10 rounded">
+                                <a
+                                  href={msg.media_url || "#"}
+                                  download={msg.conteudo}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 py-1 px-2 bg-background/10 rounded cursor-pointer hover:bg-background/20 transition-colors"
+                                  onClick={(e) => {
+                                    if (!msg.media_url) {
+                                      e.preventDefault();
+                                      toast({ title: "Download", description: `Baixando ${msg.conteudo}...` });
+                                    }
+                                  }}
+                                >
                                   <FileText className="h-4 w-4 opacity-70" />
-                                  <span className="text-xs flex-1">{msg.conteudo}</span>
-                                </div>
+                                  <span className="text-xs flex-1 underline">{msg.conteudo}</span>
+                                  <Download className="h-3.5 w-3.5 opacity-50" />
+                                </a>
                               ) : msg.tipo === "audio" ? (
                                 <div className="flex items-center gap-2 py-1 min-w-[180px]">
                                   <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0"><Play className="h-3 w-3" /></Button>
