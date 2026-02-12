@@ -7,8 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Search, Send, Paperclip, Smile, MoreVertical, Phone, Video,
-  Image, FileText, Mic, Check, CheckCheck, Clock, Archive, Tag, Link2, MessageSquare,
+  Image, FileText, Mic, Check, CheckCheck, Clock, Archive, Tag, Link2, MessageSquare, User,
 } from "lucide-react";
+import { LeadDetailsPanel } from "@/components/whatsapp/LeadDetailsPanel";
 import type { WhatsAppContact, WhatsAppMessage } from "@/services/whatsappService";
 
 // Placeholder - substituir por hooks reais
@@ -38,6 +39,7 @@ const WhatsApp = () => {
   const [selectedContact, setSelectedContact] = useState<WhatsAppContact | null>(PLACEHOLDER_CONTACTS[0]);
   const [searchQuery, setSearchQuery] = useState("");
   const [messageInput, setMessageInput] = useState("");
+  const [showLeadDetails, setShowLeadDetails] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Hooks prontos para integração:
@@ -147,108 +149,124 @@ const WhatsApp = () => {
 
         {/* Área de Chat */}
         {selectedContact ? (
-          <div className="flex-1 flex flex-col">
-            {/* Chat Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
-              <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-                  {selectedContact.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}
+          <>
+            <div className="flex-1 flex flex-col">
+              {/* Chat Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+                    {selectedContact.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{selectedContact.nome}</p>
+                    <p className="text-[11px] text-muted-foreground">{selectedContact.telefone}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{selectedContact.nome}</p>
-                  <p className="text-[11px] text-muted-foreground">{selectedContact.telefone}</p>
+                <div className="flex items-center gap-1">
+                  {selectedContact.lead_id && (
+                    <Badge variant="outline" className="text-[10px] border-accent text-accent mr-2">Lead vinculado</Badge>
+                  )}
+                  {selectedContact.cliente_id && (
+                    <Badge variant="outline" className="text-[10px] border-success text-success mr-2">Cliente</Badge>
+                  )}
+                  <Button
+                    variant={showLeadDetails ? "default" : "ghost"}
+                    size="icon"
+                    className="h-8 w-8"
+                    title="Ver detalhes do Lead"
+                    onClick={() => setShowLeadDetails(!showLeadDetails)}
+                  >
+                    <User className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" title="Vincular Lead">
+                    <Link2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" title="Tags">
+                    <Tag className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                  </Button>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
-                {selectedContact.lead_id && (
-                  <Badge variant="outline" className="text-[10px] border-accent text-accent mr-2">Lead vinculado</Badge>
-                )}
-                {selectedContact.cliente_id && (
-                  <Badge variant="outline" className="text-[10px] border-success text-success mr-2">Cliente</Badge>
-                )}
-                <Button variant="ghost" size="icon" className="h-8 w-8" title="Vincular Lead">
-                  <Link2 className="h-4 w-4 text-muted-foreground" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" title="Tags">
-                  <Tag className="h-4 w-4 text-muted-foreground" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreVertical className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              </div>
-            </div>
 
-            {/* Messages */}
-            <ScrollArea className="flex-1 px-4 py-4">
-              <div className="space-y-3 max-w-2xl mx-auto">
-                {messages.map((msg) => (
-                  <div key={msg.id} className={`flex ${msg.direcao === "enviada" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[70%] rounded-lg px-3 py-2 ${
-                      msg.direcao === "enviada"
-                        ? "bg-primary text-primary-foreground rounded-br-sm"
-                        : "bg-muted text-foreground rounded-bl-sm"
-                    }`}>
-                      {msg.tipo === "image" ? (
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 py-1">
-                            <Image className="h-4 w-4 opacity-70" />
-                            <span className="text-xs opacity-80">{msg.conteudo}</span>
+              {/* Messages */}
+              <ScrollArea className="flex-1 px-4 py-4">
+                <div className="space-y-3 max-w-2xl mx-auto">
+                  {messages.map((msg) => (
+                    <div key={msg.id} className={`flex ${msg.direcao === "enviada" ? "justify-end" : "justify-start"}`}>
+                      <div className={`max-w-[70%] rounded-lg px-3 py-2 ${
+                        msg.direcao === "enviada"
+                          ? "bg-primary text-primary-foreground rounded-br-sm"
+                          : "bg-muted text-foreground rounded-bl-sm"
+                      }`}>
+                        {msg.tipo === "image" ? (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 py-1">
+                              <Image className="h-4 w-4 opacity-70" />
+                              <span className="text-xs opacity-80">{msg.conteudo}</span>
+                            </div>
                           </div>
+                        ) : msg.tipo === "document" ? (
+                          <div className="flex items-center gap-2 py-1">
+                            <FileText className="h-4 w-4 opacity-70" />
+                            <span className="text-xs">{msg.conteudo}</span>
+                          </div>
+                        ) : msg.tipo === "audio" ? (
+                          <div className="flex items-center gap-2 py-1">
+                            <Mic className="h-4 w-4 opacity-70" />
+                            <span className="text-xs">Mensagem de áudio</span>
+                          </div>
+                        ) : (
+                          <p className="text-sm whitespace-pre-wrap">{msg.conteudo}</p>
+                        )}
+                        <div className={`flex items-center gap-1 mt-1 ${msg.direcao === "enviada" ? "justify-end" : ""}`}>
+                          <span className="text-[10px] opacity-60">{formatTime(msg.created_at)}</span>
+                          {msg.direcao === "enviada" && <StatusIcon status={msg.status} />}
                         </div>
-                      ) : msg.tipo === "document" ? (
-                        <div className="flex items-center gap-2 py-1">
-                          <FileText className="h-4 w-4 opacity-70" />
-                          <span className="text-xs">{msg.conteudo}</span>
-                        </div>
-                      ) : msg.tipo === "audio" ? (
-                        <div className="flex items-center gap-2 py-1">
-                          <Mic className="h-4 w-4 opacity-70" />
-                          <span className="text-xs">Mensagem de áudio</span>
-                        </div>
-                      ) : (
-                        <p className="text-sm whitespace-pre-wrap">{msg.conteudo}</p>
-                      )}
-                      <div className={`flex items-center gap-1 mt-1 ${msg.direcao === "enviada" ? "justify-end" : ""}`}>
-                        <span className="text-[10px] opacity-60">{formatTime(msg.created_at)}</span>
-                        {msg.direcao === "enviada" && <StatusIcon status={msg.status} />}
                       </div>
                     </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+              </ScrollArea>
 
-            {/* Message Input */}
-            <div className="px-4 py-3 border-t border-border bg-card">
-              <div className="flex items-center gap-2 max-w-2xl mx-auto">
-                <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0">
-                  <Smile className="h-5 w-5 text-muted-foreground" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0">
-                  <Paperclip className="h-5 w-5 text-muted-foreground" />
-                </Button>
-                <Input
-                  placeholder="Digite uma mensagem..."
-                  className="flex-1 h-9 text-sm bg-muted border-0"
-                  value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                />
-                <Button
-                  size="icon"
-                  className="h-9 w-9 flex-shrink-0 bg-success hover:bg-success/90 text-success-foreground"
-                  onClick={handleSend}
-                  disabled={!messageInput.trim()}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+              {/* Message Input */}
+              <div className="px-4 py-3 border-t border-border bg-card">
+                <div className="flex items-center gap-2 max-w-2xl mx-auto">
+                  <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0">
+                    <Smile className="h-5 w-5 text-muted-foreground" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0">
+                    <Paperclip className="h-5 w-5 text-muted-foreground" />
+                  </Button>
+                  <Input
+                    placeholder="Digite uma mensagem..."
+                    className="flex-1 h-9 text-sm bg-muted border-0"
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                  />
+                  <Button
+                    size="icon"
+                    className="h-9 w-9 flex-shrink-0 bg-success hover:bg-success/90 text-success-foreground"
+                    onClick={handleSend}
+                    disabled={!messageInput.trim()}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
+
+            {/* Lead Details Panel */}
+            {showLeadDetails && (
+              <LeadDetailsPanel contact={selectedContact} onClose={() => setShowLeadDetails(false)} />
+            )}
+          </>
         ) : (
           <div className="flex-1 flex items-center justify-center text-muted-foreground">
             <div className="text-center">
