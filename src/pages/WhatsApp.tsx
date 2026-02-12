@@ -1,21 +1,27 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  Search, Send, Paperclip, Smile, MoreVertical, Phone, Video,
-  Image, FileText, Mic, Check, CheckCheck, Clock, Archive, Tag, Link2, MessageSquare, User,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Search, Send, Paperclip, Smile, MoreVertical, Phone,
+  Image, FileText, Mic, Check, CheckCheck, Clock, Archive, Tag, Link2,
+  MessageSquare, User, Plus, Pencil, Trash2, Heart, ThumbsUp,
+  Laugh, MicOff, Play, Pause, X, Target, Square,
 } from "lucide-react";
 import { LeadDetailsPanel } from "@/components/whatsapp/LeadDetailsPanel";
+import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
+import { toast } from "@/hooks/use-toast";
 import type { WhatsAppContact, WhatsAppMessage } from "@/services/whatsappService";
 
-// Placeholder - substituir por hooks reais
-// import { useWhatsAppConversations, useWhatsAppMessages, useSendWhatsAppMessage, useMarkAsRead } from "@/hooks/useWhatsApp";
+const REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 
-const PLACEHOLDER_CONTACTS: WhatsAppContact[] = [
+const INITIAL_CONTACTS: WhatsAppContact[] = [
   { id: "1", nome: "Ricardo Pereira", telefone: "(11) 99900-1234", foto_url: null, lead_id: "1", cliente_id: null, ultima_mensagem: "Boa tarde! Gostaria de cotar um seguro auto para meu Civic 2025", ultima_mensagem_at: "2026-02-12T14:30:00Z", nao_lidas: 2, status: "ativo", tags: ["lead", "auto"] },
   { id: "2", nome: "Luciana Mendes", telefone: "(21) 98800-5678", foto_url: null, lead_id: "2", cliente_id: null, ultima_mensagem: "Recebi a proposta, vou analisar e retorno", ultima_mensagem_at: "2026-02-12T13:15:00Z", nao_lidas: 0, status: "ativo", tags: ["lead", "vida"] },
   { id: "3", nome: "João Silva", telefone: "(11) 99999-1234", foto_url: null, lead_id: null, cliente_id: "1", ultima_mensagem: "Preciso acionar o seguro, tive uma colisão", ultima_mensagem_at: "2026-02-12T11:00:00Z", nao_lidas: 1, status: "ativo", tags: ["cliente", "sinistro"] },
@@ -25,50 +31,137 @@ const PLACEHOLDER_CONTACTS: WhatsAppContact[] = [
   { id: "7", nome: "Carlos Mendes", telefone: "(31) 97777-9012", foto_url: null, lead_id: null, cliente_id: "4", ultima_mensagem: "Quando vence minha apólice?", ultima_mensagem_at: "2026-02-11T17:00:00Z", nao_lidas: 0, status: "ativo", tags: ["cliente", "renovação"] },
 ];
 
-const PLACEHOLDER_MESSAGES: WhatsAppMessage[] = [
+const INITIAL_MESSAGES: (WhatsAppMessage & { reaction?: string; edited?: boolean; deleted?: boolean })[] = [
   { id: "m1", contato_id: "1", tipo: "text", conteudo: "Boa tarde! Vi o anúncio de vocês e gostaria de cotar um seguro auto", media_url: null, media_mime_type: null, direcao: "recebida", status: "lida", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:00:00Z" },
   { id: "m2", contato_id: "1", tipo: "text", conteudo: "Boa tarde Ricardo! Claro, ficarei feliz em ajudar. Qual é o modelo e ano do seu veículo?", media_url: null, media_mime_type: null, direcao: "enviada", status: "lida", remetente: "Corretor", created_at: "2026-02-12T14:05:00Z" },
   { id: "m3", contato_id: "1", tipo: "text", conteudo: "É um Honda Civic EXL 2025, tenho 35 anos, garagem em casa e no trabalho", media_url: null, media_mime_type: null, direcao: "recebida", status: "lida", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:10:00Z" },
-  { id: "m4", contato_id: "1", tipo: "text", conteudo: "Excelente! Com esse perfil conseguimos boas condições. Vou preparar cotações com Porto Seguro, Tokio Marine e HDI. Pode me enviar a CNH e o documento do veículo?", media_url: null, media_mime_type: null, direcao: "enviada", status: "entregue", remetente: "Corretor", created_at: "2026-02-12T14:15:00Z" },
+  { id: "m4", contato_id: "1", tipo: "text", conteudo: "Excelente! Com esse perfil conseguimos boas condições. Vou preparar cotações com Porto Seguro, Tokio Marine e HDI.", media_url: null, media_mime_type: null, direcao: "enviada", status: "entregue", remetente: "Corretor", created_at: "2026-02-12T14:15:00Z" },
   { id: "m5", contato_id: "1", tipo: "text", conteudo: "Claro! Segue a CNH", media_url: null, media_mime_type: null, direcao: "recebida", status: "lida", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:25:00Z" },
   { id: "m6", contato_id: "1", tipo: "image", conteudo: "CNH_Ricardo.jpg", media_url: "/placeholder.svg", media_mime_type: "image/jpeg", direcao: "recebida", status: "lida", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:25:30Z" },
   { id: "m7", contato_id: "1", tipo: "text", conteudo: "Gostaria de cotar um seguro auto para meu Civic 2025", media_url: null, media_mime_type: null, direcao: "recebida", status: "entregue", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:30:00Z" },
 ];
 
+type ExtMessage = WhatsAppMessage & { reaction?: string; edited?: boolean; deleted?: boolean };
+
 const WhatsApp = () => {
-  const [selectedContact, setSelectedContact] = useState<WhatsAppContact | null>(PLACEHOLDER_CONTACTS[0]);
+  const [contacts, setContacts] = useState(INITIAL_CONTACTS);
+  const [selectedContact, setSelectedContact] = useState<WhatsAppContact | null>(contacts[0]);
   const [searchQuery, setSearchQuery] = useState("");
   const [messageInput, setMessageInput] = useState("");
   const [showLeadDetails, setShowLeadDetails] = useState(false);
+  const [allMessages, setAllMessages] = useState<ExtMessage[]>(INITIAL_MESSAGES);
+  const [editingMsg, setEditingMsg] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [newLeadOpen, setNewLeadOpen] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const recordingRef = useRef<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Hooks prontos para integração:
-  // const { data: conversations } = useWhatsAppConversations({ search: searchQuery });
-  // const { data: messages } = useWhatsAppMessages(selectedContact?.id ?? null);
-  // const sendMessage = useSendWhatsAppMessage();
-  // const markAsRead = useMarkAsRead();
-
-  const contacts = PLACEHOLDER_CONTACTS.filter(c =>
+  const filteredContacts = contacts.filter(c =>
     c.nome.toLowerCase().includes(searchQuery.toLowerCase()) || c.telefone.includes(searchQuery)
   );
 
-  const messages = selectedContact ? PLACEHOLDER_MESSAGES.filter(m => m.contato_id === selectedContact.id) : [];
+  const messages = selectedContact ? allMessages.filter(m => m.contato_id === selectedContact.id) : [];
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages.length]);
 
+  // --- Send text ---
   const handleSend = () => {
     if (!messageInput.trim() || !selectedContact) return;
-    // sendMessage.mutate({ contato_id: selectedContact.id, tipo: "text", conteudo: messageInput });
-    console.log("Enviar:", { contato_id: selectedContact.id, tipo: "text", conteudo: messageInput });
+    const newMsg: ExtMessage = {
+      id: crypto.randomUUID(), contato_id: selectedContact.id, tipo: "text",
+      conteudo: messageInput, media_url: null, media_mime_type: null,
+      direcao: "enviada", status: "enviada", remetente: "Corretor", created_at: new Date().toISOString(),
+    };
+    setAllMessages(prev => [...prev, newMsg]);
+    setContacts(prev => prev.map(c => c.id === selectedContact.id ? { ...c, ultima_mensagem: messageInput, ultima_mensagem_at: newMsg.created_at } : c));
     setMessageInput("");
   };
 
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  // --- Delete message ---
+  const handleDelete = (msgId: string) => {
+    setAllMessages(prev => prev.map(m => m.id === msgId ? { ...m, deleted: true, conteudo: "Mensagem apagada" } : m));
   };
+
+  // --- Edit message ---
+  const startEdit = (msg: ExtMessage) => {
+    setEditingMsg(msg.id);
+    setEditText(msg.conteudo);
+  };
+  const confirmEdit = () => {
+    if (!editingMsg || !editText.trim()) return;
+    setAllMessages(prev => prev.map(m => m.id === editingMsg ? { ...m, conteudo: editText, edited: true } : m));
+    setEditingMsg(null);
+    setEditText("");
+  };
+  const cancelEdit = () => { setEditingMsg(null); setEditText(""); };
+
+  // --- React ---
+  const handleReact = (msgId: string, emoji: string) => {
+    setAllMessages(prev => prev.map(m => m.id === msgId ? { ...m, reaction: m.reaction === emoji ? undefined : emoji } : m));
+  };
+
+  // --- File attach ---
+  const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !selectedContact) return;
+    Array.from(files).forEach(file => {
+      const isImage = file.type.startsWith("image/");
+      const newMsg: ExtMessage = {
+        id: crypto.randomUUID(), contato_id: selectedContact.id,
+        tipo: isImage ? "image" : "document",
+        conteudo: file.name, media_url: URL.createObjectURL(file),
+        media_mime_type: file.type, direcao: "enviada", status: "enviada",
+        remetente: "Corretor", created_at: new Date().toISOString(),
+      };
+      setAllMessages(prev => [...prev, newMsg]);
+    });
+    e.target.value = "";
+  };
+
+  // --- Audio recording ---
+  const startRecording = () => {
+    setIsRecording(true);
+    setRecordingTime(0);
+    recordingRef.current = window.setInterval(() => setRecordingTime(t => t + 1), 1000);
+    // In real integration: navigator.mediaDevices.getUserMedia({ audio: true })
+  };
+  const stopRecording = (send: boolean) => {
+    if (recordingRef.current) clearInterval(recordingRef.current);
+    setIsRecording(false);
+    if (send && selectedContact) {
+      const newMsg: ExtMessage = {
+        id: crypto.randomUUID(), contato_id: selectedContact.id, tipo: "audio",
+        conteudo: `audio_${recordingTime}s.ogg`, media_url: null, media_mime_type: "audio/ogg",
+        direcao: "enviada", status: "enviada", remetente: "Corretor", created_at: new Date().toISOString(),
+      };
+      setAllMessages(prev => [...prev, newMsg]);
+      toast({ title: "Áudio enviado", description: `Duração: ${recordingTime}s` });
+    }
+    setRecordingTime(0);
+  };
+
+  // --- Create lead & auto-create chat ---
+  const handleLeadCreated = (lead: Record<string, unknown>) => {
+    const nome = String(lead.nome || "Novo Lead");
+    const telefone = String(lead.telefone || "");
+    const newContact: WhatsAppContact = {
+      id: crypto.randomUUID(), nome, telefone, foto_url: null,
+      lead_id: crypto.randomUUID(), cliente_id: null,
+      ultima_mensagem: "Lead criado — Iniciar conversa", ultima_mensagem_at: new Date().toISOString(),
+      nao_lidas: 0, status: "ativo", tags: ["lead", String(lead.ramo_interesse || "novo")],
+    };
+    setContacts(prev => [newContact, ...prev]);
+    setSelectedContact(newContact);
+    toast({ title: "Lead criado!", description: `Chat com ${nome} criado automaticamente.` });
+  };
+
+  const formatTime = (d: string) => new Date(d).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  const formatRecTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
   const StatusIcon = ({ status }: { status: WhatsAppMessage["status"] }) => {
     switch (status) {
@@ -83,15 +176,17 @@ const WhatsApp = () => {
   return (
     <AppLayout>
       <div className="flex h-[calc(100vh-7rem)] gap-0 rounded-lg border border-border overflow-hidden bg-card">
-        {/* Lista de Conversas */}
+        {/* Contact List */}
         <div className="w-80 flex-shrink-0 border-r border-border flex flex-col">
-          {/* Header */}
           <div className="px-4 py-3 border-b border-border">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-success" /> Conversas
               </h3>
               <div className="flex gap-1">
+                <Button variant="ghost" size="icon" className="h-7 w-7" title="Novo Lead + Chat" onClick={() => setNewLeadOpen(true)}>
+                  <Plus className="h-3.5 w-3.5 text-muted-foreground" />
+                </Button>
                 <Button variant="ghost" size="icon" className="h-7 w-7" title="Arquivadas">
                   <Archive className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
@@ -99,18 +194,11 @@ const WhatsApp = () => {
             </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar conversas..."
-                className="pl-9 h-8 text-xs bg-muted border-0"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+              <Input placeholder="Buscar conversas..." className="pl-9 h-8 text-xs bg-muted border-0" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
           </div>
-
-          {/* Contact List */}
           <ScrollArea className="flex-1">
-            {contacts.map((c) => (
+            {filteredContacts.map((c) => (
               <button
                 key={c.id}
                 onClick={() => setSelectedContact(c)}
@@ -147,7 +235,7 @@ const WhatsApp = () => {
           </ScrollArea>
         </div>
 
-        {/* Área de Chat */}
+        {/* Chat Area */}
         {selectedContact ? (
           <>
             <div className="flex-1 flex flex-col">
@@ -169,12 +257,14 @@ const WhatsApp = () => {
                   {selectedContact.cliente_id && (
                     <Badge variant="outline" className="text-[10px] border-success text-success mr-2">Cliente</Badge>
                   )}
+                  {!selectedContact.lead_id && (
+                    <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1 mr-2" onClick={() => setNewLeadOpen(true)}>
+                      <Target className="h-3 w-3" /> Criar Lead
+                    </Button>
+                  )}
                   <Button
-                    variant={showLeadDetails ? "default" : "ghost"}
-                    size="icon"
-                    className="h-8 w-8"
-                    title="Ver detalhes do Lead"
-                    onClick={() => setShowLeadDetails(!showLeadDetails)}
+                    variant={showLeadDetails ? "default" : "ghost"} size="icon" className="h-8 w-8"
+                    title="Ver detalhes do Lead" onClick={() => setShowLeadDetails(!showLeadDetails)}
                   >
                     <User className="h-4 w-4" />
                   </Button>
@@ -197,36 +287,105 @@ const WhatsApp = () => {
               <ScrollArea className="flex-1 px-4 py-4">
                 <div className="space-y-3 max-w-2xl mx-auto">
                   {messages.map((msg) => (
-                    <div key={msg.id} className={`flex ${msg.direcao === "enviada" ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[70%] rounded-lg px-3 py-2 ${
-                        msg.direcao === "enviada"
-                          ? "bg-primary text-primary-foreground rounded-br-sm"
-                          : "bg-muted text-foreground rounded-bl-sm"
-                      }`}>
-                        {msg.tipo === "image" ? (
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2 py-1">
-                              <Image className="h-4 w-4 opacity-70" />
-                              <span className="text-xs opacity-80">{msg.conteudo}</span>
+                    <div key={msg.id} className={`flex ${msg.direcao === "enviada" ? "justify-end" : "justify-start"} group`}>
+                      <div className="relative">
+                        {/* Message bubble */}
+                        <div className={`max-w-[400px] rounded-lg px-3 py-2 ${
+                          msg.deleted
+                            ? "bg-muted/50 text-muted-foreground italic border border-border"
+                            : msg.direcao === "enviada"
+                              ? "bg-primary text-primary-foreground rounded-br-sm"
+                              : "bg-muted text-foreground rounded-bl-sm"
+                        }`}>
+                          {msg.deleted ? (
+                            <p className="text-xs flex items-center gap-1.5"><Trash2 className="h-3 w-3" /> Mensagem apagada</p>
+                          ) : editingMsg === msg.id ? (
+                            <div className="space-y-2">
+                              <Input
+                                value={editText} onChange={(e) => setEditText(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === "Enter") confirmEdit(); if (e.key === "Escape") cancelEdit(); }}
+                                className="h-7 text-xs bg-background text-foreground"
+                                autoFocus
+                              />
+                              <div className="flex gap-1 justify-end">
+                                <Button size="sm" variant="ghost" className="h-5 text-[10px] px-2" onClick={cancelEdit}>Cancelar</Button>
+                                <Button size="sm" className="h-5 text-[10px] px-2" onClick={confirmEdit}>Salvar</Button>
+                              </div>
                             </div>
+                          ) : (
+                            <>
+                              {msg.tipo === "image" ? (
+                                <div className="space-y-1">
+                                  {msg.media_url && <img src={msg.media_url} alt={msg.conteudo} className="rounded max-w-[240px] max-h-[200px] object-cover" />}
+                                  <div className="flex items-center gap-2 py-0.5">
+                                    <Image className="h-3 w-3 opacity-70" />
+                                    <span className="text-[10px] opacity-80">{msg.conteudo}</span>
+                                  </div>
+                                </div>
+                              ) : msg.tipo === "document" ? (
+                                <div className="flex items-center gap-2 py-1 px-1 bg-background/10 rounded">
+                                  <FileText className="h-4 w-4 opacity-70" />
+                                  <span className="text-xs flex-1">{msg.conteudo}</span>
+                                </div>
+                              ) : msg.tipo === "audio" ? (
+                                <div className="flex items-center gap-2 py-1 min-w-[180px]">
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0"><Play className="h-3 w-3" /></Button>
+                                  <div className="flex-1 h-1 rounded-full bg-background/20">
+                                    <div className="h-1 rounded-full bg-current w-1/3" />
+                                  </div>
+                                  <span className="text-[10px] opacity-60">0:{msg.conteudo.match(/(\d+)s/)?.[1] || "00"}</span>
+                                </div>
+                              ) : (
+                                <p className="text-sm whitespace-pre-wrap">{msg.conteudo}</p>
+                              )}
+                              {msg.edited && <span className="text-[9px] opacity-40 italic">editada</span>}
+                            </>
+                          )}
+                          <div className={`flex items-center gap-1 mt-1 ${msg.direcao === "enviada" ? "justify-end" : ""}`}>
+                            <span className="text-[10px] opacity-60">{formatTime(msg.created_at)}</span>
+                            {msg.direcao === "enviada" && <StatusIcon status={msg.status} />}
                           </div>
-                        ) : msg.tipo === "document" ? (
-                          <div className="flex items-center gap-2 py-1">
-                            <FileText className="h-4 w-4 opacity-70" />
-                            <span className="text-xs">{msg.conteudo}</span>
-                          </div>
-                        ) : msg.tipo === "audio" ? (
-                          <div className="flex items-center gap-2 py-1">
-                            <Mic className="h-4 w-4 opacity-70" />
-                            <span className="text-xs">Mensagem de áudio</span>
-                          </div>
-                        ) : (
-                          <p className="text-sm whitespace-pre-wrap">{msg.conteudo}</p>
-                        )}
-                        <div className={`flex items-center gap-1 mt-1 ${msg.direcao === "enviada" ? "justify-end" : ""}`}>
-                          <span className="text-[10px] opacity-60">{formatTime(msg.created_at)}</span>
-                          {msg.direcao === "enviada" && <StatusIcon status={msg.status} />}
                         </div>
+
+                        {/* Reaction badge */}
+                        {msg.reaction && !msg.deleted && (
+                          <span className="absolute -bottom-2 left-2 text-sm bg-card border border-border rounded-full px-1 shadow-sm cursor-pointer"
+                            onClick={() => handleReact(msg.id, msg.reaction!)}>{msg.reaction}</span>
+                        )}
+
+                        {/* Actions on hover */}
+                        {!msg.deleted && !editingMsg && (
+                          <div className={`absolute top-0 ${msg.direcao === "enviada" ? "-left-20" : "-right-20"} hidden group-hover:flex items-center gap-0.5`}>
+                            {/* Reactions */}
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-6 w-6"><Smile className="h-3 w-3 text-muted-foreground" /></Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-1 flex gap-0.5" side="top">
+                                {REACTIONS.map(r => (
+                                  <button key={r} className="text-lg hover:scale-125 transition-transform px-0.5" onClick={() => handleReact(msg.id, r)}>{r}</button>
+                                ))}
+                              </PopoverContent>
+                            </Popover>
+
+                            {/* More actions */}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-6 w-6"><MoreVertical className="h-3 w-3 text-muted-foreground" /></Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align={msg.direcao === "enviada" ? "end" : "start"} className="min-w-[140px]">
+                                {msg.direcao === "enviada" && msg.tipo === "text" && (
+                                  <DropdownMenuItem onClick={() => startEdit(msg)} className="text-xs gap-2">
+                                    <Pencil className="h-3 w-3" /> Editar
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem onClick={() => handleDelete(msg.id)} className="text-xs gap-2 text-destructive">
+                                  <Trash2 className="h-3 w-3" /> Apagar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -234,35 +393,54 @@ const WhatsApp = () => {
                 </div>
               </ScrollArea>
 
-              {/* Message Input */}
+              {/* Input Area */}
               <div className="px-4 py-3 border-t border-border bg-card">
-                <div className="flex items-center gap-2 max-w-2xl mx-auto">
-                  <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0">
-                    <Smile className="h-5 w-5 text-muted-foreground" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0">
-                    <Paperclip className="h-5 w-5 text-muted-foreground" />
-                  </Button>
-                  <Input
-                    placeholder="Digite uma mensagem..."
-                    className="flex-1 h-9 text-sm bg-muted border-0"
-                    value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                  />
-                  <Button
-                    size="icon"
-                    className="h-9 w-9 flex-shrink-0 bg-success hover:bg-success/90 text-success-foreground"
-                    onClick={handleSend}
-                    disabled={!messageInput.trim()}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
+                {isRecording ? (
+                  <div className="flex items-center gap-3 max-w-2xl mx-auto">
+                    <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={() => stopRecording(false)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                    <div className="flex-1 flex items-center gap-3">
+                      <span className="h-2.5 w-2.5 rounded-full bg-destructive animate-pulse" />
+                      <span className="text-sm font-mono text-destructive font-medium">{formatRecTime(recordingTime)}</span>
+                      <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
+                        <div className="h-1 bg-destructive rounded-full animate-pulse" style={{ width: `${Math.min(recordingTime * 2, 100)}%` }} />
+                      </div>
+                    </div>
+                    <Button size="icon" className="h-9 w-9 bg-success hover:bg-success/90 text-success-foreground" onClick={() => stopRecording(true)}>
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 max-w-2xl mx-auto">
+                    <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0">
+                      <Smile className="h-5 w-5 text-muted-foreground" />
+                    </Button>
+                    <input type="file" ref={fileInputRef} className="hidden" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileAttach} />
+                    <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0" onClick={() => fileInputRef.current?.click()}>
+                      <Paperclip className="h-5 w-5 text-muted-foreground" />
+                    </Button>
+                    <Input
+                      placeholder="Digite uma mensagem..."
+                      className="flex-1 h-9 text-sm bg-muted border-0"
+                      value={messageInput}
+                      onChange={(e) => setMessageInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                    />
+                    {messageInput.trim() ? (
+                      <Button size="icon" className="h-9 w-9 flex-shrink-0 bg-success hover:bg-success/90 text-success-foreground" onClick={handleSend}>
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button size="icon" variant="ghost" className="h-9 w-9 flex-shrink-0 text-muted-foreground hover:text-destructive" onClick={startRecording}>
+                        <Mic className="h-5 w-5" />
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Lead Details Panel */}
             {showLeadDetails && (
               <LeadDetailsPanel contact={selectedContact} onClose={() => setShowLeadDetails(false)} />
             )}
@@ -276,6 +454,13 @@ const WhatsApp = () => {
           </div>
         )}
       </div>
+
+      {/* New Lead Dialog */}
+      <NewLeadDialog
+        open={newLeadOpen}
+        onOpenChange={setNewLeadOpen}
+        onLeadCreated={handleLeadCreated}
+      />
     </AppLayout>
   );
 };
