@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useRole } from "@/contexts/RoleContext";
+import { useRole, ROLE_LABELS, ROLE_EMOJI } from "@/contexts/RoleContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import type { UserRole } from "@/contexts/RoleContext";
@@ -14,6 +14,8 @@ export function AppHeader() {
   const { role, switchRole } = useRole();
   const { theme, toggleTheme } = useTheme();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+
+  const allRoles: UserRole[] = ["admin", "corretor_novo", "corretor_renovacao", "corretor_sinistro", "corretor_financeiro"];
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
@@ -29,12 +31,13 @@ export function AppHeader() {
 
       <div className="flex items-center gap-3">
         <Select value={role} onValueChange={(v) => switchRole(v as UserRole)}>
-          <SelectTrigger className="w-[160px] h-8 text-xs border-dashed">
+          <SelectTrigger className="w-[200px] h-8 text-xs border-dashed">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="admin">👑 Administrador</SelectItem>
-            <SelectItem value="corretor">👤 Corretor</SelectItem>
+            {allRoles.map(r => (
+              <SelectItem key={r} value={r}>{ROLE_EMOJI[r]} {ROLE_LABELS[r]}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
