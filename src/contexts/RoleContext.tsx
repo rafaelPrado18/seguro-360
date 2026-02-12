@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 export type UserRole = "admin" | "corretor_novo" | "corretor_renovacao" | "corretor_sinistro" | "corretor_financeiro";
+export type BrokerStatus = "online" | "offline";
 
 export interface UserProfile {
   id: string;
@@ -49,12 +50,15 @@ interface RoleContextType {
   isAdmin: boolean;
   isCorretorType: (type: UserRole) => boolean;
   hasScope: (scope: string) => boolean;
+  brokerStatus: BrokerStatus;
+  setBrokerStatus: (status: BrokerStatus) => void;
 }
 
 const RoleContext = createContext<RoleContextType | null>(null);
 
 export function RoleProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<UserRole>("admin");
+  const [brokerStatus, setBrokerStatus] = useState<BrokerStatus>("online");
 
   const currentUser = PROFILES[role];
   const scopes = ROLE_SCOPES[role];
@@ -69,6 +73,8 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       isAdmin: role === "admin",
       isCorretorType: (type: UserRole) => role === type,
       hasScope,
+      brokerStatus,
+      setBrokerStatus,
     }}>
       {children}
     </RoleContext.Provider>
