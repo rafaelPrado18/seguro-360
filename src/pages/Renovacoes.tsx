@@ -1,5 +1,6 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +19,8 @@ const renovacoesData = [
 
 const Renovacoes = () => {
   const [search, setSearch] = useState("");
-  const filtered = renovacoesData.filter(r => r.cliente.toLowerCase().includes(search.toLowerCase()) || r.apolice.includes(search));
+  const [renovacoes, setRenovacoes] = useState(renovacoesData);
+  const filtered = renovacoes.filter(r => r.cliente.toLowerCase().includes(search.toLowerCase()) || r.apolice.includes(search));
 
   const statusColor = (s: string) => {
     switch (s) {
@@ -85,7 +87,10 @@ const Renovacoes = () => {
                         <div className="flex items-center justify-center gap-1">
                           <Button variant="ghost" size="icon" className="h-7 w-7" title="Enviar email"><Mail className="h-3.5 w-3.5 text-muted-foreground" /></Button>
                           <Button variant="ghost" size="icon" className="h-7 w-7" title="Ligar"><Phone className="h-3.5 w-3.5 text-muted-foreground" /></Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" title="Renovar"><RefreshCw className="h-3.5 w-3.5 text-muted-foreground" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" title="Renovar" onClick={() => {
+                            setRenovacoes(prev => prev.map(item => item.id === r.id ? { ...item, status: "Renovado" } : item));
+                            toast.success(`Apólice ${r.apolice} de ${r.cliente} renovada com sucesso!`);
+                          }}><RefreshCw className="h-3.5 w-3.5 text-muted-foreground" /></Button>
                         </div>
                       </td>
                     </tr>
