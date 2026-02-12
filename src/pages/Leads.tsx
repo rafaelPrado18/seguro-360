@@ -341,10 +341,10 @@ const Leads = () => {
           open={redistribuirOpen}
           onOpenChange={setRedistribuirOpen}
           corretores={distribution.map(d => ({ id: d.corretor_id, nome: d.corretor_nome }))}
-          onRedistribuir={({ horarioPartir, corretorOrigem }) => {
-            // Filter leads from the given time and corretor, then redistribute
-            const today = new Date().toISOString().split("T")[0];
-            const cutoff = new Date(`${today}T${horarioPartir}:00`).getTime();
+          onRedistribuir={({ data, horarioPartir, corretorOrigem }) => {
+            // Filter leads from the given date/time and corretor, then redistribute
+            const dateStr = data.toISOString().split("T")[0];
+            const cutoff = new Date(`${dateStr}T${horarioPartir}:00`).getTime();
             setLeads(prev => {
               const corretorNames = distribution.map(d => d.corretor_nome);
               let idx = 0;

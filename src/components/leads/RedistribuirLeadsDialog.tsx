@@ -1,13 +1,18 @@
 import { useState } from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shuffle, Clock, Users } from "lucide-react";
+import { Shuffle, Clock, Users, CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface Corretor {
   id: string;
@@ -18,10 +23,11 @@ interface RedistribuirLeadsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   corretores: Corretor[];
-  onRedistribuir: (params: { horarioPartir: string; corretorOrigem: string | "all" }) => void;
+  onRedistribuir: (params: { data: Date; horarioPartir: string; corretorOrigem: string | "all" }) => void;
 }
 
 export function RedistribuirLeadsDialog({ open, onOpenChange, corretores, onRedistribuir }: RedistribuirLeadsDialogProps) {
+  const [data, setData] = useState<Date>(new Date());
   const [horario, setHorario] = useState("08:00");
   const [corretorOrigem, setCorretorOrigem] = useState<string>("all");
 
@@ -30,9 +36,9 @@ export function RedistribuirLeadsDialog({ open, onOpenChange, corretores, onRedi
       toast.error("Informe o horário a partir do qual redistribuir.");
       return;
     }
-    onRedistribuir({ horarioPartir: horario, corretorOrigem });
+    onRedistribuir({ data, horarioPartir: horario, corretorOrigem });
     toast.success(
-      `Leads a partir de ${horario} ${corretorOrigem === "all" ? "de todos os corretores" : `de ${corretores.find(c => c.id === corretorOrigem)?.nome}`} redistribuídos com sucesso!`
+      `Leads a partir de ${format(data, "dd/MM/yyyy")} ${horario} ${corretorOrigem === "all" ? "de todos os corretores" : `de ${corretores.find(c => c.id === corretorOrigem)?.nome}`} redistribuídos com sucesso!`
     );
     onOpenChange(false);
   };
@@ -46,11 +52,43 @@ export function RedistribuirLeadsDialog({ open, onOpenChange, corretores, onRedi
             Redistribuir Leads
           </DialogTitle>
           <DialogDescription>
-            Redistribua os leads a partir de um horário específico, de um ou todos os corretores.
+            Redistribua os leads a partir de uma data e horário específicos, de um ou todos os corretores.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
+          {/* Data */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5 text-sm font-medium">
+              <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
+              Data
+            </Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal h-9 text-sm",
+                    !data && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {data ? format(data, "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={data}
+                  onSelect={(d) => d && setData(d)}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Horário */}
           <div className="space-y-2">
             <Label htmlFor="horario" className="flex items-center gap-1.5 text-sm font-medium">
               <Clock className="h-3.5 w-3.5 text-muted-foreground" />
@@ -64,10 +102,11 @@ export function RedistribuirLeadsDialog({ open, onOpenChange, corretores, onRedi
               className="h-9"
             />
             <p className="text-[11px] text-muted-foreground">
-              Todos os leads recebidos a partir deste horário (hoje) serão redistribuídos.
+              Todos os leads recebidos a partir desta data/horário serão redistribuídos.
             </p>
           </div>
 
+          {/* Corretor */}
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5 text-sm font-medium">
               <Users className="h-3.5 w-3.5 text-muted-foreground" />
