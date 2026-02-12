@@ -12,6 +12,8 @@ import Renovacoes from "./pages/Renovacoes";
 import Agenda from "./pages/Agenda";
 import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
+import Leads from "./pages/Leads";
+import WhatsApp from "./pages/WhatsApp";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +26,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/leads" element={<Leads />} />
+          <Route path="/whatsapp" element={<WhatsApp />} />
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/apolices" element={<Apolices />} />
           <Route path="/sinistros" element={<Sinistros />} />
