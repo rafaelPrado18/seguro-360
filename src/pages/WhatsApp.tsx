@@ -12,14 +12,28 @@ import {
   Search, Send, Paperclip, Smile, MoreVertical, Phone,
   Image, FileText, Mic, Check, CheckCheck, Clock, Archive, Tag, Link2,
   MessageSquare, User, Plus, Pencil, Trash2, Heart, ThumbsUp,
-  Laugh, MicOff, Play, Pause, X, Target, Square,
+  Laugh, MicOff, Play, Pause, X, Target, Square, FileStack,
 } from "lucide-react";
+import { Popover as TemplatePopover, PopoverContent as TemplatePopoverContent, PopoverTrigger as TemplatePopoverTrigger } from "@/components/ui/popover";
 import { LeadDetailsPanel } from "@/components/whatsapp/LeadDetailsPanel";
 import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
 import { toast } from "@/hooks/use-toast";
 import type { WhatsAppContact, WhatsAppMessage } from "@/services/whatsappService";
 
 const REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
+
+const TEMPLATES = [
+  { id: "1", nome: "Boas-vindas Lead", categoria: "boas_vindas", conteudo: "Olá {{nome}}! 👋\n\nSou {{corretor}} da SeguraCRM. Vi que você tem interesse em seguro {{ramo}}.\n\nPosso te ajudar a encontrar a melhor cobertura com o melhor preço. Quando podemos conversar?" },
+  { id: "2", nome: "Envio de Proposta", categoria: "proposta", conteudo: "Olá {{nome}}! 📋\n\nSegue a proposta do seguro {{ramo}} que conversamos:\n\n🏢 Seguradora: {{seguradora}}\n💰 Prêmio: {{valor_premio}}\n\n📎 Acesse a proposta completa: {{link_proposta}}\n\nQualquer dúvida estou à disposição!" },
+  { id: "3", nome: "Lembrete de Renovação", categoria: "renovacao", conteudo: "Olá {{nome}}! 🔔\n\nSua apólice {{numero_apolice}} ({{ramo}}) vence em {{data_vencimento}}.\n\nJá estou preparando a renovação com as melhores condições. Podemos agendar uma conversa para revisar as coberturas?\n\nAbraços, {{corretor}}" },
+  { id: "4", nome: "Follow-up Lead", categoria: "follow_up", conteudo: "Oi {{nome}}, tudo bem? 😊\n\nEntrei em contato recentemente sobre o seguro {{ramo}}. Gostaria de saber se ainda tem interesse?\n\nEstou com condições especiais essa semana. Posso enviar uma cotação?" },
+  { id: "5", nome: "Sinistro - Abertura", categoria: "sinistro", conteudo: "Olá {{nome}}, recebi seu chamado e já estou cuidando da abertura do sinistro.\n\n📋 Apólice: {{numero_apolice}}\n🏢 Seguradora: {{seguradora}}\n\nVou te manter informado(a) sobre cada etapa. Se precisar, é só chamar!\n\n{{corretor}}" },
+];
+
+const categoriaLabels: Record<string, string> = {
+  boas_vindas: "Boas-vindas", proposta: "Proposta", renovacao: "Renovação",
+  follow_up: "Follow-up", sinistro: "Sinistro", cobranca: "Cobrança", geral: "Geral",
+};
 
 const INITIAL_CONTACTS: WhatsAppContact[] = [
   { id: "1", nome: "Ricardo Pereira", telefone: "(11) 99900-1234", foto_url: null, lead_id: "1", cliente_id: null, ultima_mensagem: "Boa tarde! Gostaria de cotar um seguro auto para meu Civic 2025", ultima_mensagem_at: "2026-02-12T14:30:00Z", nao_lidas: 2, status: "ativo", tags: ["lead", "auto"] },
@@ -424,6 +438,42 @@ const WhatsApp = () => {
                     <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0" onClick={() => fileInputRef.current?.click()}>
                       <Paperclip className="h-5 w-5 text-muted-foreground" />
                     </Button>
+                    <TemplatePopover>
+                      <TemplatePopoverTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0" title="Templates">
+                          <FileStack className="h-5 w-5 text-muted-foreground" />
+                        </Button>
+                      </TemplatePopoverTrigger>
+                      <TemplatePopoverContent className="w-72 p-0" side="top" align="start">
+                        <div className="p-2 border-b border-border">
+                          <p className="text-xs font-semibold text-foreground">Templates Rápidos</p>
+                        </div>
+                        <ScrollArea className="max-h-64">
+                          <div className="p-1">
+                            {TEMPLATES.map(t => (
+                              <button
+                                key={t.id}
+                                className="w-full text-left px-3 py-2 rounded-md hover:bg-muted transition-colors"
+                                onClick={() => {
+                                  let content = t.conteudo;
+                                  if (selectedContact) {
+                                    content = content.replace(/\{\{nome\}\}/g, selectedContact.nome);
+                                  }
+                                  setMessageInput(content);
+                                }}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <FileStack className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                                  <span className="text-xs font-medium text-foreground">{t.nome}</span>
+                                  <Badge variant="secondary" className="text-[9px] ml-auto">{categoriaLabels[t.categoria] || t.categoria}</Badge>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2 pl-5.5">{t.conteudo}</p>
+                              </button>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </TemplatePopoverContent>
+                    </TemplatePopover>
                     <Input
                       placeholder="Digite uma mensagem..."
                       className="flex-1 h-9 text-sm bg-muted border-0"
