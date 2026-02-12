@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { LeadKanban, type KanbanColumn } from "@/components/leads/LeadKanban";
 import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
+import { LeadDetailSheet } from "@/components/leads/LeadDetailSheet";
 import { useRole } from "@/contexts/RoleContext";
 import { Link } from "react-router-dom";
 import type { Lead } from "@/services/leadsService";
@@ -75,6 +76,7 @@ const Leads = () => {
   const [leads, setLeads] = useState(PLACEHOLDER_LEADS);
   const [corretorFilter, setCorretorFilter] = useState<string>("all");
   const [newLeadOpen, setNewLeadOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const stats = PLACEHOLDER_STATS;
   const distribution = PLACEHOLDER_DISTRIBUTION;
@@ -245,6 +247,7 @@ const Leads = () => {
             columns={KANBAN_COLUMNS}
             onStatusChange={handleStatusChange}
             corretorFilter={isAdmin ? (corretorFilter !== "all" ? corretorFilter : null) : currentUser.nome}
+            onLeadClick={(lead) => setSelectedLead(lead)}
           />
         ) : (
           <Card>
@@ -316,6 +319,12 @@ const Leads = () => {
             };
             setLeads(prev => [newLead, ...prev]);
           }}
+        />
+
+        <LeadDetailSheet
+          lead={selectedLead}
+          open={!!selectedLead}
+          onOpenChange={(open) => { if (!open) setSelectedLead(null); }}
         />
       </div>
     </AppLayout>
