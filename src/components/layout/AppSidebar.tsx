@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useNotifications } from "@/contexts/NotificationContext";
+import logoHataseg from "@/assets/logo-hataseg.png";
 import {
   LayoutDashboard,
   Users,
@@ -44,13 +45,11 @@ export function AppSidebar() {
   return (
     <aside className="sidebar-gradient flex w-64 flex-col border-r border-sidebar-border">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 px-6 border-b border-sidebar-border">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary">
-          <Shield className="h-5 w-5 text-sidebar-primary-foreground" />
-        </div>
+      <div className="flex h-16 items-center gap-3 px-4 border-b border-sidebar-border">
+        <img src={logoHataseg} alt="HataSeg" className="h-10 w-10 object-contain rounded" />
         <div>
-          <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-wide">SeguraCRM</h1>
-          <p className="text-[10px] text-sidebar-muted uppercase tracking-widest">Gestão de Seguros</p>
+          <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-wide">HataSeg</h1>
+          <p className="text-[10px] text-sidebar-muted uppercase tracking-widest">Seguros & Previdência</p>
         </div>
       </div>
 
