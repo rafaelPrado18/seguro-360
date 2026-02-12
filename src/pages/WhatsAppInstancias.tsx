@@ -5,15 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Smartphone, Wifi, WifiOff, QrCode, Plus, Trash2, RefreshCw,
-  CheckCircle2, XCircle, Clock, Settings2, User,
+  CheckCircle2, XCircle, Clock, Settings2, Users, ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,7 +24,7 @@ interface WhatsAppInstance {
   id: string;
   nome: string;
   telefone: string;
-  corretor: string;
+  corretores: string[];
   status: "conectado" | "desconectado" | "aguardando_qr";
   ultimaConexao: string;
   mensagensHoje: number;
@@ -37,34 +40,19 @@ const corretores = [
 
 const initialInstances: WhatsAppInstance[] = [
   {
-    id: "inst-1",
-    nome: "Linha Principal",
-    telefone: "(11) 99900-0001",
-    corretor: "corretor-novo-1",
-    status: "conectado",
-    ultimaConexao: "2026-02-12T14:30:00Z",
-    mensagensHoje: 47,
-    autoReply: true,
+    id: "inst-1", nome: "Linha Principal", telefone: "(11) 99900-0001",
+    corretores: ["corretor-novo-1", "corretor-renov-1"],
+    status: "conectado", ultimaConexao: "2026-02-12T14:30:00Z", mensagensHoje: 47, autoReply: true,
   },
   {
-    id: "inst-2",
-    nome: "Renovações",
-    telefone: "(11) 99900-0002",
-    corretor: "corretor-renov-1",
-    status: "desconectado",
-    ultimaConexao: "2026-02-11T18:00:00Z",
-    mensagensHoje: 0,
-    autoReply: false,
+    id: "inst-2", nome: "Renovações", telefone: "(11) 99900-0002",
+    corretores: ["corretor-renov-1"],
+    status: "desconectado", ultimaConexao: "2026-02-11T18:00:00Z", mensagensHoje: 0, autoReply: false,
   },
   {
-    id: "inst-3",
-    nome: "Sinistros",
-    telefone: "(11) 99900-0003",
-    corretor: "corretor-sin-1",
-    status: "aguardando_qr",
-    ultimaConexao: "",
-    mensagensHoje: 0,
-    autoReply: false,
+    id: "inst-3", nome: "Sinistros", telefone: "(11) 99900-0003",
+    corretores: ["corretor-sin-1"],
+    status: "aguardando_qr", ultimaConexao: "", mensagensHoje: 0, autoReply: false,
   },
 ];
 
@@ -74,23 +62,77 @@ const statusConfig = {
   aguardando_qr: { label: "Aguardando QR", color: "border-warning text-warning", icon: Clock, iconColor: "text-warning" },
 };
 
+function CorretorMultiSelect({
+  selected,
+  onChange,
+  size = "sm",
+}: {
+  selected: string[];
+  onChange: (ids: string[]) => void;
+  size?: "sm" | "md";
+}) {
+  const toggle = (id: string) => {
+    onChange(
+      selected.includes(id)
+        ? selected.filter(s => s !== id)
+        : [...selected, id]
+    );
+  };
+
+  const label = selected.length === 0
+    ? "Selecione corretores"
+    : selected.length === 1
+    ? corretores.find(c => c.id === selected[0])?.nome || "1 corretor"
+    : `${selected.length} corretores`;
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={`w-full justify-between font-normal ${size === "sm" ? "h-8 text-xs" : "h-9 text-sm"}`}
+        >
+          <span className="truncate">{label}</span>
+          <ChevronDown className="h-3.5 w-3.5 ml-1 shrink-0 text-muted-foreground" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-56 p-2" align="start">
+        <div className="space-y-1">
+          {corretores.map(c => (
+            <label
+              key={c.id}
+              className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/60 cursor-pointer transition-colors"
+            >
+              <Checkbox
+                checked={selected.includes(c.id)}
+                onCheckedChange={() => toggle(c.id)}
+              />
+              <span className="text-sm">{c.nome}</span>
+            </label>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 const WhatsAppInstancias = () => {
   const [instances, setInstances] = useState<WhatsAppInstance[]>(initialInstances);
   const [selectedInstance, setSelectedInstance] = useState<WhatsAppInstance | null>(null);
   const [showQr, setShowQr] = useState<string | null>(null);
   const [newDialogOpen, setNewDialogOpen] = useState(false);
-  const [newForm, setNewForm] = useState({ nome: "", telefone: "", corretor: "" });
+  const [newForm, setNewForm] = useState({ nome: "", telefone: "", corretores: [] as string[] });
 
   const handleCreate = () => {
-    if (!newForm.nome.trim() || !newForm.corretor) {
-      toast.error("Preencha o nome e selecione um corretor");
+    if (!newForm.nome.trim() || newForm.corretores.length === 0) {
+      toast.error("Preencha o nome e selecione ao menos um corretor");
       return;
     }
     const inst: WhatsAppInstance = {
       id: crypto.randomUUID(),
       nome: newForm.nome,
       telefone: newForm.telefone || "—",
-      corretor: newForm.corretor,
+      corretores: newForm.corretores,
       status: "aguardando_qr",
       ultimaConexao: "",
       mensagensHoje: 0,
@@ -98,7 +140,7 @@ const WhatsAppInstancias = () => {
     };
     setInstances(prev => [...prev, inst]);
     setNewDialogOpen(false);
-    setNewForm({ nome: "", telefone: "", corretor: "" });
+    setNewForm({ nome: "", telefone: "", corretores: [] });
     setShowQr(inst.id);
     toast.success("Instância criada! Escaneie o QR Code para conectar.");
   };
@@ -126,12 +168,12 @@ const WhatsAppInstancias = () => {
     setInstances(prev => prev.map(i => i.id === id ? { ...i, autoReply: checked } : i));
   };
 
-  const handleUpdateCorretor = (id: string, corretorId: string) => {
-    setInstances(prev => prev.map(i => i.id === id ? { ...i, corretor: corretorId } : i));
-    toast.success("Corretor atualizado");
+  const handleUpdateCorretores = (id: string, corretorIds: string[]) => {
+    setInstances(prev => prev.map(i => i.id === id ? { ...i, corretores: corretorIds } : i));
   };
 
-  const getCorretorNome = (id: string) => corretores.find(c => c.id === id)?.nome || "—";
+  const getCorretorNomes = (ids: string[]) =>
+    ids.map(id => corretores.find(c => c.id === id)?.nome).filter(Boolean);
 
   return (
     <AppLayout>
@@ -191,9 +233,9 @@ const WhatsAppInstancias = () => {
           {instances.map(inst => {
             const sc = statusConfig[inst.status];
             const StatusIcon = sc.icon;
+            const nomes = getCorretorNomes(inst.corretores);
             return (
               <Card key={inst.id} className="relative overflow-hidden">
-                {/* Status bar */}
                 <div className={`absolute top-0 left-0 right-0 h-1 ${
                   inst.status === "conectado" ? "bg-success" :
                   inst.status === "desconectado" ? "bg-destructive" : "bg-warning"
@@ -221,21 +263,20 @@ const WhatsAppInstancias = () => {
                 </CardHeader>
 
                 <CardContent className="space-y-4">
-                  {/* Corretor */}
+                  {/* Corretores */}
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground flex items-center gap-1">
-                      <User className="h-3 w-3" /> Corretor Designado
+                      <Users className="h-3 w-3" /> Corretores Designados
                     </Label>
-                    <Select value={inst.corretor} onValueChange={v => handleUpdateCorretor(inst.id, v)}>
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {corretores.map(c => (
-                          <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="flex flex-wrap gap-1">
+                      {nomes.length === 0 ? (
+                        <span className="text-xs text-muted-foreground italic">Nenhum</span>
+                      ) : (
+                        nomes.map(nome => (
+                          <Badge key={nome} variant="secondary" className="text-[10px]">{nome}</Badge>
+                        ))
+                      )}
+                    </div>
                   </div>
 
                   {/* Stats */}
@@ -277,7 +318,7 @@ const WhatsAppInstancias = () => {
                         <QrCode className="h-3 w-3" /> Conectar
                       </Button>
                     )}
-                    <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => setSelectedInstance(inst)}>
+                    <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => setSelectedInstance({ ...inst })}>
                       <Settings2 className="h-3 w-3" />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(inst.id)}>
@@ -300,7 +341,6 @@ const WhatsAppInstancias = () => {
             </DialogHeader>
             <div className="flex flex-col items-center gap-4 py-4">
               <div className="w-56 h-56 bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center">
-                {/* Simulated QR Code */}
                 <div className="grid grid-cols-8 gap-0.5 p-4">
                   {Array.from({ length: 64 }).map((_, i) => (
                     <div
@@ -359,18 +399,12 @@ const WhatsAppInstancias = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Corretor Designado</Label>
-                  <Select
-                    value={selectedInstance.corretor}
-                    onValueChange={v => setSelectedInstance(prev => prev ? { ...prev, corretor: v } : prev)}
-                  >
-                    <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {corretores.map(c => (
-                        <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-xs">Corretores Designados</Label>
+                  <CorretorMultiSelect
+                    selected={selectedInstance.corretores}
+                    onChange={ids => setSelectedInstance(prev => prev ? { ...prev, corretores: ids } : prev)}
+                    size="md"
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
@@ -439,15 +473,12 @@ const WhatsAppInstancias = () => {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Corretor Designado *</Label>
-                <Select value={newForm.corretor} onValueChange={v => setNewForm(f => ({ ...f, corretor: v }))}>
-                  <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Selecione um corretor" /></SelectTrigger>
-                  <SelectContent>
-                    {corretores.map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label className="text-xs">Corretores Designados *</Label>
+                <CorretorMultiSelect
+                  selected={newForm.corretores}
+                  onChange={ids => setNewForm(f => ({ ...f, corretores: ids }))}
+                  size="md"
+                />
               </div>
             </div>
             <DialogFooter className="gap-2">
