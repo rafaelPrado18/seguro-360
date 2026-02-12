@@ -11,6 +11,7 @@ import {
   TrendingUp, UserCheck, Shuffle, Phone, Kanban, List, Settings2
 } from "lucide-react";
 import { LeadKanban, type KanbanColumn } from "@/components/leads/LeadKanban";
+import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
 import { useRole } from "@/contexts/RoleContext";
 import { Link } from "react-router-dom";
 import type { Lead } from "@/services/leadsService";
@@ -73,6 +74,7 @@ const Leads = () => {
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
   const [leads, setLeads] = useState(PLACEHOLDER_LEADS);
   const [corretorFilter, setCorretorFilter] = useState<string>("all");
+  const [newLeadOpen, setNewLeadOpen] = useState(false);
 
   const stats = PLACEHOLDER_STATS;
   const distribution = PLACEHOLDER_DISTRIBUTION;
@@ -115,7 +117,7 @@ const Leads = () => {
                 </Button>
               </>
             )}
-            <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90" size="sm">
+            <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90" size="sm" onClick={() => setNewLeadOpen(true)}>
               <Plus className="h-4 w-4" /> Novo Lead
             </Button>
           </div>
@@ -301,6 +303,20 @@ const Leads = () => {
             </CardContent>
           </Card>
         )}
+
+        <NewLeadDialog
+          open={newLeadOpen}
+          onOpenChange={setNewLeadOpen}
+          onLeadCreated={(lead) => {
+            const newLead: Lead = {
+              ...lead as Lead,
+              id: crypto.randomUUID(),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            };
+            setLeads(prev => [newLead, ...prev]);
+          }}
+        />
       </div>
     </AppLayout>
   );
