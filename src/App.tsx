@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ScopeGuard, AdminGuard } from "@/components/layout/ScopeGuard";
 import Index from "./pages/Index";
 import Clientes from "./pages/Clientes";
 import Apolices from "./pages/Apolices";
@@ -28,18 +29,18 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/leads" element={<Leads />} />
-          <Route path="/whatsapp" element={<WhatsApp />} />
-          <Route path="/whatsapp/templates" element={<WhatsAppTemplates />} />
-          <Route path="/gerenciar-status" element={<GerenciarStatus />} />
-          <Route path="/clientes" element={<Clientes />} />
-          <Route path="/apolices" element={<Apolices />} />
-          <Route path="/sinistros" element={<Sinistros />} />
-          <Route path="/comissoes" element={<Comissoes />} />
-          <Route path="/renovacoes" element={<Renovacoes />} />
+          <Route path="/leads" element={<ScopeGuard scope="leads"><Leads /></ScopeGuard>} />
+          <Route path="/whatsapp" element={<ScopeGuard scope="whatsapp"><WhatsApp /></ScopeGuard>} />
+          <Route path="/whatsapp/templates" element={<ScopeGuard scope="whatsapp"><WhatsAppTemplates /></ScopeGuard>} />
+          <Route path="/gerenciar-status" element={<AdminGuard><GerenciarStatus /></AdminGuard>} />
+          <Route path="/clientes" element={<ScopeGuard scope="clientes"><Clientes /></ScopeGuard>} />
+          <Route path="/apolices" element={<ScopeGuard scope="apolices"><Apolices /></ScopeGuard>} />
+          <Route path="/sinistros" element={<ScopeGuard scope="sinistros"><Sinistros /></ScopeGuard>} />
+          <Route path="/comissoes" element={<ScopeGuard scope="comissoes"><Comissoes /></ScopeGuard>} />
+          <Route path="/renovacoes" element={<ScopeGuard scope="renovacoes"><Renovacoes /></ScopeGuard>} />
           <Route path="/agenda" element={<Agenda />} />
-          <Route path="/relatorios" element={<Relatorios />} />
-          <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="/relatorios" element={<ScopeGuard scope="relatorios"><Relatorios /></ScopeGuard>} />
+          <Route path="/configuracoes" element={<AdminGuard><Configuracoes /></AdminGuard>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

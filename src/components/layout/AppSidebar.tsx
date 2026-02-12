@@ -10,19 +10,19 @@ import { useRole, ROLE_LABELS } from "@/contexts/RoleContext";
 import { Button } from "@/components/ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/", adminOnly: false },
-  { icon: Target, label: "Leads", path: "/leads", adminOnly: false },
-  { icon: MessageSquare, label: "WhatsApp", path: "/whatsapp", adminOnly: false },
-  { icon: FileStack, label: "Templates", path: "/whatsapp/templates", adminOnly: false },
-  { icon: Users, label: "Clientes", path: "/clientes", adminOnly: false },
-  { icon: FileText, label: "Apólices", path: "/apolices", adminOnly: false },
-  { icon: AlertTriangle, label: "Sinistros", path: "/sinistros", adminOnly: false },
-  { icon: DollarSign, label: "Comissões", path: "/comissoes", adminOnly: false },
-  { icon: RefreshCw, label: "Renovações", path: "/renovacoes", adminOnly: false },
-  { icon: CalendarCheck, label: "Agenda", path: "/agenda", adminOnly: false },
-  { icon: BarChart3, label: "Relatórios", path: "/relatorios", adminOnly: true },
-  { icon: Workflow, label: "Ger. Status", path: "/gerenciar-status", adminOnly: true },
-  { icon: Settings, label: "Configurações", path: "/configuracoes", adminOnly: true },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/", adminOnly: false, scope: null },
+  { icon: Target, label: "Leads", path: "/leads", adminOnly: false, scope: "leads" },
+  { icon: MessageSquare, label: "WhatsApp", path: "/whatsapp", adminOnly: false, scope: "whatsapp" },
+  { icon: FileStack, label: "Templates", path: "/whatsapp/templates", adminOnly: false, scope: "whatsapp" },
+  { icon: Users, label: "Clientes", path: "/clientes", adminOnly: false, scope: "clientes" },
+  { icon: FileText, label: "Apólices", path: "/apolices", adminOnly: false, scope: "apolices" },
+  { icon: AlertTriangle, label: "Sinistros", path: "/sinistros", adminOnly: false, scope: "sinistros" },
+  { icon: DollarSign, label: "Comissões", path: "/comissoes", adminOnly: false, scope: "comissoes" },
+  { icon: RefreshCw, label: "Renovações", path: "/renovacoes", adminOnly: false, scope: "renovacoes" },
+  { icon: CalendarCheck, label: "Agenda", path: "/agenda", adminOnly: false, scope: null },
+  { icon: BarChart3, label: "Relatórios", path: "/relatorios", adminOnly: false, scope: "relatorios" },
+  { icon: Workflow, label: "Ger. Status", path: "/gerenciar-status", adminOnly: true, scope: null },
+  { icon: Settings, label: "Configurações", path: "/configuracoes", adminOnly: true, scope: null },
 ];
 
 interface AppSidebarProps {
@@ -31,10 +31,14 @@ interface AppSidebarProps {
 
 export function AppSidebar({ onClose }: AppSidebarProps) {
   const location = useLocation();
-  const { isAdmin, currentUser } = useRole();
+  const { isAdmin, currentUser, hasScope } = useRole();
   const { unreadCount } = useNotifications();
 
-  const visibleItems = menuItems.filter(item => !item.adminOnly || isAdmin);
+  const visibleItems = menuItems.filter(item => {
+    if (item.adminOnly && !isAdmin) return false;
+    if (item.scope && !hasScope(item.scope)) return false;
+    return true;
+  });
 
   return (
     <aside className="sidebar-gradient flex w-64 flex-col border-r border-sidebar-border h-full">
