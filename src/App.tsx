@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ScopeGuard, AdminGuard } from "@/components/layout/ScopeGuard";
+import Login from "./pages/Login";
 import Index from "./pages/Index";
 import Clientes from "./pages/Clientes";
 import Apolices from "./pages/Apolices";
@@ -28,6 +29,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/login" element={<Login />} />
           <Route path="/" element={<Index />} />
           <Route path="/leads" element={<ScopeGuard scope="leads"><Leads /></ScopeGuard>} />
           <Route path="/whatsapp" element={<ScopeGuard scope="whatsapp"><WhatsApp /></ScopeGuard>} />
