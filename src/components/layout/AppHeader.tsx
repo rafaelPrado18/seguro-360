@@ -9,6 +9,9 @@ import { useNotifications } from "@/contexts/NotificationContext";
 import type { UserRole } from "@/contexts/RoleContext";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { NovaApoliceDialog } from "@/components/apolices/NovaApoliceDialog";
 
 interface AppHeaderProps {
   onMenuToggle?: () => void;
@@ -18,6 +21,23 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
   const { role, switchRole, brokerStatus, setBrokerStatus } = useRole();
   const { theme, toggleTheme } = useTheme();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const [novaApoliceOpen, setNovaApoliceOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchValue.trim()) {
+      const q = searchValue.toLowerCase();
+      if (q.includes("lead")) navigate("/leads");
+      else if (q.includes("apólice") || q.includes("apolice")) navigate("/apolices");
+      else if (q.includes("sinistro")) navigate("/sinistros");
+      else if (q.includes("cliente")) navigate("/clientes");
+      else if (q.includes("renov")) navigate("/renovacoes");
+      else if (q.includes("comiss")) navigate("/comissoes");
+      else navigate("/clientes");
+      setSearchValue("");
+    }
+  };
 
   const allRoles: UserRole[] = ["admin", "corretor_novo", "corretor_renovacao", "corretor_sinistro", "corretor_financeiro"];
 
@@ -52,6 +72,9 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
           <Input
             placeholder="Buscar clientes, apólices, sinistros..."
             className="pl-9 bg-secondary border-0 h-9 text-sm"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            onKeyDown={handleSearch}
           />
         </div>
       </div>
@@ -73,11 +96,11 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
           {theme === "light" ? <Moon className="h-4 w-4 text-muted-foreground" /> : <Sun className="h-4 w-4 text-muted-foreground" />}
         </Button>
 
-        <Button size="sm" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-9 text-sm font-semibold hidden md:flex">
+        <Button size="sm" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-9 text-sm font-semibold hidden md:flex" onClick={() => setNovaApoliceOpen(true)}>
           <Plus className="h-4 w-4" />
           Nova Apólice
         </Button>
-        <Button size="icon" className="h-9 w-9 bg-accent text-accent-foreground hover:bg-accent/90 md:hidden">
+        <Button size="icon" className="h-9 w-9 bg-accent text-accent-foreground hover:bg-accent/90 md:hidden" onClick={() => setNovaApoliceOpen(true)}>
           <Plus className="h-4 w-4" />
         </Button>
 
@@ -129,6 +152,7 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
         </Popover>
       </div>
     </header>
+    <NovaApoliceDialog open={novaApoliceOpen} onOpenChange={setNovaApoliceOpen} />
     </div>
   );
 }
