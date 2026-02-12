@@ -1,0 +1,466 @@
+import { useState } from "react";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Smartphone, Wifi, WifiOff, QrCode, Plus, Trash2, RefreshCw,
+  CheckCircle2, XCircle, Clock, Settings2, User,
+} from "lucide-react";
+import { toast } from "sonner";
+
+interface WhatsAppInstance {
+  id: string;
+  nome: string;
+  telefone: string;
+  corretor: string;
+  status: "conectado" | "desconectado" | "aguardando_qr";
+  ultimaConexao: string;
+  mensagensHoje: number;
+  autoReply: boolean;
+}
+
+const corretores = [
+  { id: "corretor-novo-1", nome: "André Oliveira" },
+  { id: "corretor-renov-1", nome: "Beatriz Costa" },
+  { id: "corretor-sin-1", nome: "Carlos Neto" },
+  { id: "corretor-fin-1", nome: "Diana Alves" },
+];
+
+const initialInstances: WhatsAppInstance[] = [
+  {
+    id: "inst-1",
+    nome: "Linha Principal",
+    telefone: "(11) 99900-0001",
+    corretor: "corretor-novo-1",
+    status: "conectado",
+    ultimaConexao: "2026-02-12T14:30:00Z",
+    mensagensHoje: 47,
+    autoReply: true,
+  },
+  {
+    id: "inst-2",
+    nome: "Renovações",
+    telefone: "(11) 99900-0002",
+    corretor: "corretor-renov-1",
+    status: "desconectado",
+    ultimaConexao: "2026-02-11T18:00:00Z",
+    mensagensHoje: 0,
+    autoReply: false,
+  },
+  {
+    id: "inst-3",
+    nome: "Sinistros",
+    telefone: "(11) 99900-0003",
+    corretor: "corretor-sin-1",
+    status: "aguardando_qr",
+    ultimaConexao: "",
+    mensagensHoje: 0,
+    autoReply: false,
+  },
+];
+
+const statusConfig = {
+  conectado: { label: "Conectado", color: "border-success text-success", icon: CheckCircle2, iconColor: "text-success" },
+  desconectado: { label: "Desconectado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
+  aguardando_qr: { label: "Aguardando QR", color: "border-warning text-warning", icon: Clock, iconColor: "text-warning" },
+};
+
+const WhatsAppInstancias = () => {
+  const [instances, setInstances] = useState<WhatsAppInstance[]>(initialInstances);
+  const [selectedInstance, setSelectedInstance] = useState<WhatsAppInstance | null>(null);
+  const [showQr, setShowQr] = useState<string | null>(null);
+  const [newDialogOpen, setNewDialogOpen] = useState(false);
+  const [newForm, setNewForm] = useState({ nome: "", telefone: "", corretor: "" });
+
+  const handleCreate = () => {
+    if (!newForm.nome.trim() || !newForm.corretor) {
+      toast.error("Preencha o nome e selecione um corretor");
+      return;
+    }
+    const inst: WhatsAppInstance = {
+      id: crypto.randomUUID(),
+      nome: newForm.nome,
+      telefone: newForm.telefone || "—",
+      corretor: newForm.corretor,
+      status: "aguardando_qr",
+      ultimaConexao: "",
+      mensagensHoje: 0,
+      autoReply: false,
+    };
+    setInstances(prev => [...prev, inst]);
+    setNewDialogOpen(false);
+    setNewForm({ nome: "", telefone: "", corretor: "" });
+    setShowQr(inst.id);
+    toast.success("Instância criada! Escaneie o QR Code para conectar.");
+  };
+
+  const handleDelete = (id: string) => {
+    setInstances(prev => prev.filter(i => i.id !== id));
+    if (selectedInstance?.id === id) setSelectedInstance(null);
+    toast.success("Instância removida");
+  };
+
+  const handleReconnect = (id: string) => {
+    setShowQr(id);
+    setInstances(prev => prev.map(i => i.id === id ? { ...i, status: "aguardando_qr" as const } : i));
+  };
+
+  const handleSimulateConnect = (id: string) => {
+    setInstances(prev => prev.map(i => i.id === id ? {
+      ...i, status: "conectado" as const, ultimaConexao: new Date().toISOString(),
+    } : i));
+    setShowQr(null);
+    toast.success("WhatsApp conectado com sucesso!");
+  };
+
+  const handleToggleAutoReply = (id: string, checked: boolean) => {
+    setInstances(prev => prev.map(i => i.id === id ? { ...i, autoReply: checked } : i));
+  };
+
+  const handleUpdateCorretor = (id: string, corretorId: string) => {
+    setInstances(prev => prev.map(i => i.id === id ? { ...i, corretor: corretorId } : i));
+    toast.success("Corretor atualizado");
+  };
+
+  const getCorretorNome = (id: string) => corretores.find(c => c.id === id)?.nome || "—";
+
+  return (
+    <AppLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground">Instâncias WhatsApp</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              {instances.filter(i => i.status === "conectado").length} de {instances.length} instâncias conectadas
+            </p>
+          </div>
+          <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 self-start sm:self-auto" onClick={() => setNewDialogOpen(true)}>
+            <Plus className="h-4 w-4" /> Nova Instância
+          </Button>
+        </div>
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="pt-5 pb-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-success/10 flex items-center justify-center">
+                <Wifi className="h-5 w-5 text-success" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-foreground">{instances.filter(i => i.status === "conectado").length}</p>
+                <p className="text-xs text-muted-foreground">Conectadas</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-5 pb-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+                <WifiOff className="h-5 w-5 text-destructive" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-foreground">{instances.filter(i => i.status === "desconectado").length}</p>
+                <p className="text-xs text-muted-foreground">Desconectadas</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-5 pb-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Smartphone className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-foreground">{instances.reduce((s, i) => s + i.mensagensHoje, 0)}</p>
+                <p className="text-xs text-muted-foreground">Mensagens Hoje</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Instance Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {instances.map(inst => {
+            const sc = statusConfig[inst.status];
+            const StatusIcon = sc.icon;
+            return (
+              <Card key={inst.id} className="relative overflow-hidden">
+                {/* Status bar */}
+                <div className={`absolute top-0 left-0 right-0 h-1 ${
+                  inst.status === "conectado" ? "bg-success" :
+                  inst.status === "desconectado" ? "bg-destructive" : "bg-warning"
+                }`} />
+
+                <CardHeader className="pb-3 pt-5">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
+                        inst.status === "conectado" ? "bg-success/10" :
+                        inst.status === "desconectado" ? "bg-destructive/10" : "bg-warning/10"
+                      }`}>
+                        <Smartphone className={`h-5 w-5 ${sc.iconColor}`} />
+                      </div>
+                      <div>
+                        <CardTitle className="text-sm font-semibold">{inst.nome}</CardTitle>
+                        <p className="text-xs text-muted-foreground">{inst.telefone}</p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className={`text-[10px] ${sc.color}`}>
+                      <StatusIcon className="h-3 w-3 mr-1" />
+                      {sc.label}
+                    </Badge>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  {/* Corretor */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                      <User className="h-3 w-3" /> Corretor Designado
+                    </Label>
+                    <Select value={inst.corretor} onValueChange={v => handleUpdateCorretor(inst.id, v)}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {corretores.map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Mensagens hoje</span>
+                    <span className="font-semibold">{inst.mensagensHoje}</span>
+                  </div>
+                  {inst.ultimaConexao && (
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Última conexão</span>
+                      <span className="font-medium">
+                        {new Date(inst.ultimaConexao).toLocaleString("pt-BR", {
+                          day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Auto-reply */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Resposta automática</span>
+                    <Switch
+                      checked={inst.autoReply}
+                      onCheckedChange={c => handleToggleAutoReply(inst.id, c)}
+                      className="scale-75"
+                    />
+                  </div>
+
+                  <Separator />
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    {inst.status === "conectado" ? (
+                      <Button variant="outline" size="sm" className="flex-1 h-8 text-xs gap-1.5" onClick={() => handleReconnect(inst.id)}>
+                        <RefreshCw className="h-3 w-3" /> Reconectar
+                      </Button>
+                    ) : (
+                      <Button size="sm" className="flex-1 h-8 text-xs gap-1.5 bg-success text-success-foreground hover:bg-success/90" onClick={() => setShowQr(inst.id)}>
+                        <QrCode className="h-3 w-3" /> Conectar
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => setSelectedInstance(inst)}>
+                      <Settings2 className="h-3 w-3" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(inst.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* QR Code Dialog */}
+        <Dialog open={!!showQr} onOpenChange={o => { if (!o) setShowQr(null); }}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-base">
+                <QrCode className="h-5 w-5 text-success" /> Conectar WhatsApp
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center gap-4 py-4">
+              <div className="w-56 h-56 bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center">
+                {/* Simulated QR Code */}
+                <div className="grid grid-cols-8 gap-0.5 p-4">
+                  {Array.from({ length: 64 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-4 w-4 rounded-sm ${Math.random() > 0.4 ? "bg-foreground" : "bg-background"}`}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="text-center space-y-1">
+                <p className="text-sm font-medium text-foreground">Escaneie o QR Code</p>
+                <p className="text-xs text-muted-foreground">
+                  Abra o WhatsApp no celular → Dispositivos conectados → Conectar dispositivo
+                </p>
+              </div>
+              <Button
+                className="w-full bg-success text-success-foreground hover:bg-success/90 gap-2"
+                onClick={() => showQr && handleSimulateConnect(showQr)}
+              >
+                <CheckCircle2 className="h-4 w-4" /> Simular Conexão
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Detail / Config Dialog */}
+        <Dialog open={!!selectedInstance} onOpenChange={o => { if (!o) setSelectedInstance(null); }}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-base">
+                <Settings2 className="h-5 w-5 text-primary" /> Configuração — {selectedInstance?.nome}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedInstance && (
+              <div className="space-y-4 py-2">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Nome da Instância</Label>
+                  <Input
+                    value={selectedInstance.nome}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setSelectedInstance(prev => prev ? { ...prev, nome: val } : prev);
+                    }}
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Telefone</Label>
+                  <Input
+                    value={selectedInstance.telefone}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setSelectedInstance(prev => prev ? { ...prev, telefone: val } : prev);
+                    }}
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Corretor Designado</Label>
+                  <Select
+                    value={selectedInstance.corretor}
+                    onValueChange={v => setSelectedInstance(prev => prev ? { ...prev, corretor: v } : prev)}
+                  >
+                    <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {corretores.map(c => (
+                        <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">Resposta Automática</p>
+                    <p className="text-xs text-muted-foreground">Responder leads fora do horário</p>
+                  </div>
+                  <Switch
+                    checked={selectedInstance.autoReply}
+                    onCheckedChange={c => setSelectedInstance(prev => prev ? { ...prev, autoReply: c } : prev)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">Status</p>
+                    <p className="text-xs text-muted-foreground">Estado atual da conexão</p>
+                  </div>
+                  <Badge variant="outline" className={`text-[10px] ${statusConfig[selectedInstance.status].color}`}>
+                    {statusConfig[selectedInstance.status].label}
+                  </Badge>
+                </div>
+              </div>
+            )}
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setSelectedInstance(null)}>Cancelar</Button>
+              <Button
+                className="bg-accent text-accent-foreground hover:bg-accent/90"
+                onClick={() => {
+                  if (selectedInstance) {
+                    setInstances(prev => prev.map(i => i.id === selectedInstance.id ? selectedInstance : i));
+                    setSelectedInstance(null);
+                    toast.success("Configuração salva!");
+                  }
+                }}
+              >
+                Salvar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* New Instance Dialog */}
+        <Dialog open={newDialogOpen} onOpenChange={setNewDialogOpen}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-base">
+                <Plus className="h-5 w-5 text-accent" /> Nova Instância
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Nome da Instância *</Label>
+                <Input
+                  value={newForm.nome}
+                  onChange={e => setNewForm(f => ({ ...f, nome: e.target.value }))}
+                  placeholder="Ex: Linha Comercial"
+                  className="h-9 text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Telefone</Label>
+                <Input
+                  value={newForm.telefone}
+                  onChange={e => setNewForm(f => ({ ...f, telefone: e.target.value }))}
+                  placeholder="(11) 99900-0000"
+                  className="h-9 text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Corretor Designado *</Label>
+                <Select value={newForm.corretor} onValueChange={v => setNewForm(f => ({ ...f, corretor: v }))}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Selecione um corretor" /></SelectTrigger>
+                  <SelectContent>
+                    {corretores.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setNewDialogOpen(false)}>Cancelar</Button>
+              <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleCreate}>
+                Criar e Conectar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </AppLayout>
+  );
+};
+
+export default WhatsAppInstancias;
