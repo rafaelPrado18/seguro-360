@@ -251,6 +251,32 @@ const Leads = () => {
             <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90" size="sm" onClick={() => setNewLeadOpen(true)}>
               <Plus className="h-4 w-4" /> Novo Lead
             </Button>
+            <Button variant="outline" size="sm" className="gap-2 border-dashed" onClick={() => {
+              const nomes = ["Ana Costa", "Bruno Ferreira", "Camila Santos", "Diego Lima", "Elena Moraes", "Fabio Nunes", "Gabriela Ribeiro", "Hugo Teixeira"];
+              const origens: Lead["origem"][] = ["whatsapp", "site", "indicacao", "facebook", "instagram", "google_ads"];
+              const ramos = ["Auto", "Vida", "Residencial", "Empresarial", "Saúde", "Viagem"];
+              const nome = nomes[Math.floor(Math.random() * nomes.length)];
+              const newLead: Lead = {
+                id: crypto.randomUUID(),
+                nome,
+                email: `${nome.toLowerCase().replace(" ", ".")}@email.com`,
+                telefone: `(11) 9${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`,
+                origem: origens[Math.floor(Math.random() * origens.length)],
+                ramo_interesse: ramos[Math.floor(Math.random() * ramos.length)],
+                status: "novo",
+                corretor_responsavel: null,
+                valor_estimado: Math.floor(1000 + Math.random() * 50000),
+                observacoes: "",
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              };
+              setLeads(prev => [newLead, ...prev]);
+              playNewLeadSound();
+              addNotification({ type: "lead", title: "🔔 Novo Lead!", message: `${newLead.nome} — ${newLead.ramo_interesse} (${newLead.origem})`, leadId: newLead.id });
+              toast.success("Novo lead recebido!", { description: newLead.nome });
+            }}>
+              ⚡ Simular Lead
+            </Button>
           </div>
         </div>
 
