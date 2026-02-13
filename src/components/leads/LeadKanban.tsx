@@ -65,7 +65,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
   };
 
   const getColumnTotal = (columnId: string) => {
-    return getColumnLeads(columnId).reduce((sum, l) => sum + l.valor_estimado, 0);
+    return getColumnLeads(columnId).reduce((sum, l) => sum + (l.valor_estimado ?? 0), 0);
   };
 
   return (
@@ -116,27 +116,31 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                       <div className="flex items-center gap-1.5">
                         <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40 flex-shrink-0" />
                         <div className="h-6 w-6 rounded-full bg-accent/15 flex items-center justify-center text-[9px] font-bold text-accent">
-                          {lead.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                          {(lead.nome ?? "").split(" ").filter(Boolean).map(n => n[0]).join("").slice(0, 2).toUpperCase()}
                         </div>
                       </div>
                       <Button variant="ghost" size="icon" className="h-5 w-5">
                         <MoreHorizontal className="h-3 w-3 text-muted-foreground" />
                       </Button>
                     </div>
-                    <p className="text-sm font-medium text-foreground truncate">{lead.nome}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{lead.ramo_interesse}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{lead.nome ?? "Sem nome"}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{lead.ramo_interesse ?? "—"}</p>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs font-bold text-foreground">R$ {lead.valor_estimado.toLocaleString()}</span>
-                      <Badge variant="secondary" className="text-[9px]">{origemLabels[lead.origem] || lead.origem}</Badge>
+                      <span className="text-xs font-bold text-foreground">R$ {(lead.valor_estimado ?? 0).toLocaleString()}</span>
+                      {lead.origem ? (
+                        <Badge variant="secondary" className="text-[9px]">{origemLabels[lead.origem] || lead.origem}</Badge>
+                      ) : null}
                     </div>
                     <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
                       <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">
                         {lead.corretor_responsavel || "Sem corretor"}
                       </span>
                       <div className="flex gap-0.5">
-                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); window.open(`tel:${lead.telefone}`); }}>
-                          <Phone className="h-3 w-3 text-muted-foreground" />
-                        </Button>
+                        {lead.telefone && (
+                          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); window.open(`tel:${lead.telefone}`); }}>
+                            <Phone className="h-3 w-3 text-muted-foreground" />
+                          </Button>
+                        )}
                         <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); navigate("/whatsapp"); }}>
                           <MessageSquare className="h-3 w-3 text-muted-foreground" />
                         </Button>
