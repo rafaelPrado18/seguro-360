@@ -1,4 +1,7 @@
-import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useRef, useEffect, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { leadsService } from "@/services/leadsService";
+import { toast } from "sonner";
 
 export interface Notification {
   id: string;
@@ -25,27 +28,36 @@ export function useNotifications() {
   return useContext(NotificationContext);
 }
 
-const NOTIFICATION_SOUND_URL = "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdW+Jkpd/aXBygoyQf3VqcH+Lk5J8cW1xf4qQin5ybHKAi5GLfnJscoCLkYt+cmxygIuRi35ybHKAi5CLfnJscoCKkIt+cmxygIuRi35ybA==";
+const playNewLeadSound = () => {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const now = ctx.currentTime;
+    const freqs = [1200, 1500, 1800];
+    const beepDuration = 0.25;
+    const gap = 0.1;
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.5, now + i * (beepDuration + gap));
+      gain.gain.exponentialRampToValueAtTime(0.01, now + i * (beepDuration + gap) + beepDuration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + i * (beepDuration + gap));
+      osc.stop(now + i * (beepDuration + gap) + beepDuration);
+    });
+    setTimeout(() => ctx.close().catch(() => {}), 1500);
+  } catch {}
+};
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([
     { id: "demo-1", type: "lead", title: "Novo Lead via WhatsApp", message: "Ricardo Pereira enviou mensagem", read: false, timestamp: new Date().toISOString() },
     { id: "demo-2", type: "whatsapp", title: "Mensagem recebida", message: "Luciana Mendes respondeu", read: false, timestamp: new Date(Date.now() - 300000).toISOString() },
   ]);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
-
-  const playSound = useCallback(() => {
-    try {
-      if (!audioRef.current) {
-        audioRef.current = new Audio(NOTIFICATION_SOUND_URL);
-        audioRef.current.volume = 0.5;
-      }
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
-    } catch {}
-  }, []);
 
   const addNotification = useCallback((n: Omit<Notification, "id" | "read" | "timestamp">) => {
     const newNotif: Notification = {
@@ -55,8 +67,42 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       timestamp: new Date().toISOString(),
     };
     setNotifications(prev => [newNotif, ...prev].slice(0, 50));
-    playSound();
-  }, [playSound]);
+  }, []);
+
+  // Global lead polling every 10 seconds
+  const { data: apiLeads } = useQuery({
+    queryKey: ["leads"],
+    queryFn: () => leadsService.getLeads(),
+    refetchInterval: 10000,
+    refetchIntervalInBackground: false,
+    retry: 1,
+  });
+
+  const prevLeadIdsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (apiLeads?.data && apiLeads.data.length > 0) {
+      const prevIds = prevLeadIdsRef.current;
+      const newLeads = apiLeads.data.filter(l => !prevIds.has(l.id));
+
+      if (newLeads.length > 0 && prevIds.size > 0) {
+        playNewLeadSound();
+        newLeads.forEach(lead => {
+          addNotification({
+            type: "lead",
+            title: "🔔 Novo Lead!",
+            message: `${lead.nome} — ${lead.ramo_interesse} (${lead.origem})`,
+            leadId: lead.id,
+          });
+        });
+        toast.success(`${newLeads.length} novo${newLeads.length > 1 ? "s" : ""} lead${newLeads.length > 1 ? "s" : ""} recebido${newLeads.length > 1 ? "s" : ""}!`, {
+          description: newLeads.map(l => l.nome).join(", "),
+        });
+      }
+
+      prevLeadIdsRef.current = new Set(apiLeads.data.map(l => l.id));
+    }
+  }, [apiLeads, addNotification]);
 
   const markAsRead = useCallback((id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
