@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -123,6 +123,7 @@ const Leads = () => {
 
   const stats = PLACEHOLDER_STATS;
   const distribution = PLACEHOLDER_DISTRIBUTION;
+  const roundRobinIdx = useRef(0);
 
   const getTemplateForStatus = (status: string): WhatsAppTemplate | null => {
     const category = STATUS_TEMPLATE_MAP[status];
@@ -391,13 +392,18 @@ const Leads = () => {
           open={newLeadOpen}
           onOpenChange={setNewLeadOpen}
           onLeadCreated={(lead) => {
+            const corretorNames = distribution.map(d => d.corretor_nome);
+            const assignedCorretor = corretorNames[roundRobinIdx.current % corretorNames.length];
+            roundRobinIdx.current += 1;
             const newLead: Lead = {
               ...lead as Lead,
               id: crypto.randomUUID(),
+              corretor_responsavel: assignedCorretor,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             };
             setLeads(prev => [newLead, ...prev]);
+            toast.success(`Lead atribuído a ${assignedCorretor}`);
           }}
         />
 
