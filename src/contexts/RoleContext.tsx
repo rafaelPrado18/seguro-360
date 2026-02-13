@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-export type UserRole = "admin" | "corretor_novo" | "corretor_renovacao" | "corretor_sinistro" | "corretor_financeiro";
+export type UserRole = "super_admin" | "admin" | "corretor_novo" | "corretor_renovacao" | "corretor_sinistro" | "corretor_financeiro";
 export type BrokerStatus = "online" | "offline";
 
 export interface UserProfile {
@@ -11,6 +11,7 @@ export interface UserProfile {
 }
 
 const PROFILES: Record<UserRole, UserProfile> = {
+  super_admin: { id: "super-admin-1", nome: "Super Admin", email: "super@plataforma.com", role: "super_admin" },
   admin: { id: "admin-1", nome: "Admin Geral", email: "admin@hataseg.com", role: "admin" },
   corretor_novo: { id: "corretor-novo-1", nome: "André Oliveira", email: "andre@hataseg.com", role: "corretor_novo" },
   corretor_renovacao: { id: "corretor-renov-1", nome: "Beatriz Costa", email: "beatriz@hataseg.com", role: "corretor_renovacao" },
@@ -19,6 +20,7 @@ const PROFILES: Record<UserRole, UserProfile> = {
 };
 
 export const ROLE_LABELS: Record<UserRole, string> = {
+  super_admin: "Super Admin",
   admin: "Administrador",
   corretor_novo: "Corretor — Novo",
   corretor_renovacao: "Corretor — Renovação",
@@ -27,6 +29,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 export const ROLE_EMOJI: Record<UserRole, string> = {
+  super_admin: "🏢",
   admin: "👑",
   corretor_novo: "🎯",
   corretor_renovacao: "🔄",
@@ -36,6 +39,7 @@ export const ROLE_EMOJI: Record<UserRole, string> = {
 
 /** Which data scopes each role focuses on */
 export const ROLE_SCOPES: Record<UserRole, string[]> = {
+  super_admin: ["todos"],
   admin: ["todos"],
   corretor_novo: ["leads", "whatsapp", "clientes", "apolices"],
   corretor_renovacao: ["renovacoes", "apolices", "clientes", "whatsapp"],
@@ -48,6 +52,7 @@ interface RoleContextType {
   role: UserRole;
   switchRole: (role: UserRole) => void;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   isCorretorType: (type: UserRole) => boolean;
   hasScope: (scope: string) => boolean;
   brokerStatus: BrokerStatus;
@@ -63,14 +68,16 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   const currentUser = PROFILES[role];
   const scopes = ROLE_SCOPES[role];
 
-  const hasScope = (scope: string) => role === "admin" || scopes.includes(scope);
+  const isSuperAdmin = role === "super_admin";
+  const hasScope = (scope: string) => role === "admin" || role === "super_admin" || scopes.includes(scope);
 
   return (
     <RoleContext.Provider value={{
       currentUser,
       role,
       switchRole: setRole,
-      isAdmin: role === "admin",
+      isAdmin: role === "admin" || role === "super_admin",
+      isSuperAdmin: role === "super_admin",
       isCorretorType: (type: UserRole) => role === type,
       hasScope,
       brokerStatus,
