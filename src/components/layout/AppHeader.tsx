@@ -44,20 +44,26 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
   return (
     <div>
       {brokerStatus === "offline" && (
-        <div className="flex items-center justify-between gap-2 bg-destructive/10 border-b border-destructive/20 px-4 py-2">
-          <div className="flex items-center gap-2">
-            <WifiOff className="h-4 w-4 text-destructive" />
-            <span className="text-xs font-medium text-destructive">
-              Você está offline — leads e mensagens não serão recebidos
-            </span>
+        <div className="flex items-center justify-between gap-2 bg-destructive/15 border-b-2 border-destructive/40 px-4 py-3 animate-fade-in">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive/20 animate-pulse">
+              <WifiOff className="h-4 w-4 text-destructive" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-destructive block">
+                ⚠️ Você está OFFLINE
+              </span>
+              <span className="text-[10px] text-destructive/70">
+                Leads e mensagens não serão distribuídos para você
+              </span>
+            </div>
           </div>
           <Button
-            variant="outline"
             size="sm"
-            className="h-6 text-[10px] border-destructive/30 text-destructive hover:bg-destructive/10"
+            className="h-8 text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold animate-pulse"
             onClick={() => setBrokerStatus("online")}
           >
-            Ficar Online
+            Ficar Online Agora
           </Button>
         </div>
       )}
@@ -106,10 +112,10 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative h-9 w-9">
-              <Bell className="h-4 w-4 text-muted-foreground" />
+            <Button variant="ghost" size="icon" className={`relative h-9 w-9 ${unreadCount > 0 ? "text-accent" : ""}`}>
+              <Bell className={`h-4 w-4 ${unreadCount > 0 ? "text-accent animate-[scale-in_0.3s_ease-out]" : "text-muted-foreground"}`} />
               {unreadCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground">
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground animate-pulse shadow-lg">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
