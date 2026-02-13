@@ -69,7 +69,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
   };
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: "calc(100vh - 22rem)" }}>
+    <div className="flex gap-4 overflow-x-auto pb-4" style={{ height: "calc(100vh - 22rem)" }}>
       {columns.map((col) => {
         const colLeads = getColumnLeads(col.id);
         const isOver = dragOverColumn === col.id;
