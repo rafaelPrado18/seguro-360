@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ScopeGuard, AdminGuard } from "@/components/layout/ScopeGuard";
+import { ScopeGuard, AdminGuard, SuperAdminGuard } from "@/components/layout/ScopeGuard";
 import Login from "./pages/Login";
 import Index from "./pages/Index";
 import Clientes from "./pages/Clientes";
@@ -20,6 +20,7 @@ import WhatsAppTemplates from "./pages/WhatsAppTemplates";
 import GerenciarStatus from "./pages/GerenciarStatus";
 import Usuarios from "./pages/Usuarios";
 import WhatsAppInstancias from "./pages/WhatsAppInstancias";
+import Empresas from "./pages/Empresas";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
           <Route path="/relatorios" element={<ScopeGuard scope="relatorios"><Relatorios /></ScopeGuard>} />
           <Route path="/usuarios" element={<AdminGuard><Usuarios /></AdminGuard>} />
           <Route path="/configuracoes" element={<AdminGuard><Configuracoes /></AdminGuard>} />
+          <Route path="/empresas" element={<SuperAdminGuard><Empresas /></SuperAdminGuard>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

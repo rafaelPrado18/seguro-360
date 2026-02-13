@@ -4,28 +4,29 @@ import logoHataseg from "@/assets/logo-hataseg.png";
 import {
   LayoutDashboard, Users, FileText, AlertTriangle, DollarSign,
   RefreshCw, CalendarCheck, Settings, BarChart3, Target,
-  MessageSquare, FileStack, Workflow, X, Circle, Smartphone,
+  MessageSquare, FileStack, Workflow, X, Circle, Smartphone, Building2,
 } from "lucide-react";
 import { useRole, ROLE_LABELS } from "@/contexts/RoleContext";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/", adminOnly: false, scope: null },
-  { icon: Target, label: "Leads", path: "/leads", adminOnly: false, scope: "leads" },
-  { icon: MessageSquare, label: "WhatsApp", path: "/whatsapp", adminOnly: false, scope: "whatsapp" },
-  { icon: FileStack, label: "Templates", path: "/whatsapp/templates", adminOnly: false, scope: "whatsapp" },
-  { icon: Smartphone, label: "Instâncias WA", path: "/whatsapp/instancias", adminOnly: true, scope: null },
-  { icon: Users, label: "Clientes", path: "/clientes", adminOnly: false, scope: "clientes" },
-  { icon: FileText, label: "Apólices", path: "/apolices", adminOnly: false, scope: "apolices" },
-  { icon: AlertTriangle, label: "Sinistros", path: "/sinistros", adminOnly: false, scope: "sinistros" },
-  { icon: DollarSign, label: "Comissões", path: "/comissoes", adminOnly: false, scope: "comissoes" },
-  { icon: RefreshCw, label: "Renovações", path: "/renovacoes", adminOnly: false, scope: "renovacoes" },
-  { icon: CalendarCheck, label: "Agenda", path: "/agenda", adminOnly: false, scope: null },
-  { icon: BarChart3, label: "Relatórios", path: "/relatorios", adminOnly: false, scope: "relatorios" },
-  { icon: Workflow, label: "Ger. Status", path: "/gerenciar-status", adminOnly: true, scope: null },
-  { icon: Users, label: "Usuários", path: "/usuarios", adminOnly: true, scope: null },
-  { icon: Settings, label: "Configurações", path: "/configuracoes", adminOnly: true, scope: null },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/", adminOnly: false, superAdminOnly: false, scope: null },
+  { icon: Target, label: "Leads", path: "/leads", adminOnly: false, superAdminOnly: false, scope: "leads" },
+  { icon: MessageSquare, label: "WhatsApp", path: "/whatsapp", adminOnly: false, superAdminOnly: false, scope: "whatsapp" },
+  { icon: FileStack, label: "Templates", path: "/whatsapp/templates", adminOnly: false, superAdminOnly: false, scope: "whatsapp" },
+  { icon: Smartphone, label: "Instâncias WA", path: "/whatsapp/instancias", adminOnly: true, superAdminOnly: false, scope: null },
+  { icon: Users, label: "Clientes", path: "/clientes", adminOnly: false, superAdminOnly: false, scope: "clientes" },
+  { icon: FileText, label: "Apólices", path: "/apolices", adminOnly: false, superAdminOnly: false, scope: "apolices" },
+  { icon: AlertTriangle, label: "Sinistros", path: "/sinistros", adminOnly: false, superAdminOnly: false, scope: "sinistros" },
+  { icon: DollarSign, label: "Comissões", path: "/comissoes", adminOnly: false, superAdminOnly: false, scope: "comissoes" },
+  { icon: RefreshCw, label: "Renovações", path: "/renovacoes", adminOnly: false, superAdminOnly: false, scope: "renovacoes" },
+  { icon: CalendarCheck, label: "Agenda", path: "/agenda", adminOnly: false, superAdminOnly: false, scope: null },
+  { icon: BarChart3, label: "Relatórios", path: "/relatorios", adminOnly: false, superAdminOnly: false, scope: "relatorios" },
+  { icon: Workflow, label: "Ger. Status", path: "/gerenciar-status", adminOnly: true, superAdminOnly: false, scope: null },
+  { icon: Users, label: "Usuários", path: "/usuarios", adminOnly: true, superAdminOnly: false, scope: null },
+  { icon: Settings, label: "Configurações", path: "/configuracoes", adminOnly: true, superAdminOnly: false, scope: null },
+  { icon: Building2, label: "Empresas", path: "/empresas", adminOnly: false, superAdminOnly: true, scope: null },
 ];
 
 interface AppSidebarProps {
@@ -34,10 +35,11 @@ interface AppSidebarProps {
 
 export function AppSidebar({ onClose }: AppSidebarProps) {
   const location = useLocation();
-  const { isAdmin, currentUser, hasScope, brokerStatus, setBrokerStatus } = useRole();
+  const { isAdmin, isSuperAdmin, currentUser, hasScope, brokerStatus, setBrokerStatus } = useRole();
   const { unreadCount } = useNotifications();
 
   const visibleItems = menuItems.filter(item => {
+    if (item.superAdminOnly && !isSuperAdmin) return false;
     if (item.adminOnly && !isAdmin) return false;
     if (item.scope && !hasScope(item.scope)) return false;
     return true;

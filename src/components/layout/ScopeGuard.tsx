@@ -29,3 +29,13 @@ export function AdminGuard({ children }: AdminGuardProps) {
 
   return <>{children}</>;
 }
+
+export function SuperAdminGuard({ children }: { children: React.ReactNode }) {
+  const { isSuperAdmin } = useRole();
+
+  if (!isSuperAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+}
