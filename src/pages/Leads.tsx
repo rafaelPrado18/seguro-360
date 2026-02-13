@@ -105,7 +105,32 @@ const DEFAULT_TEMPLATES: WhatsAppTemplate[] = [
   },
 ];
 
-const NEW_LEAD_SOUND_URL = "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdW+Jkpd/aXBygoyQf3VqcH+Lk5J8cW1xf4qQin5ybHKAi5GLfnJscoCLkYt+cmxygIuRi35ybHKAi5CLfnJscoCKkIt+cmxygIuRi35ybA==";
+const playNewLeadSoundFn = () => {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const now = ctx.currentTime;
+
+    // Three ascending high-pitched beeps
+    const freqs = [1200, 1500, 1800];
+    const beepDuration = 0.25;
+    const gap = 0.1;
+
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.5, now + i * (beepDuration + gap));
+      gain.gain.exponentialRampToValueAtTime(0.01, now + i * (beepDuration + gap) + beepDuration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + i * (beepDuration + gap));
+      osc.stop(now + i * (beepDuration + gap) + beepDuration);
+    });
+
+    setTimeout(() => ctx.close().catch(() => {}), 1500);
+  } catch {}
+};
 
 const Leads = () => {
   const { isAdmin, currentUser } = useRole();
@@ -127,17 +152,9 @@ const Leads = () => {
   // Polling leads every 10 seconds
   const { data: apiLeads } = useLeads(undefined);
   const prevLeadIdsRef = useRef<Set<string>>(new Set(leads.map(l => l.id)));
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const playNewLeadSound = useCallback(() => {
-    try {
-      if (!audioRef.current) {
-        audioRef.current = new Audio(NEW_LEAD_SOUND_URL);
-        audioRef.current.volume = 0.7;
-      }
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
-    } catch {}
+    playNewLeadSoundFn();
   }, []);
 
   // When API returns data, merge and detect new leads
