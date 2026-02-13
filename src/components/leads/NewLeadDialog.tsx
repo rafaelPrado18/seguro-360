@@ -20,6 +20,7 @@ const leadSchema = z.object({
   nome: z.string().trim().min(2, "Nome deve ter ao menos 2 caracteres").max(100),
   email: z.string().trim().email("Email inválido").max(255),
   telefone: z.string().trim().min(10, "Telefone inválido").max(20),
+  veiculo: z.string().trim().max(100, "Máximo 100 caracteres").optional().default(""),
   origem: z.enum(["site", "indicacao", "whatsapp", "facebook", "instagram", "google_ads", "outro"]),
   ramo_interesse: z.string().trim().min(1, "Selecione um ramo de interesse"),
   valor_estimado: z.coerce.number().min(0, "Valor deve ser positivo"),
@@ -56,7 +57,7 @@ export function NewLeadDialog({ open, onOpenChange, onLeadCreated }: NewLeadDial
   const form = useForm<LeadFormData>({
     resolver: zodResolver(leadSchema),
     defaultValues: {
-      nome: "", email: "", telefone: "", origem: "whatsapp",
+      nome: "", email: "", telefone: "", veiculo: "", origem: "whatsapp",
       ramo_interesse: "", valor_estimado: 0, observacoes: "",
     },
   });
@@ -67,6 +68,7 @@ export function NewLeadDialog({ open, onOpenChange, onLeadCreated }: NewLeadDial
         nome: data.nome,
         email: data.email,
         telefone: data.telefone,
+        veiculo: data.veiculo || "",
         origem: data.origem,
         ramo_interesse: data.ramo_interesse,
         valor_estimado: data.valor_estimado,
@@ -115,6 +117,13 @@ export function NewLeadDialog({ open, onOpenChange, onLeadCreated }: NewLeadDial
                 <FormItem>
                   <FormLabel>Telefone</FormLabel>
                   <FormControl><Input placeholder="(11) 99999-9999" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="veiculo" render={({ field }) => (
+                <FormItem className="col-span-2">
+                  <FormLabel>Veículo (modelo ou placa)</FormLabel>
+                  <FormControl><Input placeholder="Ex: Honda Civic 2024 ou ABC-1D23" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
