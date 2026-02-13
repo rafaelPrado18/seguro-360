@@ -12,8 +12,9 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Search, Plus, MoreHorizontal, Users, Target,
-  TrendingUp, UserCheck, Shuffle, Phone, Kanban, List, Settings2, Send, MessageSquare
+  TrendingUp, UserCheck, Shuffle, Phone, Kanban, List, Settings2, Send, MessageSquare, CalendarDays
 } from "lucide-react";
+import { startOfDay, startOfYesterday, subDays, isAfter, isEqual } from "date-fns";
 import { LeadKanban, type KanbanColumn } from "@/components/leads/LeadKanban";
 import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
 import { LeadDetailSheet } from "@/components/leads/LeadDetailSheet";
@@ -114,6 +115,7 @@ const Leads = () => {
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
   const [leads, setLeads] = useState(PLACEHOLDER_LEADS);
   const [corretorFilter, setCorretorFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("all");
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const [redistribuirOpen, setRedistribuirOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -174,14 +176,41 @@ const Leads = () => {
       .replace(/\{\{data_vencimento\}\}/g, "...")
   };
 
+  const getDateFilterStart = (filter: string): Date | null => {
+    const now = new Date();
+    switch (filter) {
+      case "hoje": return startOfDay(now);
+      case "ontem": return startOfYesterday();
+      case "7dias": return startOfDay(subDays(now, 7));
+      case "15dias": return startOfDay(subDays(now, 15));
+      case "30dias": return startOfDay(subDays(now, 30));
+      default: return null;
+    }
+  };
+
+  const getDateFilterEnd = (filter: string): Date | null => {
+    if (filter === "ontem") return startOfDay(new Date());
+    return null;
+  };
+
   const displayLeads = leads.filter(l => {
     console.log(currentUser)
-    const matchesSearch = l.nome.toLowerCase().includes(search.toLowerCase()) || l.telefone.includes(search);
+    const matchesSearch = (l.nome ?? "").toLowerCase().includes(search.toLowerCase()) || (l.telefone ?? "").includes(search);
     const matchesStatus = statusFilter === "all" || l.status === statusFilter;
     const matchesCorretor = isAdmin
       ? corretorFilter === "all" || l.corretor_responsavel === corretorFilter
       : l.corretor_responsavel === currentUser.nome || !l.corretor_responsavel;
-    return matchesSearch && matchesStatus && matchesCorretor;
+    
+    let matchesDate = true;
+    if (dateFilter !== "all" && l.created_at) {
+      const leadDate = new Date(l.created_at);
+      const start = getDateFilterStart(dateFilter);
+      const end = getDateFilterEnd(dateFilter);
+      if (start) matchesDate = isAfter(leadDate, start) || isEqual(leadDate, start);
+      if (matchesDate && end) matchesDate = !isAfter(leadDate, end);
+    }
+
+    return matchesSearch && matchesStatus && matchesCorretor && matchesDate;
   });
 
   return (
@@ -308,6 +337,20 @@ const Leads = () => {
                 </SelectContent>
               </Select>
             )}
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="w-[140px] sm:w-[160px] h-9 text-sm">
+                <CalendarDays className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="hoje">Hoje</SelectItem>
+                <SelectItem value="ontem">Ontem</SelectItem>
+                <SelectItem value="7dias">Últimos 7 dias</SelectItem>
+                <SelectItem value="15dias">Últimos 15 dias</SelectItem>
+                <SelectItem value="30dias">Últimos 30 dias</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex items-center gap-2">
             <Button
