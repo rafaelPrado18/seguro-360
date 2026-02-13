@@ -8,11 +8,12 @@ export interface Lead {
   nome: string;
   email: string;
   telefone: string;
-  origem: "site" | "indicacao" | "whatsapp" | "facebook" | "instagram" | "google_ads" | "outro";
+  origem: "site" | "indicacao" | "whatsapp" | "facebook" | "instagram" | "google_ads" | "meta_ads" | "outro";
   ramo_interesse: string;
   status: "novo" | "em_contato" | "qualificado" | "proposta_enviada" | "convertido" | "perdido";
   corretor_responsavel: string | null;
   valor_estimado: number;
+  modelo?: string;
   observacoes: string;
   created_at: string;
   updated_at: string;

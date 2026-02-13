@@ -24,7 +24,7 @@ interface LeadKanbanProps {
 
 const origemLabels: Record<string, string> = {
   whatsapp: "WhatsApp", site: "Site", indicacao: "Indicação",
-  facebook: "Facebook", instagram: "Instagram", google_ads: "Google Ads", outro: "Outro",
+  facebook: "Facebook", instagram: "Instagram", google_ads: "Google Ads", meta_ads: "Meta Ads", outro: "Outro",
 };
 
 export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onLeadClick }: LeadKanbanProps) {
