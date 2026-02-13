@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,8 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import type { Lead } from "@/services/leadsService";
 import type { WhatsAppTemplate } from "@/services/whatsappService";
+import { useLeads } from "@/hooks/useLeads";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 const PLACEHOLDER_STATS = {
   total: 142, novos: 28, em_contato: 35, qualificados: 22, convertidos: 45, perdidos: 12,
@@ -103,8 +105,11 @@ const DEFAULT_TEMPLATES: WhatsAppTemplate[] = [
   },
 ];
 
+const NEW_LEAD_SOUND_URL = "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdW+Jkpd/aXBygoyQf3VqcH+Lk5J8cW1xf4qQin5ybHKAi5GLfnJscoCLkYt+cmxygIuRi35ybHKAi5CLfnJscoCKkIt+cmxygIuRi35ybA==";
+
 const Leads = () => {
   const { isAdmin, currentUser } = useRole();
+  const { addNotification } = useNotifications();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
@@ -118,6 +123,52 @@ const Leads = () => {
   const [pendingChange, setPendingChange] = useState<{ leadId: string; newStatus: string; lead: Lead } | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<WhatsAppTemplate | null>(null);
   const [sendMessage, setSendMessage] = useState(true);
+
+  // Polling leads every 10 seconds
+  const { data: apiLeads } = useLeads(undefined);
+  const prevLeadIdsRef = useRef<Set<string>>(new Set(leads.map(l => l.id)));
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const playNewLeadSound = useCallback(() => {
+    try {
+      if (!audioRef.current) {
+        audioRef.current = new Audio(NEW_LEAD_SOUND_URL);
+        audioRef.current.volume = 0.7;
+      }
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    } catch {}
+  }, []);
+
+  // When API returns data, merge and detect new leads
+  useEffect(() => {
+    if (apiLeads?.data && apiLeads.data.length > 0) {
+      const prevIds = prevLeadIdsRef.current;
+      const newLeads = apiLeads.data.filter(l => !prevIds.has(l.id));
+
+      if (newLeads.length > 0 && prevIds.size > 0) {
+        // Play sound alert
+        playNewLeadSound();
+
+        // Add notifications for each new lead
+        newLeads.forEach(lead => {
+          addNotification({
+            type: "lead",
+            title: "🔔 Novo Lead!",
+            message: `${lead.nome} — ${lead.ramo_interesse} (${lead.origem})`,
+            leadId: lead.id,
+          });
+        });
+
+        toast.success(`${newLeads.length} novo${newLeads.length > 1 ? "s" : ""} lead${newLeads.length > 1 ? "s" : ""} recebido${newLeads.length > 1 ? "s" : ""}!`, {
+          description: newLeads.map(l => l.nome).join(", "),
+        });
+      }
+
+      setLeads(apiLeads.data);
+      prevLeadIdsRef.current = new Set(apiLeads.data.map(l => l.id));
+    }
+  }, [apiLeads, playNewLeadSound, addNotification]);
 
   const stats = PLACEHOLDER_STATS;
   const distribution = PLACEHOLDER_DISTRIBUTION;

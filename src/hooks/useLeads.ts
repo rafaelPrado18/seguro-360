@@ -5,6 +5,9 @@ export function useLeads(filters?: LeadFilters) {
   return useQuery({
     queryKey: ["leads", filters],
     queryFn: () => leadsService.getLeads(filters),
+    refetchInterval: 10000, // Poll every 10 seconds
+    refetchIntervalInBackground: false,
+    retry: 1,
   });
 }
 
