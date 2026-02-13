@@ -7,8 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
   Search, Plus, MoreHorizontal, Users, Target,
-  TrendingUp, UserCheck, Shuffle, Phone, Kanban, List, Settings2
+  TrendingUp, UserCheck, Shuffle, Phone, Kanban, List, Settings2, Send, MessageSquare
 } from "lucide-react";
 import { LeadKanban, type KanbanColumn } from "@/components/leads/LeadKanban";
 import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
@@ -16,7 +20,9 @@ import { LeadDetailSheet } from "@/components/leads/LeadDetailSheet";
 import { RedistribuirLeadsDialog } from "@/components/leads/RedistribuirLeadsDialog";
 import { useRole } from "@/contexts/RoleContext";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import type { Lead } from "@/services/leadsService";
+import type { WhatsAppTemplate } from "@/services/whatsappService";
 
 const PLACEHOLDER_STATS = {
   total: 142, novos: 28, em_contato: 35, qualificados: 22, convertidos: 45, perdidos: 12,
@@ -69,6 +75,34 @@ const origemLabels: Record<string, string> = {
   facebook: "Facebook", instagram: "Instagram", google_ads: "Google Ads", outro: "Outro",
 };
 
+// Map lead status to template category
+const STATUS_TEMPLATE_MAP: Record<string, string> = {
+  novo: "boas_vindas",
+  em_contato: "follow_up",
+  qualificado: "follow_up",
+  proposta_enviada: "proposta",
+  convertido: "geral",
+  perdido: "geral",
+};
+
+const DEFAULT_TEMPLATES: WhatsAppTemplate[] = [
+  {
+    id: "1", nome: "Boas-vindas Lead", categoria: "boas_vindas",
+    conteudo: "Olá {{nome}}! 👋\n\nSou {{corretor}} da SeguraCRM. Vi que você tem interesse em seguro {{ramo}}.\n\nPosso te ajudar a encontrar a melhor cobertura com o melhor preço. Quando podemos conversar?",
+    variaveis: ["nome", "corretor", "ramo"], status: "aprovado",
+  },
+  {
+    id: "2", nome: "Envio de Proposta", categoria: "proposta",
+    conteudo: "Olá {{nome}}! 📋\n\nSegue a proposta do seguro {{ramo}} que conversamos:\n\n🏢 Seguradora: {{seguradora}}\n💰 Prêmio: {{valor_premio}}\n\n📎 Acesse a proposta completa: {{link_proposta}}\n\nQualquer dúvida estou à disposição!",
+    variaveis: ["nome", "ramo", "seguradora", "valor_premio", "link_proposta"], status: "aprovado",
+  },
+  {
+    id: "4", nome: "Follow-up Lead", categoria: "follow_up",
+    conteudo: "Oi {{nome}}, tudo bem? 😊\n\nEntrei em contato recentemente sobre o seguro {{ramo}}. Gostaria de saber se ainda tem interesse?\n\nEstou com condições especiais essa semana. Posso enviar uma cotação?",
+    variaveis: ["nome", "ramo"], status: "aprovado",
+  },
+];
+
 const Leads = () => {
   const { isAdmin, currentUser } = useRole();
   const [search, setSearch] = useState("");
@@ -80,12 +114,54 @@ const Leads = () => {
   const [redistribuirOpen, setRedistribuirOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
+  // Status change + template confirmation
+  const [pendingChange, setPendingChange] = useState<{ leadId: string; newStatus: string; lead: Lead } | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<WhatsAppTemplate | null>(null);
+  const [sendMessage, setSendMessage] = useState(true);
+
   const stats = PLACEHOLDER_STATS;
   const distribution = PLACEHOLDER_DISTRIBUTION;
 
+  const getTemplateForStatus = (status: string): WhatsAppTemplate | null => {
+    const category = STATUS_TEMPLATE_MAP[status];
+    if (!category) return null;
+    return DEFAULT_TEMPLATES.find(t => t.categoria === category && t.status === "aprovado") || null;
+  };
+
   const handleStatusChange = (leadId: string, newStatus: string) => {
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead) return;
+    const template = getTemplateForStatus(newStatus);
+    if (template) {
+      setPendingChange({ leadId, newStatus, lead });
+      setSelectedTemplate(template);
+      setSendMessage(true);
+    } else {
+      applyStatusChange(leadId, newStatus, false);
+    }
+  };
+
+  const applyStatusChange = (leadId: string, newStatus: string, shouldSend: boolean) => {
     setLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus as Lead["status"] } : l));
-    // updateStatus.mutate({ id: leadId, status: newStatus as Lead["status"] });
+    if (shouldSend && selectedTemplate) {
+      toast.success(`Mensagem "${selectedTemplate.nome}" enviada via WhatsApp`);
+    }
+    setPendingChange(null);
+    setSelectedTemplate(null);
+  };
+
+  const getPreviewText = (template: WhatsAppTemplate, lead: Lead) => {
+    return template.conteudo
+      .replace(/\{\{nome\}\}/g, lead.nome)
+      .replace(/\{\{ramo\}\}/g, lead.ramo_interesse)
+      .replace(/\{\{corretor\}\}/g, lead.corretor_responsavel || "Corretor")
+      .replace(/\{\{telefone\}\}/g, lead.telefone)
+      .replace(/\{\{email\}\}/g, lead.email)
+      .replace(/\{\{valor_premio\}\}/g, `R$ ${lead.valor_estimado.toLocaleString()}`)
+      .replace(/\{\{seguradora\}\}/g, "Seguradora")
+      .replace(/\{\{link_proposta\}\}/g, "https://...")
+      .replace(/\{\{numero_apolice\}\}/g, "#...")
+      .replace(/\{\{data_vencimento\}\}/g, "...")
   };
 
   const displayLeads = leads.filter(l => {
@@ -362,6 +438,57 @@ const Leads = () => {
             });
           }}
         />
+        {/* Template Send Confirmation Dialog */}
+        <Dialog open={!!pendingChange} onOpenChange={(open) => { if (!open) { setPendingChange(null); setSelectedTemplate(null); } }}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-accent" />
+                Enviar mensagem WhatsApp?
+              </DialogTitle>
+              <DialogDescription>
+                O lead <strong>{pendingChange?.lead.nome}</strong> será movido para{" "}
+                <strong>{pendingChange ? statusLabels[pendingChange.newStatus as Lead["status"]] : ""}</strong>.
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedTemplate && pendingChange && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-[10px]">{selectedTemplate.nome}</Badge>
+                </div>
+                <div className="p-3 rounded-lg bg-muted border border-border max-h-48 overflow-y-auto">
+                  <p className="text-sm whitespace-pre-wrap text-foreground">
+                    {getPreviewText(selectedTemplate, pendingChange.lead)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="send-msg"
+                    checked={sendMessage}
+                    onCheckedChange={(checked) => setSendMessage(!!checked)}
+                  />
+                  <label htmlFor="send-msg" className="text-sm text-foreground cursor-pointer">
+                    Enviar esta mensagem ao lead
+                  </label>
+                </div>
+              </div>
+            )}
+
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => { if (pendingChange) applyStatusChange(pendingChange.leadId, pendingChange.newStatus, false); }}>
+                Apenas mover
+              </Button>
+              <Button
+                className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
+                onClick={() => { if (pendingChange) applyStatusChange(pendingChange.leadId, pendingChange.newStatus, sendMessage); }}
+              >
+                <Send className="h-4 w-4" />
+                {sendMessage ? "Mover e Enviar" : "Confirmar"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
