@@ -1,7 +1,7 @@
 // Service layer for Leads API integration
 // Replace BASE_URL and implement your API endpoints
 
-const BASE_URL = "/api"; // TODO: Replace with your actual API base URL
+const BASE_URL = "http://localhost:5001/mango-softwares"; // TODO: Replace with your actual API base URL
 
 export interface Lead {
   id: string;
@@ -57,7 +57,7 @@ export const leadsService = {
         }
       });
     }
-    const response = await fetch(`${BASE_URL}/leads?${params.toString()}`);
+    const response = await fetch(`${BASE_URL}/v1/read/leads?leadTag=corretor_responsavel&leadValue=NERIELLI FREITAS`);
     if (!response.ok) throw new Error("Erro ao buscar leads");
     return response.json();
   },
