@@ -118,7 +118,6 @@ const Leads = () => {
   const [redistribuirOpen, setRedistribuirOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
-  // Sync API data into local state
   useEffect(() => {
     if (apiData?.data && apiData.data.length > 0) {
       setLeads(apiData.data);

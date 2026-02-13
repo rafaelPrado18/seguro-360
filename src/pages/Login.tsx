@@ -8,13 +8,6 @@ import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import logoHataseg from "@/assets/logo-hataseg.png";
 import { toast } from "@/hooks/use-toast";
 
-const MOCK_USERS = [
-  { email: "admin@hataseg.com", senha: "admin123", nome: "Admin Geral", cargo: "Administrador" },
-  { email: "andre@hataseg.com", senha: "andre123", nome: "André Oliveira", cargo: "Corretor — Novo" },
-  { email: "beatriz@hataseg.com", senha: "beatriz123", nome: "Beatriz Costa", cargo: "Corretor — Renovação" },
-  { email: "carlos@hataseg.com", senha: "carlos123", nome: "Carlos Neto", cargo: "Corretor — Sinistro" },
-  { email: "diana@hataseg.com", senha: "diana123", nome: "Diana Alves", cargo: "Corretor — Financeiro" },
-];
 
 const Login = () => {
   const navigate = useNavigate();
@@ -23,29 +16,93 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    setTimeout(() => {
-      const user = MOCK_USERS.find(
-        (u) => u.email === email.toLowerCase().trim() && u.senha === senha
-      );
+    try {
+      const response = await fetch("http://173.249.50.11:8000/v1/create/authorization/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email,
+          password: senha,   // aqui estava errado
+        }),
+      });
 
-      if (user) {
-        toast({ title: `Bem-vindo, ${user.nome}!`, description: user.cargo });
-        navigate("/");
-      } else {
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
         toast({
-          title: "Credenciais inválidas",
-          description: "Verifique seu email e senha.",
+          title: "Erro no login",
+          description: data?.message || "Credenciais inválidas.",
           variant: "destructive",
         });
+        return;
       }
-      setLoading(false);
-    }, 800);
-  };
 
+      // ================================
+      // SALVAR COOKIES DO USUÁRIO
+      // ================================
+      document.cookie = `userToken=${data.userToken}; path=/;`;
+      document.cookie = `userId=${data.userId}; path=/;`;
+      document.cookie = `userName=${data.name}; path=/;`;
+      document.cookie = `userEmail=${email}; path=/;`;
+      document.cookie = `assignedConsultant=${data.email}; path=/;`;
+      document.cookie = `userFunction=${data.function}; path=/;`;
+      document.cookie = `userStatus=online; path=/;`;
+
+      toast({
+        title: `Bem vindo ${data.name}!`,
+        description: `${data.function}`,
+      });
+
+      // ================================
+      // ATUALIZAR STATUS DO USUÁRIO
+      // ================================
+      try {
+        const statusResponse = await fetch("http://173.249.50.11:8000/v1/update/agent/status", {
+          method: "PATCH",
+          headers: {
+            "Authorization": `Bearer ${data.userToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            agentName: data.name,
+            email: email,
+            status: "online",
+            userId: data.userId,
+          }),
+        });
+
+        if (statusResponse.status === 204) {
+          console.log("Status atualizado ✔");
+        } else {
+          const err = await statusResponse.json().catch(() => null);
+          console.warn("Falha ao atualizar status:", err);
+        }
+      } catch (error) {
+        console.error("Erro ao atualizar status:", error);
+      }
+
+      // ================================
+      // REDIRECIONAR
+      // ================================
+      navigate("/");
+      window.location.reload();
+
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro inesperado ao tentar fazer login.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-8">
@@ -84,12 +141,7 @@ const Login = () => {
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="senha" className="text-sm">Senha</Label>
-                  <button type="button" className="text-xs text-accent hover:underline">
-                    Esqueceu a senha?
-                  </button>
-                </div>
+
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
@@ -120,26 +172,6 @@ const Login = () => {
               </Button>
             </form>
 
-            {/* Demo credentials */}
-            <div className="border-t border-border pt-4">
-              <p className="text-[11px] text-muted-foreground text-center mb-3">Credenciais de demonstração</p>
-              <div className="grid grid-cols-1 gap-1.5">
-                {MOCK_USERS.map((u) => (
-                  <button
-                    key={u.email}
-                    type="button"
-                    className="flex items-center justify-between px-3 py-2 rounded-md text-xs bg-muted/50 hover:bg-muted transition-colors text-left"
-                    onClick={() => {
-                      setEmail(u.email);
-                      setSenha(u.senha);
-                    }}
-                  >
-                    <span className="font-medium text-foreground">{u.nome}</span>
-                    <span className="text-muted-foreground">{u.cargo}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
           </CardContent>
         </Card>
 

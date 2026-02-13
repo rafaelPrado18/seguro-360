@@ -82,6 +82,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (apiLeads?.data && apiLeads.data.length > 0) {
+      console.log('testeeee', apiLeads?.data)
       const prevIds = prevLeadIdsRef.current;
       const newLeads = apiLeads.data.filter(l => !prevIds.has(l.id));
 

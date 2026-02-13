@@ -13,7 +13,7 @@ export interface UserProfile {
 const PROFILES: Record<UserRole, UserProfile> = {
   super_admin: { id: "super-admin-1", nome: "Super Admin", email: "super@plataforma.com", role: "super_admin" },
   admin: { id: "admin-1", nome: "Admin Geral", email: "admin@hataseg.com", role: "admin" },
-  corretor_novo: { id: "corretor-novo-1", nome: "André Oliveira", email: "andre@hataseg.com", role: "corretor_novo" },
+  corretor_novo: { id: "corretor-novo-1", nome: "NERIELLI FREITAS", email: "andre@hataseg.com", role: "corretor_novo" },
   corretor_renovacao: { id: "corretor-renov-1", nome: "Beatriz Costa", email: "beatriz@hataseg.com", role: "corretor_renovacao" },
   corretor_sinistro: { id: "corretor-sin-1", nome: "Carlos Neto", email: "carlos@hataseg.com", role: "corretor_sinistro" },
   corretor_financeiro: { id: "corretor-fin-1", nome: "Diana Alves", email: "diana@hataseg.com", role: "corretor_financeiro" },
