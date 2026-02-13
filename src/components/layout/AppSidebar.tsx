@@ -24,7 +24,7 @@ const menuItems = [
   { icon: CalendarCheck, label: "Agenda", path: "/agenda", adminOnly: false, superAdminOnly: false, scope: null },
   { icon: BarChart3, label: "Relatórios", path: "/relatorios", adminOnly: false, superAdminOnly: false, scope: "relatorios" },
   { icon: Workflow, label: "Ger. Status", path: "/gerenciar-status", adminOnly: true, superAdminOnly: false, scope: null },
-  { icon: Users, label: "Usuários", path: "/usuarios", adminOnly: true, superAdminOnly: false, scope: null },
+  { icon: Users, label: "Usuários", path: "/usuarios", adminOnly: false, superAdminOnly: false, scope: null },
   { icon: Settings, label: "Configurações", path: "/configuracoes", adminOnly: true, superAdminOnly: false, scope: null },
   { icon: Building2, label: "Empresas", path: "/empresas", adminOnly: false, superAdminOnly: true, scope: null },
 ];
