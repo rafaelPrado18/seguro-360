@@ -10,14 +10,45 @@ export interface UserProfile {
   role: UserRole;
 }
 
-const PROFILES: Record<UserRole, UserProfile> = {
-  super_admin: { id: "super-admin-1", nome: "Super Admin", email: "super@plataforma.com", role: "super_admin" },
-  admin: { id: "admin-1", nome: "Admin Geral", email: "admin@hataseg.com", role: "admin" },
-  corretor_novo: { id: "corretor-novo-1", nome: "NERIELLI FREITAS", email: "andre@hataseg.com", role: "corretor_novo" },
-  corretor_renovacao: { id: "corretor-renov-1", nome: "Beatriz Costa", email: "beatriz@hataseg.com", role: "corretor_renovacao" },
-  corretor_sinistro: { id: "corretor-sin-1", nome: "Carlos Neto", email: "carlos@hataseg.com", role: "corretor_sinistro" },
-  corretor_financeiro: { id: "corretor-fin-1", nome: "Diana Alves", email: "diana@hataseg.com", role: "corretor_financeiro" },
+/** Map API "function" field to internal UserRole */
+const FUNCTION_TO_ROLE: Record<string, UserRole> = {
+  "Super Admin": "super_admin",
+  "Administrador": "admin",
+  "Admin": "admin",
+  "Corretor — Novo": "corretor_novo",
+  "Corretor — Renovação": "corretor_renovacao",
+  "Corretor — Sinistro": "corretor_sinistro",
+  "Corretor — Financeiro": "corretor_financeiro",
+  "corretor_novo": "corretor_novo",
+  "corretor_renovacao": "corretor_renovacao",
+  "corretor_sinistro": "corretor_sinistro",
+  "corretor_financeiro": "corretor_financeiro",
+  "super_admin": "super_admin",
+  "admin": "admin",
 };
+
+function getCookie(name: string): string {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? decodeURIComponent(match[2]) : "";
+}
+
+function getUserFromCookies(): UserProfile | null {
+  const userId = getCookie("userId");
+  const userName = getCookie("userName");
+  const userEmail = getCookie("userEmail");
+  const userFunction = getCookie("userFunction");
+
+  if (!userId || !userName) return null;
+
+  const role = FUNCTION_TO_ROLE[userFunction] || "corretor_novo";
+
+  return {
+    id: userId,
+    nome: userName,
+    email: userEmail,
+    role,
+  };
+}
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   super_admin: "Super Admin",
@@ -61,11 +92,25 @@ interface RoleContextType {
 
 const RoleContext = createContext<RoleContextType | null>(null);
 
-export function RoleProvider({ children }: { children: ReactNode }) {
-  const [role, setRole] = useState<UserRole>("admin");
-  const [brokerStatus, setBrokerStatus] = useState<BrokerStatus>("online");
+const DEFAULT_USER: UserProfile = { id: "guest", nome: "Visitante", email: "", role: "corretor_novo" };
 
-  const currentUser = PROFILES[role];
+export function RoleProvider({ children }: { children: ReactNode }) {
+  const cookieUser = getUserFromCookies();
+  const [currentUser, setCurrentUser] = useState<UserProfile>(cookieUser || DEFAULT_USER);
+  const [role, setRole] = useState<UserRole>(currentUser.role);
+  const [brokerStatus, setBrokerStatus] = useState<BrokerStatus>(
+    (getCookie("userStatus") as BrokerStatus) || "online"
+  );
+
+  // Re-sync when cookies change (e.g. after login redirect)
+  useEffect(() => {
+    const u = getUserFromCookies();
+    if (u && u.id !== currentUser.id) {
+      setCurrentUser(u);
+      setRole(u.role);
+    }
+  }, []);
+
   const scopes = ROLE_SCOPES[role];
 
   const isSuperAdmin = role === "super_admin";

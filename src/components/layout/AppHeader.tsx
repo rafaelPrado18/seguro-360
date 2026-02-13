@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useRole, ROLE_LABELS, ROLE_EMOJI } from "@/contexts/RoleContext";
+import { useRole, ROLE_LABELS } from "@/contexts/RoleContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import type { UserRole } from "@/contexts/RoleContext";
@@ -18,7 +18,7 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ onMenuToggle }: AppHeaderProps) {
-  const { role, switchRole, brokerStatus, setBrokerStatus } = useRole();
+  const { role, currentUser, brokerStatus, setBrokerStatus } = useRole();
   const { theme, toggleTheme } = useTheme();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [novaApoliceOpen, setNovaApoliceOpen] = useState(false);
@@ -39,7 +39,7 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
     }
   };
 
-  const allRoles: UserRole[] = ["super_admin", "admin", "corretor_novo", "corretor_renovacao", "corretor_sinistro", "corretor_financeiro"];
+  
 
   return (
     <div>
@@ -87,16 +87,9 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
 
       {/* Right: actions */}
       <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
-        <Select value={role} onValueChange={(v) => switchRole(v as UserRole)}>
-          <SelectTrigger className="w-[120px] sm:w-[200px] h-8 text-xs border-dashed">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {allRoles.map(r => (
-              <SelectItem key={r} value={r}>{ROLE_EMOJI[r]} {ROLE_LABELS[r]}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <span className="text-xs text-muted-foreground hidden sm:inline font-medium">
+          {currentUser.nome} · {ROLE_LABELS[role]}
+        </span>
 
         <Button variant="ghost" size="icon" className="h-9 w-9" onClick={toggleTheme}>
           {theme === "light" ? <Moon className="h-4 w-4 text-muted-foreground" /> : <Sun className="h-4 w-4 text-muted-foreground" />}
