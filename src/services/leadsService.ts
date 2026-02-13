@@ -47,9 +47,9 @@ export interface PaginatedResponse<T> {
   total_pages: number;
 }
 
-export const leadsService = {
+export const leadsService = { 
   // GET /api/leads - Listar leads com filtros e paginação
-  async getLeads(filters?: LeadFilters, currentUser?: string): Promise<PaginatedResponse<Lead>> {
+  async getLeads(filters?: LeadFilters, currentUser?: string, userFunction?: string): Promise<PaginatedResponse<Lead>> {
     const params = new URLSearchParams();
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
@@ -58,9 +58,18 @@ export const leadsService = {
         }
       });
     }
-    const response = await fetch(`${BASE_URL}/v1/read/leads?leadTag=corretor_responsavel&leadValue=${currentUser}`);
-    if (!response.ok) throw new Error("Erro ao buscar leads");
-    return response.json();
+    console.log(userFunction)
+    console.log(userFunction == 'administrador')
+    if (userFunction != 'administrador'){
+      const response = await fetch(`${BASE_URL}/v1/read/leads?leadTag=corretor_responsavel&leadValue=${currentUser}`);
+      if (!response.ok) throw new Error("Erro ao buscar leads");
+      return response.json();
+    }else{
+      const response = await fetch(`${BASE_URL}/v1/read/leads?leadTag`);
+      if (!response.ok) throw new Error("Erro ao buscar leads");
+      return response.json();
+    }
+
   },
 
   // GET /api/leads/:id - Buscar lead por ID

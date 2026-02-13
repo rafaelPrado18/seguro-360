@@ -60,6 +60,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
     setDragOverColumn(null);
     if (draggedLead && draggedLead.status !== columnId) {
       onStatusChange(draggedLead.id, columnId);
+      console.log('teste')
     }
     setDraggedLead(null);
   };
@@ -100,7 +101,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
 
             {/* Cards */}
             <ScrollArea className="flex-1">
-            <div className="p-2 space-y-2">
+            <div className="p-1 space-y-1">
               {colLeads.map((lead) => (
                 <Card
                   key={lead.id}
@@ -111,7 +112,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                     draggedLead?.id === lead.id ? "opacity-40 scale-95" : ""
                   }`}
                 >
-                  <CardContent className="p-3">
+                  <CardContent className="p-3 min-w-[275px] max-w-[275px] ">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-1.5">
                         <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40 flex-shrink-0" />
@@ -125,6 +126,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                     </div>
                     <p className="text-sm font-medium text-foreground truncate">{lead.nome ?? "Sem nome"}</p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">{lead.ramo_interesse ?? "—"}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{lead.created_at ?? "—"}</p>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-xs font-bold text-foreground">R$ {(lead.valor_estimado ?? 0).toLocaleString()}</span>
                       {lead.origem ? (

@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useCallback, useRef, useEffect, ty
 import { useQuery } from "@tanstack/react-query";
 import { leadsService } from "@/services/leadsService";
 import { toast } from "sonner";
+import { useRole } from "@/contexts/RoleContext";
 
 export interface Notification {
   id: string;
@@ -52,6 +53,8 @@ const playNewLeadSound = () => {
 };
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
+  const { isAdmin, currentUser } = useRole();
+  
   const [notifications, setNotifications] = useState<Notification[]>([
     { id: "demo-1", type: "lead", title: "Novo Lead via WhatsApp", message: "Ricardo Pereira enviou mensagem", read: false, timestamp: new Date().toISOString() },
     { id: "demo-2", type: "whatsapp", title: "Mensagem recebida", message: "Luciana Mendes respondeu", read: false, timestamp: new Date(Date.now() - 300000).toISOString() },
@@ -68,11 +71,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     };
     setNotifications(prev => [newNotif, ...prev].slice(0, 50));
   }, []);
-
   // Global lead polling every 10 seconds
   const { data: apiLeads } = useQuery({
     queryKey: ["leads"],
-    queryFn: () => leadsService.getLeads(),
+    queryFn: () => leadsService.getLeads(null, currentUser.nome, currentUser.role),
     refetchInterval: 10000,
     refetchIntervalInBackground: false,
     retry: 1,

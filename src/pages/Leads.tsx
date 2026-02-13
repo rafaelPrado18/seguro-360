@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,12 +25,7 @@ import { toast } from "sonner";
 import type { Lead } from "@/services/leadsService";
 import type { WhatsAppTemplate } from "@/services/whatsappService";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { useLeads, useUpdateLeadStatus } from "@/hooks/useLeads";
-
-const PLACEHOLDER_STATS = {
-  total: 142, novos: 28, em_contato: 35, qualificados: 22, convertidos: 45, perdidos: 12,
-  taxa_conversao: 31.7,
-};
+import { useLeads, useUpdateLeadStatus} from "@/hooks/useLeads";
 
 const PLACEHOLDER_DISTRIBUTION = [
   { corretor_id: "1", corretor_nome: "André Oliveira", total_leads: 32, convertidos: 12, taxa_conversao: 37.5, valor_total_convertido: 156000 },
@@ -40,16 +35,7 @@ const PLACEHOLDER_DISTRIBUTION = [
   { corretor_id: "5", corretor_nome: "Eduardo Ramos", total_leads: 27, convertidos: 6, taxa_conversao: 22.2, valor_total_convertido: 78000 },
 ];
 
-const PLACEHOLDER_LEADS: Lead[] = [
-  { id: "1", nome: "Ricardo Pereira", email: "ricardo@email.com", telefone: "(11) 99900-1234", origem: "whatsapp", ramo_interesse: "Auto", status: "novo", corretor_responsavel: null, valor_estimado: 3500, observacoes: "", created_at: "2026-02-12T10:00:00Z", updated_at: "2026-02-12T10:00:00Z" },
-  { id: "2", nome: "Luciana Mendes", email: "luciana@email.com", telefone: "(21) 98800-5678", origem: "site", ramo_interesse: "Vida", status: "em_contato", corretor_responsavel: "André Oliveira", valor_estimado: 2200, observacoes: "", created_at: "2026-02-11T14:00:00Z", updated_at: "2026-02-12T09:00:00Z" },
-  { id: "3", nome: "Empresa Alfa Ltda", email: "contato@alfa.com", telefone: "(11) 3300-9012", origem: "indicacao", ramo_interesse: "Empresarial", status: "qualificado", corretor_responsavel: "Beatriz Costa", valor_estimado: 45000, observacoes: "", created_at: "2026-02-10T11:00:00Z", updated_at: "2026-02-12T08:00:00Z" },
-  { id: "4", nome: "Marcos Silva", email: "marcos@email.com", telefone: "(31) 97700-3456", origem: "facebook", ramo_interesse: "Residencial", status: "proposta_enviada", corretor_responsavel: "Carlos Neto", valor_estimado: 1800, observacoes: "", created_at: "2026-02-09T16:00:00Z", updated_at: "2026-02-11T15:00:00Z" },
-  { id: "5", nome: "Patrícia Gomes", email: "patricia@email.com", telefone: "(41) 96600-7890", origem: "instagram", ramo_interesse: "Auto", status: "novo", corretor_responsavel: null, valor_estimado: 4200, observacoes: "", created_at: "2026-02-12T08:30:00Z", updated_at: "2026-02-12T08:30:00Z" },
-  { id: "6", nome: "Fernando Dias", email: "fernando@email.com", telefone: "(51) 95500-2345", origem: "whatsapp", ramo_interesse: "Vida", status: "convertido", corretor_responsavel: "Diana Alves", valor_estimado: 3800, observacoes: "", created_at: "2026-02-05T09:00:00Z", updated_at: "2026-02-10T17:00:00Z" },
-  { id: "7", nome: "Juliana Rocha", email: "juliana@email.com", telefone: "(61) 94400-6789", origem: "google_ads", ramo_interesse: "Saúde", status: "perdido", corretor_responsavel: "Eduardo Ramos", valor_estimado: 5600, observacoes: "", created_at: "2026-02-03T13:00:00Z", updated_at: "2026-02-08T10:00:00Z" },
-  { id: "8", nome: "Tech Solutions S/A", email: "rh@tech.com", telefone: "(11) 4400-1122", origem: "indicacao", ramo_interesse: "Empresarial", status: "em_contato", corretor_responsavel: "André Oliveira", valor_estimado: 78000, observacoes: "", created_at: "2026-02-11T10:00:00Z", updated_at: "2026-02-12T07:00:00Z" },
-];
+const PLACEHOLDER_LEADS: Lead[] = [];
 
 const KANBAN_COLUMNS: KanbanColumn[] = [
   { id: "novo", label: "Novo", color: "text-info", bgColor: "bg-info" },
@@ -107,9 +93,10 @@ const DEFAULT_TEMPLATES: WhatsAppTemplate[] = [
 ];
 
 const Leads = () => {
+  
   const { isAdmin, currentUser } = useRole();
   const { addNotification } = useNotifications();
-  const { data: apiData } = useLeads(null, currentUser.nome);
+  const { data: apiData } = useLeads(null, currentUser.nome, currentUser.role);
   const updateLeadStatus = useUpdateLeadStatus();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -127,12 +114,76 @@ const Leads = () => {
     }
   }, [apiData]);
 
+  const stats = useMemo(() => {
+  if (!leads || leads.length === 0) {
+    return {
+      total: 0,
+      novos: 0,
+      em_contato: 0,
+      qualificados: 0,
+      convertidos: 0,
+      perdidos: 0,
+      valor_total: 0,
+      taxa_conversao: 0,
+    };
+  }
+
+  const counters = {
+    total: leads.length,
+    novos: 0,
+    em_contato: 0,
+    qualificados: 0,
+    proposta_enviada: 0,
+    convertidos: 0,
+    perdidos: 0,
+    valor_total: 0,
+  };
+
+  for (const lead of leads) {
+    switch (lead.status) {
+      case "novo":
+        counters.novos++;
+        break;
+
+      case "em_contato":
+        counters.em_contato++;
+        break;
+
+      case "qualificado":
+        counters.qualificados++;
+        break;
+
+      case "proposta_enviada":
+        counters.proposta_enviada++;
+        break;
+
+      case "convertido":
+        counters.convertidos++;
+        counters.valor_total += lead.valor_estimado || 0;
+        break;
+
+      case "perdido":
+        counters.perdidos++;
+        break;
+    }
+  }
+
+  const taxa =
+    counters.total > 0
+      ? (counters.convertidos / counters.total) * 100
+      : 0;
+
+  return {
+    ...counters,
+    taxa_conversao: Number(taxa.toFixed(1)),
+  };
+}, [leads]);
+
   // Status change + template confirmation
   const [pendingChange, setPendingChange] = useState<{ leadId: string; newStatus: string; lead: Lead } | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<WhatsAppTemplate | null>(null);
   const [sendMessage, setSendMessage] = useState(true);
 
-  const stats = PLACEHOLDER_STATS;
   const distribution = PLACEHOLDER_DISTRIBUTION;
 
   const getTemplateForStatus = (status: string): WhatsAppTemplate | null => {
@@ -215,8 +266,7 @@ const Leads = () => {
   };
 
   const displayLeads = leads.filter(l => {
-    console.log(currentUser)
-    const matchesSearch = (l.nome ?? "").toLowerCase().includes(search.toLowerCase()) || (l.telefone ?? "").includes(search);
+    const matchesSearch = l.nome.toLowerCase().includes(search.toLowerCase()) || l.telefone.includes(search);
     const matchesStatus = statusFilter === "all" || l.status === statusFilter;
     const matchesCorretor = isAdmin
       ? corretorFilter === "all" || l.corretor_responsavel === corretorFilter

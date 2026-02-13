@@ -1,20 +1,20 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-export type UserRole = "super_admin" | "admin" | "corretor" | "corretor_renovacao" | "corretor_sinistro" | "corretor_financeiro";
+export type UserRole = "super_admin" | "administrador" | "corretor" | "corretor_renovacao" | "corretor_sinistro" | "corretor_financeiro";
 export type BrokerStatus = "online" | "offline";
 
 export interface UserProfile {
   id: string;
   nome: string;
   email: string;
-  role: UserRole;
+  role: string;
 }
 
 /** Map API "function" field to internal UserRole */
 const FUNCTION_TO_ROLE: Record<string, UserRole> = {
   "Super Admin": "super_admin",
-  "Administrador": "admin",
-  "Admin": "admin",
+  "Administrador": "administrador",
+  "Admin": "administrador",
   "Corretor — Novo": "corretor",
   "Corretor — Renovação": "corretor_renovacao",
   "Corretor — Sinistro": "corretor_sinistro",
@@ -23,8 +23,7 @@ const FUNCTION_TO_ROLE: Record<string, UserRole> = {
   "corretor_renovacao": "corretor_renovacao",
   "corretor_sinistro": "corretor_sinistro",
   "corretor_financeiro": "corretor_financeiro",
-  "super_admin": "super_admin",
-  "admin": "admin",
+  "super_admin": "super_admin"
 };
 
 function getCookie(name: string): string {
@@ -46,13 +45,13 @@ function getUserFromCookies(): UserProfile | null {
     id: userId,
     nome: userName,
     email: userEmail,
-    role,
+    role: userFunction,
   };
 }
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   super_admin: "Super Admin",
-  admin: "Administrador",
+  administrador: "Administrador",
   corretor: "Corretor — Novo",
   corretor_renovacao: "Corretor — Renovação",
   corretor_sinistro: "Corretor — Sinistro",
@@ -61,7 +60,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 
 export const ROLE_EMOJI: Record<UserRole, string> = {
   super_admin: "🏢",
-  admin: "👑",
+  administrador: "👑",
   corretor: "🎯",
   corretor_renovacao: "🔄",
   corretor_sinistro: "⚠️",
@@ -71,7 +70,7 @@ export const ROLE_EMOJI: Record<UserRole, string> = {
 /** Which data scopes each role focuses on */
 export const ROLE_SCOPES: Record<UserRole, string[]> = {
   super_admin: ["todos"],
-  admin: ["todos"],
+  administrador: ["todos"],
   corretor: ["leads", "whatsapp", "clientes", "apolices"],
   corretor_renovacao: ["renovacoes", "apolices", "clientes", "whatsapp"],
   corretor_sinistro: ["sinistros", "clientes", "apolices", "whatsapp"],
@@ -97,7 +96,7 @@ const DEFAULT_USER: UserProfile = { id: "guest", nome: "Visitante", email: "", r
 export function RoleProvider({ children }: { children: ReactNode }) {
   const cookieUser = getUserFromCookies();
   const [currentUser, setCurrentUser] = useState<UserProfile>(cookieUser || DEFAULT_USER);
-  const [role, setRole] = useState<UserRole>(currentUser.role);
+  const [role, setRole] = useState<string>(currentUser.role);
   const [brokerStatus, setBrokerStatus] = useState<BrokerStatus>(
     (getCookie("userStatus") as BrokerStatus) || "online"
   );
@@ -114,14 +113,14 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   const scopes = ROLE_SCOPES[role];
 
   const isSuperAdmin = role === "super_admin";
-  const hasScope = (scope: string) => role === "admin" || role === "super_admin" || scopes.includes(scope);
+  const hasScope = (scope: string) => role === "administrador" || role === "super_admin" || scopes.includes(scope);
 
   return (
     <RoleContext.Provider value={{
       currentUser,
       role,
       switchRole: setRole,
-      isAdmin: role === "admin" || role === "super_admin",
+      isAdmin: role === "administrador" || role === "super_admin",
       isSuperAdmin: role === "super_admin",
       isCorretorType: (type: UserRole) => role === type,
       hasScope,

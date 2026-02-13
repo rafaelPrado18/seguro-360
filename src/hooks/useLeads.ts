@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { leadsService, type LeadFilters, type Lead } from "@/services/leadsService";
 
-export function useLeads(filters?: LeadFilters, currentUser?: string) {
+export function useLeads(filters?: LeadFilters, currentUser?: string, currentFunction?: string) {
   return useQuery({
     queryKey: ["leads", filters],
-    queryFn: () => leadsService.getLeads(filters, currentUser),
+    queryFn: () => leadsService.getLeads(filters, currentUser, currentFunction),
     refetchInterval: 10000, // Poll every 10 seconds
     refetchIntervalInBackground: false,
     retry: 1,
