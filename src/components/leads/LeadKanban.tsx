@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { GripVertical, Phone, MessageSquare, MoreHorizontal } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
 
@@ -98,7 +99,8 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
             </div>
 
             {/* Cards */}
-            <div className="flex-1 p-2 space-y-2 overflow-y-auto">
+            <ScrollArea className="flex-1">
+            <div className="p-2 space-y-2">
               {colLeads.map((lead) => (
                 <Card
                   key={lead.id}
@@ -152,6 +154,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                 </div>
               )}
             </div>
+            </ScrollArea>
           </div>
         );
       })}
