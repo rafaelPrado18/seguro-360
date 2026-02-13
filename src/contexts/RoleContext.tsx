@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-export type UserRole = "super_admin" | "admin" | "corretor_novo" | "corretor_renovacao" | "corretor_sinistro" | "corretor_financeiro";
+export type UserRole = "super_admin" | "admin" | "corretor" | "corretor_renovacao" | "corretor_sinistro" | "corretor_financeiro";
 export type BrokerStatus = "online" | "offline";
 
 export interface UserProfile {
@@ -15,11 +15,11 @@ const FUNCTION_TO_ROLE: Record<string, UserRole> = {
   "Super Admin": "super_admin",
   "Administrador": "admin",
   "Admin": "admin",
-  "Corretor — Novo": "corretor_novo",
+  "Corretor — Novo": "corretor",
   "Corretor — Renovação": "corretor_renovacao",
   "Corretor — Sinistro": "corretor_sinistro",
   "Corretor — Financeiro": "corretor_financeiro",
-  "corretor_novo": "corretor_novo",
+  "corretor": "corretor",
   "corretor_renovacao": "corretor_renovacao",
   "corretor_sinistro": "corretor_sinistro",
   "corretor_financeiro": "corretor_financeiro",
@@ -40,7 +40,7 @@ function getUserFromCookies(): UserProfile | null {
 
   if (!userId || !userName) return null;
 
-  const role = FUNCTION_TO_ROLE[userFunction] || "corretor_novo";
+  const role = FUNCTION_TO_ROLE[userFunction] || "corretor";
 
   return {
     id: userId,
@@ -53,7 +53,7 @@ function getUserFromCookies(): UserProfile | null {
 export const ROLE_LABELS: Record<UserRole, string> = {
   super_admin: "Super Admin",
   admin: "Administrador",
-  corretor_novo: "Corretor — Novo",
+  corretor: "Corretor — Novo",
   corretor_renovacao: "Corretor — Renovação",
   corretor_sinistro: "Corretor — Sinistro",
   corretor_financeiro: "Corretor — Financeiro",
@@ -62,7 +62,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 export const ROLE_EMOJI: Record<UserRole, string> = {
   super_admin: "🏢",
   admin: "👑",
-  corretor_novo: "🎯",
+  corretor: "🎯",
   corretor_renovacao: "🔄",
   corretor_sinistro: "⚠️",
   corretor_financeiro: "💰",
@@ -72,7 +72,7 @@ export const ROLE_EMOJI: Record<UserRole, string> = {
 export const ROLE_SCOPES: Record<UserRole, string[]> = {
   super_admin: ["todos"],
   admin: ["todos"],
-  corretor_novo: ["leads", "whatsapp", "clientes", "apolices"],
+  corretor: ["leads", "whatsapp", "clientes", "apolices"],
   corretor_renovacao: ["renovacoes", "apolices", "clientes", "whatsapp"],
   corretor_sinistro: ["sinistros", "clientes", "apolices", "whatsapp"],
   corretor_financeiro: ["comissoes", "relatorios", "apolices", "clientes"],
@@ -92,7 +92,7 @@ interface RoleContextType {
 
 const RoleContext = createContext<RoleContextType | null>(null);
 
-const DEFAULT_USER: UserProfile = { id: "guest", nome: "Visitante", email: "", role: "corretor_novo" };
+const DEFAULT_USER: UserProfile = { id: "guest", nome: "Visitante", email: "", role: "corretor" };
 
 export function RoleProvider({ children }: { children: ReactNode }) {
   const cookieUser = getUserFromCookies();

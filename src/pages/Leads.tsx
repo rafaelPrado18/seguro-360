@@ -108,7 +108,7 @@ const DEFAULT_TEMPLATES: WhatsAppTemplate[] = [
 const Leads = () => {
   const { isAdmin, currentUser } = useRole();
   const { addNotification } = useNotifications();
-  const { data: apiData } = useLeads();
+  const { data: apiData } = useLeads(null, currentUser.nome);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
@@ -175,6 +175,7 @@ const Leads = () => {
   };
 
   const displayLeads = leads.filter(l => {
+    console.log(currentUser)
     const matchesSearch = l.nome.toLowerCase().includes(search.toLowerCase()) || l.telefone.includes(search);
     const matchesStatus = statusFilter === "all" || l.status === statusFilter;
     const matchesCorretor = isAdmin
