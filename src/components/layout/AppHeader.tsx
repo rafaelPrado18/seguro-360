@@ -39,7 +39,7 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
     }
   };
 
-  const allRoles: UserRole[] = ["admin", "corretor_novo", "corretor_renovacao", "corretor_sinistro", "corretor_financeiro"];
+  const allRoles: UserRole[] = ["super_admin", "admin", "corretor_novo", "corretor_renovacao", "corretor_sinistro", "corretor_financeiro"];
 
   return (
     <div>
