@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import type { Lead } from "@/services/leadsService";
 import type { WhatsAppTemplate } from "@/services/whatsappService";
 import { useNotifications } from "@/contexts/NotificationContext";
+import { useLeads } from "@/hooks/useLeads";
 
 const PLACEHOLDER_STATS = {
   total: 142, novos: 28, em_contato: 35, qualificados: 22, convertidos: 45, perdidos: 12,
@@ -107,6 +108,7 @@ const DEFAULT_TEMPLATES: WhatsAppTemplate[] = [
 const Leads = () => {
   const { isAdmin, currentUser } = useRole();
   const { addNotification } = useNotifications();
+  const { data: apiData } = useLeads();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
@@ -115,6 +117,13 @@ const Leads = () => {
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const [redistribuirOpen, setRedistribuirOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+
+  // Sync API data into local state
+  useEffect(() => {
+    if (apiData?.data && apiData.data.length > 0) {
+      setLeads(apiData.data);
+    }
+  }, [apiData]);
 
   // Status change + template confirmation
   const [pendingChange, setPendingChange] = useState<{ leadId: string; newStatus: string; lead: Lead } | null>(null);
