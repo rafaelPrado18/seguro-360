@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import type { Lead } from "@/services/leadsService";
 import type { WhatsAppTemplate } from "@/services/whatsappService";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { useLeads } from "@/hooks/useLeads";
+import { useLeads, useUpdateLeadStatus } from "@/hooks/useLeads";
 
 const PLACEHOLDER_STATS = {
   total: 142, novos: 28, em_contato: 35, qualificados: 22, convertidos: 45, perdidos: 12,
@@ -110,6 +110,7 @@ const Leads = () => {
   const { isAdmin, currentUser } = useRole();
   const { addNotification } = useNotifications();
   const { data: apiData } = useLeads(null, currentUser.nome);
+  const updateLeadStatus = useUpdateLeadStatus();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
@@ -154,7 +155,22 @@ const Leads = () => {
   };
 
   const applyStatusChange = (leadId: string, newStatus: string, shouldSend: boolean) => {
+    // Optimistic update local
     setLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus as Lead["status"] } : l));
+
+    // Call API to persist status change
+    updateLeadStatus.mutate(
+      { id: leadId, status: newStatus as Lead["status"] },
+      {
+        onError: (error) => {
+          // Revert on error
+          setLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: leads.find(ol => ol.id === leadId)?.status || l.status } : l));
+          toast.error("Erro ao atualizar status do lead");
+          console.error("Status update failed:", error);
+        },
+      }
+    );
+
     if (shouldSend && selectedTemplate) {
       toast.success(`Mensagem "${selectedTemplate.nome}" enviada via WhatsApp`);
     }
