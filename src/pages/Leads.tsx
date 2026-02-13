@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,9 +22,7 @@ import { useRole } from "@/contexts/RoleContext";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import type { Lead } from "@/services/leadsService";
-import { leadsService } from "@/services/leadsService";
 import type { WhatsAppTemplate } from "@/services/whatsappService";
-import { useLeads } from "@/hooks/useLeads";
 import { useNotifications } from "@/contexts/NotificationContext";
 
 const PLACEHOLDER_STATS = {
@@ -106,33 +104,6 @@ const DEFAULT_TEMPLATES: WhatsAppTemplate[] = [
   },
 ];
 
-const playNewLeadSoundFn = () => {
-  try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const now = ctx.currentTime;
-
-    // Three ascending high-pitched beeps
-    const freqs = [1200, 1500, 1800];
-    const beepDuration = 0.25;
-    const gap = 0.1;
-
-    freqs.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.5, now + i * (beepDuration + gap));
-      gain.gain.exponentialRampToValueAtTime(0.01, now + i * (beepDuration + gap) + beepDuration);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now + i * (beepDuration + gap));
-      osc.stop(now + i * (beepDuration + gap) + beepDuration);
-    });
-
-    setTimeout(() => ctx.close().catch(() => {}), 1500);
-  } catch {}
-};
-
 const Leads = () => {
   const { isAdmin, currentUser } = useRole();
   const { addNotification } = useNotifications();
@@ -149,43 +120,6 @@ const Leads = () => {
   const [pendingChange, setPendingChange] = useState<{ leadId: string; newStatus: string; lead: Lead } | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<WhatsAppTemplate | null>(null);
   const [sendMessage, setSendMessage] = useState(true);
-
-  // Polling leads every 10 seconds
-  const { data: apiLeads } = useLeads(undefined);
-  const prevLeadIdsRef = useRef<Set<string>>(new Set(leads.map(l => l.id)));
-
-  const playNewLeadSound = useCallback(() => {
-    playNewLeadSoundFn();
-  }, []);
-
-  // When API returns data, merge and detect new leads
-  useEffect(() => {
-    if (apiLeads?.data && apiLeads.data.length > 0) {
-      const prevIds = prevLeadIdsRef.current;
-      const newLeads = apiLeads.data.filter(l => !prevIds.has(l.id));
-
-      if (newLeads.length > 0 && prevIds.size > 0) {
-        // Play sound alert
-        playNewLeadSound();
-
-        // Add notifications for each new lead
-        newLeads.forEach(lead => {
-          addNotification({
-            type: "lead",
-            title: "🔔 Novo Lead!",
-            message: `${lead.nome} — ${lead.ramo_interesse} (${lead.origem})`,
-            leadId: lead.id,
-          });
-        });
-
-        toast.success(`${newLeads.length} novo${newLeads.length > 1 ? "s" : ""} lead${newLeads.length > 1 ? "s" : ""} recebido${newLeads.length > 1 ? "s" : ""}!`, {
-          description: newLeads.map(l => l.nome).join(", "),
-        });
-      }
-      setLeads(apiLeads.data);
-      prevLeadIdsRef.current = new Set(apiLeads.data.map(l => l.id));
-    }
-  }, [apiLeads, playNewLeadSound, addNotification]);
 
   const stats = PLACEHOLDER_STATS;
   const distribution = PLACEHOLDER_DISTRIBUTION;
