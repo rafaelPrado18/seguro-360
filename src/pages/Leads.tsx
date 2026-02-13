@@ -14,7 +14,7 @@ import {
   Search, Plus, MoreHorizontal, Users, Target,
   TrendingUp, UserCheck, Shuffle, Phone, Kanban, List, Settings2, Send, MessageSquare, CalendarDays
 } from "lucide-react";
-import { startOfDay, startOfYesterday, subDays, isAfter, isEqual } from "date-fns";
+import { startOfDay, startOfYesterday, subDays, isAfter, isEqual, parse } from "date-fns";
 import { LeadKanban, type KanbanColumn } from "@/components/leads/LeadKanban";
 import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
 import { LeadDetailSheet } from "@/components/leads/LeadDetailSheet";
@@ -176,6 +176,11 @@ const Leads = () => {
       .replace(/\{\{data_vencimento\}\}/g, "...")
   };
 
+  const parseBrDate = (dateStr: string): Date => {
+    // Format: "DD/MM/YYYY HH:mm:ss"
+    return parse(dateStr, "dd/MM/yyyy HH:mm:ss", new Date());
+  };
+
   const getDateFilterStart = (filter: string): Date | null => {
     const now = new Date();
     switch (filter) {
@@ -203,7 +208,7 @@ const Leads = () => {
     
     let matchesDate = true;
     if (dateFilter !== "all" && l.created_at) {
-      const leadDate = new Date(l.created_at);
+      const leadDate = parseBrDate(l.created_at);
       const start = getDateFilterStart(dateFilter);
       const end = getDateFilterEnd(dateFilter);
       if (start) matchesDate = isAfter(leadDate, start) || isEqual(leadDate, start);
