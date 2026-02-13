@@ -2,9 +2,11 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { KpiCard } from "@/components/dashboard/KpiCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useRole, ROLE_LABELS, ROLE_EMOJI } from "@/contexts/RoleContext";
+import { useNavigate } from "react-router-dom";
 import {
-  Users, FileText, DollarSign, AlertTriangle, RefreshCw, TrendingUp, Target, MessageSquare,
+  Users, FileText, DollarSign, AlertTriangle, RefreshCw, TrendingUp, Target, MessageSquare, Bell, Zap,
 } from "lucide-react";
 import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Area, AreaChart,
@@ -99,8 +101,12 @@ const CHART_CONFIG: Record<string, { title: string; series: { key: string; color
   },
 };
 
+// Mock count of new leads for demo
+const MOCK_NEW_LEADS_COUNT = 5;
+
 const Dashboard = () => {
-  const { role, hasScope, isAdmin, currentUser } = useRole();
+  const { role, hasScope, isAdmin, currentUser, brokerStatus } = useRole();
+  const navigate = useNavigate();
 
   // Filter KPIs by scope
   const visibleKpis = allKpis.filter(k => k.scopes.some(s => hasScope(s)));
@@ -114,9 +120,47 @@ const Dashboard = () => {
   // Show renewals only if user has renovacoes scope
   const showRenewals = hasScope("renovacoes");
 
+  // Show new leads alert for broker roles with leads scope
+  const showNewLeadsAlert = !isAdmin && hasScope("leads") && MOCK_NEW_LEADS_COUNT > 0;
+
   return (
     <AppLayout>
       <div className="space-y-6">
+        {/* Offline Warning for Brokers */}
+        {!isAdmin && brokerStatus === "offline" && (
+          <div className="animate-fade-in rounded-xl border-2 border-destructive/30 bg-destructive/10 p-4 flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/20 animate-pulse">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-destructive">Você está offline!</h3>
+              <p className="text-xs text-destructive/80">Novos leads e mensagens de WhatsApp não serão distribuídos para você enquanto estiver offline.</p>
+            </div>
+          </div>
+        )}
+
+        {/* New Leads Alert for Brokers */}
+        {showNewLeadsAlert && (
+          <div className="animate-fade-in rounded-xl border-2 border-accent/40 bg-accent/10 p-4 flex items-center gap-4 cursor-pointer hover:bg-accent/15 transition-colors" onClick={() => navigate("/leads")}>
+            <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-accent/20">
+              <Zap className="h-6 w-6 text-accent" />
+              <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground animate-pulse">
+                {MOCK_NEW_LEADS_COUNT}
+              </span>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-foreground">
+                {MOCK_NEW_LEADS_COUNT} lead{MOCK_NEW_LEADS_COUNT > 1 ? "s" : ""} aguardando atendimento!
+              </h3>
+              <p className="text-xs text-muted-foreground">Clique para visualizar e iniciar o contato</p>
+            </div>
+            <Button size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 gap-1.5">
+              <Bell className="h-3.5 w-3.5" />
+              Ver Leads
+            </Button>
+          </div>
+        )}
+
         {/* Header */}
         <div>
           <h2 className="text-2xl font-bold text-foreground">Dashboard</h2>

@@ -81,7 +81,7 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
               <item.icon className={`h-4 w-4 ${isActive ? "text-sidebar-primary" : ""}`} />
               {item.label}
               {item.path === "/leads" && unreadCount > 0 && (
-                <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+                <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground animate-pulse shadow-md">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
