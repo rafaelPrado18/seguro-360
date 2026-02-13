@@ -77,7 +77,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
         return (
           <div
             key={col.id}
-            className={`flex-shrink-0 w-72 min-w-0 max-w-[18rem] flex flex-col rounded-lg border transition-all duration-200 overflow-hidden ${
+            className={`flex-shrink-0 w-72 flex flex-col rounded-lg border transition-all duration-200 ${
               isOver ? "border-accent bg-accent/5 shadow-lg" : "border-border bg-muted/30"
             }`}
             onDragOver={(e) => handleDragOver(e, col.id)}
@@ -99,15 +99,15 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
             </div>
 
             {/* Cards */}
-            <ScrollArea className="flex-1 min-h-0">
-            <div className="p-2 space-y-2 w-full">
+            <ScrollArea className="flex-1">
+            <div className="p-2 space-y-2">
               {colLeads.map((lead) => (
                 <Card
                   key={lead.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, lead)}
                   onClick={() => onLeadClick?.(lead)}
-                  className={`cursor-grab active:cursor-grabbing kpi-card-shadow hover:shadow-md transition-all duration-150 w-full ${
+                  className={`cursor-grab active:cursor-grabbing kpi-card-shadow hover:shadow-md transition-all duration-150 ${
                     draggedLead?.id === lead.id ? "opacity-40 scale-95" : ""
                   }`}
                 >
