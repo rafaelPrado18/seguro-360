@@ -46,7 +46,7 @@ const App = () => (
           <Route path="/renovacoes" element={<ScopeGuard scope="renovacoes"><Renovacoes /></ScopeGuard>} />
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/relatorios" element={<ScopeGuard scope="relatorios"><Relatorios /></ScopeGuard>} />
-          <Route path="/usuarios" element={<AdminGuard><Usuarios /></AdminGuard>} />
+          <Route path="/usuarios" element={<Usuarios />} />
           <Route path="/configuracoes" element={<AdminGuard><Configuracoes /></AdminGuard>} />
           <Route path="/empresas" element={<SuperAdminGuard><Empresas /></SuperAdminGuard>} />
           <Route path="*" element={<NotFound />} />
