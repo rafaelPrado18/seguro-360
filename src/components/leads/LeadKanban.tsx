@@ -99,15 +99,15 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
             </div>
 
             {/* Cards */}
-            <ScrollArea className="flex-1">
-            <div className="p-2 space-y-2">
+            <ScrollArea className="flex-1 min-h-0">
+            <div className="p-2 space-y-2 overflow-hidden">
               {colLeads.map((lead) => (
                 <Card
                   key={lead.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, lead)}
                   onClick={() => onLeadClick?.(lead)}
-                  className={`cursor-grab active:cursor-grabbing kpi-card-shadow hover:shadow-md transition-all duration-150 ${
+                  className={`cursor-grab active:cursor-grabbing kpi-card-shadow hover:shadow-md transition-all duration-150 min-w-0 max-w-full overflow-hidden ${
                     draggedLead?.id === lead.id ? "opacity-40 scale-95" : ""
                   }`}
                 >
