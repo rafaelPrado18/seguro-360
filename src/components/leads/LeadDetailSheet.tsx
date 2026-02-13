@@ -19,6 +19,7 @@ import {
   Pencil, Save, X, Send, StickyNote, Trash2
 } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
+import { formatPhone } from "@/lib/utils";
 
 const statusLabels: Record<Lead["status"], string> = {
   novo: "Novo", em_contato: "Em Contato", qualificado: "Qualificado",
@@ -183,7 +184,7 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
 
   const handleCall = () => {
     window.open(`tel:${lead.telefone.replace(/\D/g, "")}`, "_self");
-    toast({ title: "Iniciando chamada", description: lead.telefone });
+    toast({ title: "Iniciando chamada", description: formatPhone(lead.telefone) });
   };
 
   const handleWhatsApp = () => {
@@ -335,7 +336,7 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
               ) : (
                 <div className="space-y-3">
                   <InfoRow icon={<Mail className="h-3.5 w-3.5" />} label="Email" value={lead.email} />
-                  <InfoRow icon={<Phone className="h-3.5 w-3.5" />} label="Telefone" value={lead.telefone} />
+                  <InfoRow icon={<Phone className="h-3.5 w-3.5" />} label="Telefone" value={formatPhone(lead.telefone)} />
                   <InfoRow icon={<Target className="h-3.5 w-3.5" />} label="Ramo de Interesse" value={lead.ramo_interesse} />
                   <InfoRow icon={<DollarSign className="h-3.5 w-3.5" />} label="Valor Estimado" value={`R$ ${lead.valor_estimado.toLocaleString()}`} />
                   <InfoRow icon={<User className="h-3.5 w-3.5" />} label="Corretor" value={lead.corretor_responsavel || "Não atribuído"} muted={!lead.corretor_responsavel} />
