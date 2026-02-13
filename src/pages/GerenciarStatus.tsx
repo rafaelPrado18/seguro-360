@@ -5,10 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, GripVertical, ArrowRight } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, ArrowRight, MessageSquare } from "lucide-react";
+import type { WhatsAppTemplate } from "@/services/whatsappService";
+
+const AVAILABLE_TEMPLATES: WhatsAppTemplate[] = [
+  { id: "1", nome: "Boas-vindas Lead", categoria: "boas_vindas", conteudo: "Olá {{nome}}! 👋\n\nSou {{corretor}}...", variaveis: ["nome", "corretor", "ramo"], status: "aprovado" },
+  { id: "2", nome: "Envio de Proposta", categoria: "proposta", conteudo: "Olá {{nome}}! 📋\n\nSegue a proposta...", variaveis: ["nome", "ramo", "seguradora", "valor_premio", "link_proposta"], status: "aprovado" },
+  { id: "3", nome: "Lembrete de Renovação", categoria: "renovacao", conteudo: "Olá {{nome}}! 🔔\n\nSua apólice...", variaveis: ["nome", "numero_apolice", "ramo", "data_vencimento", "corretor"], status: "aprovado" },
+  { id: "4", nome: "Follow-up Lead", categoria: "follow_up", conteudo: "Oi {{nome}}, tudo bem? 😊\n\nEntrei em contato...", variaveis: ["nome", "ramo"], status: "aprovado" },
+  { id: "5", nome: "Sinistro - Abertura", categoria: "sinistro", conteudo: "Olá {{nome}}, recebi seu chamado...", variaveis: ["nome", "numero_apolice", "seguradora", "corretor"], status: "pendente" },
+];
 
 export interface LeadStatus {
   id: string;
@@ -19,15 +29,16 @@ export interface LeadStatus {
   ordem: number;
   is_final: boolean;
   tipo: "ativo" | "ganho" | "perdido";
+  template_id: string | null;
 }
 
 const DEFAULT_STATUSES: LeadStatus[] = [
-  { id: "1", label: "Novo", key: "novo", color: "text-info", bgColor: "bg-info", ordem: 1, is_final: false, tipo: "ativo" },
-  { id: "2", label: "Em Contato", key: "em_contato", color: "text-warning", bgColor: "bg-warning", ordem: 2, is_final: false, tipo: "ativo" },
-  { id: "3", label: "Qualificado", key: "qualificado", color: "text-primary", bgColor: "bg-primary", ordem: 3, is_final: false, tipo: "ativo" },
-  { id: "4", label: "Proposta Enviada", key: "proposta_enviada", color: "text-accent", bgColor: "bg-accent", ordem: 4, is_final: false, tipo: "ativo" },
-  { id: "5", label: "Convertido", key: "convertido", color: "text-success", bgColor: "bg-success", ordem: 5, is_final: true, tipo: "ganho" },
-  { id: "6", label: "Perdido", key: "perdido", color: "text-destructive", bgColor: "bg-destructive", ordem: 6, is_final: true, tipo: "perdido" },
+  { id: "1", label: "Novo", key: "novo", color: "text-info", bgColor: "bg-info", ordem: 1, is_final: false, tipo: "ativo", template_id: "1" },
+  { id: "2", label: "Em Contato", key: "em_contato", color: "text-warning", bgColor: "bg-warning", ordem: 2, is_final: false, tipo: "ativo", template_id: "4" },
+  { id: "3", label: "Qualificado", key: "qualificado", color: "text-primary", bgColor: "bg-primary", ordem: 3, is_final: false, tipo: "ativo", template_id: "4" },
+  { id: "4", label: "Proposta Enviada", key: "proposta_enviada", color: "text-accent", bgColor: "bg-accent", ordem: 4, is_final: false, tipo: "ativo", template_id: "2" },
+  { id: "5", label: "Convertido", key: "convertido", color: "text-success", bgColor: "bg-success", ordem: 5, is_final: true, tipo: "ganho", template_id: null },
+  { id: "6", label: "Perdido", key: "perdido", color: "text-destructive", bgColor: "bg-destructive", ordem: 6, is_final: true, tipo: "perdido", template_id: null },
 ];
 
 const COLOR_OPTIONS = [
@@ -49,11 +60,12 @@ const GerenciarStatus = () => {
     bgColor: "bg-info",
     color: "text-info",
     tipo: "ativo" as "ativo" | "ganho" | "perdido",
+    template_id: null as string | null,
   });
 
   const openCreate = () => {
     setEditingStatus(null);
-    setFormData({ label: "", key: "", bgColor: "bg-info", color: "text-info", tipo: "ativo" });
+    setFormData({ label: "", key: "", bgColor: "bg-info", color: "text-info", tipo: "ativo", template_id: null });
     setIsDialogOpen(true);
   };
 
@@ -65,6 +77,7 @@ const GerenciarStatus = () => {
       bgColor: status.bgColor,
       color: status.color,
       tipo: status.tipo,
+      template_id: status.template_id,
     });
     setIsDialogOpen(true);
   };
@@ -75,7 +88,7 @@ const GerenciarStatus = () => {
     if (editingStatus) {
       setStatuses(prev => prev.map(s =>
         s.id === editingStatus.id
-          ? { ...s, label: formData.label, key: formData.key, bgColor: formData.bgColor, color: formData.color, tipo: formData.tipo, is_final: formData.tipo !== "ativo" }
+          ? { ...s, label: formData.label, key: formData.key, bgColor: formData.bgColor, color: formData.color, tipo: formData.tipo, is_final: formData.tipo !== "ativo", template_id: formData.template_id }
           : s
       ));
     } else {
@@ -88,6 +101,7 @@ const GerenciarStatus = () => {
         ordem: statuses.length + 1,
         is_final: formData.tipo !== "ativo",
         tipo: formData.tipo,
+        template_id: formData.template_id,
       };
       setStatuses(prev => [...prev, newStatus]);
     }
@@ -172,6 +186,14 @@ const GerenciarStatus = () => {
                     <Badge variant={status.tipo === "ganho" ? "default" : status.tipo === "perdido" ? "destructive" : "secondary"} className="text-[9px]">
                       {status.tipo === "ativo" ? "Em Andamento" : status.tipo === "ganho" ? "Ganho" : "Perdido"}
                     </Badge>
+                    {status.template_id ? (
+                      <Badge variant="outline" className="text-[9px] gap-1 border-accent text-accent">
+                        <MessageSquare className="h-2.5 w-2.5" />
+                        {AVAILABLE_TEMPLATES.find(t => t.id === status.template_id)?.nome || "Template"}
+                      </Badge>
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground italic">Sem template</span>
+                    )}
                     <span className="text-[10px] text-muted-foreground">Ordem: {status.ordem}</span>
                   </div>
                 </div>
@@ -255,6 +277,34 @@ const GerenciarStatus = () => {
                     </Button>
                   ))}
                 </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs flex items-center gap-1.5">
+                  <MessageSquare className="h-3.5 w-3.5 text-accent" />
+                  Template WhatsApp ao entrar neste status
+                </Label>
+                <Select
+                  value={formData.template_id || "none"}
+                  onValueChange={(v) => setFormData(prev => ({ ...prev, template_id: v === "none" ? null : v }))}
+                >
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder="Nenhum template" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum template</SelectItem>
+                    {AVAILABLE_TEMPLATES.filter(t => t.status === "aprovado").map(t => (
+                      <SelectItem key={t.id} value={t.id}>
+                        <span className="flex items-center gap-2">
+                          {t.nome}
+                          <span className="text-muted-foreground text-[10px]">({t.categoria})</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground">
+                  Ao mover um lead para este status, será sugerido enviar esta mensagem via WhatsApp.
+                </p>
               </div>
             </div>
             <DialogFooter>
