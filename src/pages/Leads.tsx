@@ -97,7 +97,8 @@ const Leads = () => {
   
   const { isAdmin, currentUser } = useRole();
   const { addNotification } = useNotifications();
-  const { data: apiData } = useLeads(null, currentUser.nome, currentUser.role);
+  const { role } = useRole();
+  const { data: apiData } = useLeads(null, currentUser.nome, role);
   const updateLeadStatus = useUpdateLeadStatus();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
