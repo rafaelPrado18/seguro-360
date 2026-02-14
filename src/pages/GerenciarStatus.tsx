@@ -34,15 +34,6 @@ export interface LeadStatus {
   template_id: string | null;
 }
 
-const DEFAULT_STATUSES: LeadStatus[] = [
-  { id: "1", label: "Novo", key: "novo", color: "text-info", bgColor: "bg-info", ordem: 1, is_final: false, tipo: "ativo", template_id: "1" },
-  { id: "2", label: "Em Contato", key: "em_contato", color: "text-warning", bgColor: "bg-warning", ordem: 2, is_final: false, tipo: "ativo", template_id: "4" },
-  { id: "3", label: "Qualificado", key: "qualificado", color: "text-primary", bgColor: "bg-primary", ordem: 3, is_final: false, tipo: "ativo", template_id: "4" },
-  { id: "4", label: "Proposta Enviada", key: "proposta_enviada", color: "text-accent", bgColor: "bg-accent", ordem: 4, is_final: false, tipo: "ativo", template_id: "2" },
-  { id: "5", label: "Convertido", key: "convertido", color: "text-success", bgColor: "bg-success", ordem: 5, is_final: true, tipo: "ganho", template_id: null },
-  { id: "6", label: "Perdido", key: "perdido", color: "text-destructive", bgColor: "bg-destructive", ordem: 6, is_final: true, tipo: "perdido", template_id: null },
-];
-
 const COLOR_OPTIONS = [
   { label: "Azul", value: "bg-info", text: "text-info" },
   { label: "Amarelo", value: "bg-warning", text: "text-warning" },
@@ -57,7 +48,7 @@ const GerenciarStatus = () => {
   const createStatusMutation = useCreateLeadStatus();
   const updateStatusMutation = useUpdateLeadStatusMutation();
   const deleteStatusMutation = useDeleteLeadStatusMutation();
-  const [statuses, setStatuses] = useState<LeadStatus[]>(DEFAULT_STATUSES);
+  const [statuses, setStatuses] = useState<LeadStatus[]>([]);
 
   useEffect(() => {
     if (apiStatuses && apiStatuses.length > 0) {

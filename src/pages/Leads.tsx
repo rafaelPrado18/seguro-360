@@ -68,7 +68,7 @@ const origemLabels: Record<string, string> = {
 
 // Map lead status to template category
 const STATUS_TEMPLATE_MAP: Record<string, string> = {
-  novo: "boas_vindas",
+  teste_1: "boas_vindas",
   em_contato: "follow_up",
   qualificado: "follow_up",
   proposta_enviada: "proposta",
@@ -206,6 +206,7 @@ const Leads = () => {
   const distribution = PLACEHOLDER_DISTRIBUTION;
 
   const getTemplateForStatus = (status: string): WhatsAppTemplate | null => {
+    console.log('status:', status)
     const category = STATUS_TEMPLATE_MAP[status];
     if (!category) return null;
     return DEFAULT_TEMPLATES.find(t => t.categoria === category && t.status === "aprovado") || null;
@@ -299,7 +300,7 @@ const Leads = () => {
   };
 
   const displayLeads = leads.filter(l => {
-    const matchesSearch = l.nome.toLowerCase().includes(search.toLowerCase()) || l.telefone.includes(search);
+    const matchesSearch = l.nome?.toLowerCase()?.includes(search?.toLowerCase()) || l.telefone?.includes(search);
     const matchesStatus = statusFilter === "all" || l.status === statusFilter;
     const matchesCorretor = isAdmin
       ? corretorFilter === "all" || l.corretor_responsavel === corretorFilter
@@ -369,7 +370,7 @@ const Leads = () => {
           ))}
         </div>
 
-        {/* Admin: Distribution Table */}
+        {/* Admin: Distribution Table 
         {isAdmin && (
           <Card>
             <CardHeader className="pb-3">
