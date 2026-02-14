@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,101 +11,146 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Search, Pencil, Trash2, Shield, Users, UserCheck } from "lucide-react";
+import { useAgents, useCreateAgent, useUpdateAgent, useDeleteAgent } from "@/hooks/useAgents";
+import type { Agent } from "@/services/agentsService";
 
-type UserRole = "admin" | "corretor_novo" | "corretor_renovacao" | "corretor_sinistro" | "corretor_financeiro";
-
-interface Usuario {
-  id: string;
-  nome: string;
-  email: string;
-  telefone: string;
-  role: UserRole;
-  ativo: boolean;
-  criadoEm: string;
-}
-
-const ROLE_LABELS: Record<UserRole, string> = {
-  admin: "Administrador",
-  corretor_novo: "Corretor — Novo",
+const FUNCTION_LABELS: Record<string, string> = {
+  administrador: "Administrador",
+  corretor: "Corretor — Novo",
   corretor_renovacao: "Corretor — Renovação",
   corretor_sinistro: "Corretor — Sinistro",
   corretor_financeiro: "Corretor — Financeiro",
 };
 
-const ROLE_COLORS: Record<UserRole, string> = {
-  admin: "bg-primary text-primary-foreground",
-  corretor_novo: "bg-accent text-accent-foreground",
+const FUNCTION_COLORS: Record<string, string> = {
+  administrador: "bg-primary text-primary-foreground",
+  corretor: "bg-accent text-accent-foreground",
   corretor_renovacao: "bg-info text-info-foreground",
   corretor_sinistro: "bg-destructive text-destructive-foreground",
   corretor_financeiro: "bg-success text-success-foreground",
 };
 
-const initialUsuarios: Usuario[] = [
-  { id: "1", nome: "Admin Geral", email: "admin@hataseg.com", telefone: "(11) 99999-0001", role: "admin", ativo: true, criadoEm: "2024-01-15" },
-  { id: "2", nome: "André Oliveira", email: "andre@hataseg.com", telefone: "(11) 99999-0002", role: "corretor_novo", ativo: true, criadoEm: "2024-03-10" },
-  { id: "3", nome: "Beatriz Costa", email: "beatriz@hataseg.com", telefone: "(11) 99999-0003", role: "corretor_renovacao", ativo: true, criadoEm: "2024-02-20" },
-  { id: "4", nome: "Carlos Neto", email: "carlos@hataseg.com", telefone: "(11) 99999-0004", role: "corretor_sinistro", ativo: true, criadoEm: "2024-04-05" },
-  { id: "5", nome: "Diana Alves", email: "diana@hataseg.com", telefone: "(11) 99999-0005", role: "corretor_financeiro", ativo: false, criadoEm: "2024-05-12" },
-];
+const VINCULO_LABELS: Record<string, string> = {
+  clt: "CLT",
+  pj: "PJ",
+  autonomo: "Autônomo",
+};
+
+interface AgentForm {
+  name: string;
+  email: string;
+  telefone: string;
+  function: string;
+  vinculo: string;
+  birthDate: string;
+}
+
+const EMPTY_FORM: AgentForm = {
+  name: "",
+  email: "",
+  telefone: "",
+  function: "corretor",
+  vinculo: "clt",
+  birthDate: "",
+};
 
 const Usuarios = () => {
-  const [usuarios, setUsuarios] = useState<Usuario[]>(initialUsuarios);
+  const { data: agents, isLoading } = useAgents();
+  const createMutation = useCreateAgent();
+  const updateMutation = useUpdateAgent();
+  const deleteMutation = useDeleteAgent();
+
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<Usuario | null>(null);
-  const [form, setForm] = useState({ nome: "", email: "", telefone: "", role: "corretor_novo" as UserRole });
+  const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
+  const [form, setForm] = useState<AgentForm>(EMPTY_FORM);
   const { toast } = useToast();
 
+  const usuarios = agents || [];
+
   const filtered = usuarios.filter(u =>
-    u.nome.toLowerCase().includes(search.toLowerCase()) ||
-    u.email.toLowerCase().includes(search.toLowerCase()) ||
-    ROLE_LABELS[u.role].toLowerCase().includes(search.toLowerCase())
+    u.name?.toLowerCase().includes(search.toLowerCase()) ||
+    u.email?.toLowerCase().includes(search.toLowerCase()) ||
+    (FUNCTION_LABELS[u.function] || u.function)?.toLowerCase().includes(search.toLowerCase())
   );
 
   const openNew = () => {
-    setEditingUser(null);
-    setForm({ nome: "", email: "", telefone: "", role: "corretor_novo" });
+    setEditingAgent(null);
+    setForm(EMPTY_FORM);
     setDialogOpen(true);
   };
 
-  const openEdit = (u: Usuario) => {
-    setEditingUser(u);
-    setForm({ nome: u.nome, email: u.email, telefone: u.telefone, role: u.role });
+  const openEdit = (u: Agent) => {
+    setEditingAgent(u);
+    setForm({
+      name: u.name,
+      email: u.email,
+      telefone: u.telefone,
+      function: u.function,
+      vinculo: u.vinculo,
+      birthDate: u.birthDate ? u.birthDate.split("T")[0] : "",
+    });
     setDialogOpen(true);
   };
 
   const handleSave = () => {
-    if (!form.nome.trim() || !form.email.trim()) {
+    if (!form.name.trim() || !form.email.trim()) {
       toast({ title: "Preencha nome e email", variant: "destructive" });
       return;
     }
 
-    if (editingUser) {
-      setUsuarios(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...form } : u));
-      toast({ title: "Usuário atualizado com sucesso" });
+    if (editingAgent) {
+      updateMutation.mutate(
+        { id: editingAgent.agentId, data: { ...form, birthDate: form.birthDate ? `${form.birthDate}T00:00:00` : "" } },
+        {
+          onSuccess: () => {
+            toast({ title: "Usuário atualizado com sucesso" });
+            setDialogOpen(false);
+          },
+          onError: () => toast({ title: "Erro ao atualizar usuário", variant: "destructive" }),
+        }
+      );
     } else {
-      const novo: Usuario = {
-        id: Date.now().toString(),
-        ...form,
-        ativo: true,
-        criadoEm: new Date().toISOString().split("T")[0],
+      const newAgent: Omit<Agent, "agentId"> = {
+        name: form.name,
+        email: form.email,
+        telefone: form.telefone,
+        function: form.function,
+        vinculo: form.vinculo,
+        birthDate: form.birthDate ? `${form.birthDate}T00:00:00` : "",
+        status: "offline",
+        isActive: true,
+        registrationDate: new Date().toISOString(),
       };
-      setUsuarios(prev => [...prev, novo]);
-      toast({ title: "Usuário cadastrado com sucesso" });
+      createMutation.mutate(newAgent, {
+        onSuccess: () => {
+          toast({ title: "Usuário cadastrado com sucesso" });
+          setDialogOpen(false);
+        },
+        onError: () => toast({ title: "Erro ao cadastrar usuário", variant: "destructive" }),
+      });
     }
-    setDialogOpen(false);
   };
 
-  const toggleAtivo = (id: string) => {
-    setUsuarios(prev => prev.map(u => u.id === id ? { ...u, ativo: !u.ativo } : u));
+  const toggleAtivo = (agent: Agent) => {
+    updateMutation.mutate(
+      { id: agent.agentId, data: { isActive: !agent.isActive } },
+      {
+        onSuccess: () => toast({ title: agent.isActive ? "Usuário desativado" : "Usuário ativado" }),
+        onError: () => toast({ title: "Erro ao alterar status", variant: "destructive" }),
+      }
+    );
   };
 
   const handleDelete = (id: string) => {
-    setUsuarios(prev => prev.filter(u => u.id !== id));
-    toast({ title: "Usuário removido", variant: "destructive" });
+    deleteMutation.mutate(id, {
+      onSuccess: () => toast({ title: "Usuário removido" }),
+      onError: () => toast({ title: "Erro ao remover usuário", variant: "destructive" }),
+    });
   };
 
-  const totalAtivos = usuarios.filter(u => u.ativo).length;
+  const totalAtivos = usuarios.filter(u => u.isActive).length;
+  const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
     <AppLayout>
@@ -123,12 +168,12 @@ const Usuarios = () => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>{editingUser ? "Editar Usuário" : "Novo Usuário"}</DialogTitle>
+                <DialogTitle>{editingAgent ? "Editar Usuário" : "Novo Usuário"}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-2">
                 <div className="space-y-1.5">
                   <Label className="text-xs">Nome Completo</Label>
-                  <Input value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} placeholder="Nome do corretor" className="h-9 text-sm" />
+                  <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Nome do corretor" className="h-9 text-sm" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Email</Label>
@@ -138,26 +183,45 @@ const Usuarios = () => {
                   <Label className="text-xs">Telefone</Label>
                   <Input value={form.telefone} onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} placeholder="(11) 99999-0000" className="h-9 text-sm" />
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Perfil / Função</Label>
+                    <Select value={form.function} onValueChange={v => setForm(f => ({ ...f, function: v }))}>
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="administrador">Administrador</SelectItem>
+                        <SelectItem value="corretor">Corretor — Novo</SelectItem>
+                        <SelectItem value="corretor_renovacao">Corretor — Renovação</SelectItem>
+                        <SelectItem value="corretor_sinistro">Corretor — Sinistro</SelectItem>
+                        <SelectItem value="corretor_financeiro">Corretor — Financeiro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Vínculo</Label>
+                    <Select value={form.vinculo} onValueChange={v => setForm(f => ({ ...f, vinculo: v }))}>
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="clt">CLT</SelectItem>
+                        <SelectItem value="pj">PJ</SelectItem>
+                        <SelectItem value="autonomo">Autônomo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Perfil / Função</Label>
-                  <Select value={form.role} onValueChange={(v: UserRole) => setForm(f => ({ ...f, role: v }))}>
-                    <SelectTrigger className="h-9 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                      <SelectItem value="corretor_novo">Corretor — Novo</SelectItem>
-                      <SelectItem value="corretor_renovacao">Corretor — Renovação</SelectItem>
-                      <SelectItem value="corretor_sinistro">Corretor — Sinistro</SelectItem>
-                      <SelectItem value="corretor_financeiro">Corretor — Financeiro</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-xs">Data de Nascimento</Label>
+                  <Input type="date" value={form.birthDate} onChange={e => setForm(f => ({ ...f, birthDate: e.target.value }))} className="h-9 text-sm" />
                 </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-                <Button onClick={handleSave} className="bg-accent text-accent-foreground hover:bg-accent/90">
-                  {editingUser ? "Salvar" : "Cadastrar"}
+                <Button onClick={handleSave} disabled={isSaving} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                  {isSaving ? "Salvando..." : editingAgent ? "Salvar" : "Cadastrar"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -194,7 +258,7 @@ const Usuarios = () => {
                 <Shield className="h-5 w-5 text-accent" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{usuarios.filter(u => u.role === "admin").length}</p>
+                <p className="text-2xl font-bold text-foreground">{usuarios.filter(u => u.function === "administrador").length}</p>
                 <p className="text-xs text-muted-foreground">Administradores</p>
               </div>
             </CardContent>
@@ -218,53 +282,61 @@ const Usuarios = () => {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead className="hidden sm:table-cell">Email</TableHead>
-                  <TableHead className="hidden md:table-cell">Telefone</TableHead>
-                  <TableHead>Perfil</TableHead>
-                  <TableHead className="text-center">Ativo</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.length === 0 ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">Carregando...</div>
+            ) : (
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                      Nenhum usuário encontrado
-                    </TableCell>
+                    <TableHead>Nome</TableHead>
+                    <TableHead className="hidden sm:table-cell">Email</TableHead>
+                    <TableHead className="hidden md:table-cell">Telefone</TableHead>
+                    <TableHead>Função</TableHead>
+                    <TableHead className="hidden lg:table-cell">Vínculo</TableHead>
+                    <TableHead className="text-center">Ativo</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
-                ) : (
-                  filtered.map(u => (
-                    <TableRow key={u.id} className={!u.ativo ? "opacity-50" : ""}>
-                      <TableCell className="font-medium text-sm">{u.nome}</TableCell>
-                      <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{u.email}</TableCell>
-                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{u.telefone}</TableCell>
-                      <TableCell>
-                        <Badge className={`text-[10px] ${ROLE_COLORS[u.role]}`}>
-                          {ROLE_LABELS[u.role]}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Switch checked={u.ativo} onCheckedChange={() => toggleAtivo(u.id)} className="scale-75" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(u)}>
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(u.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
+                </TableHeader>
+                <TableBody>
+                  {filtered.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                        Nenhum usuário encontrado
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    filtered.map(u => (
+                      <TableRow key={u.agentId} className={!u.isActive ? "opacity-50" : ""}>
+                        <TableCell className="font-medium text-sm">{u.name}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{u.email}</TableCell>
+                        <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{u.telefone}</TableCell>
+                        <TableCell>
+                          <Badge className={`text-[10px] ${FUNCTION_COLORS[u.function] || "bg-muted text-muted-foreground"}`}>
+                            {FUNCTION_LABELS[u.function] || u.function}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
+                          {VINCULO_LABELS[u.vinculo] || u.vinculo}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Switch checked={u.isActive} onCheckedChange={() => toggleAtivo(u)} className="scale-75" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(u)}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(u.agentId)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>
