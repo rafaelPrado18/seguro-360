@@ -24,6 +24,7 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import type { Lead } from "@/services/leadsService";
 import type { WhatsAppTemplate } from "@/services/whatsappService";
+import { whatsappService } from "@/services/whatsappService";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useLeads, useUpdateLeadStatus} from "@/hooks/useLeads";
 
@@ -223,7 +224,20 @@ const Leads = () => {
     );
 
     if (shouldSend && selectedTemplate) {
-      toast.success(`Mensagem "${selectedTemplate.nome}" enviada via WhatsApp`);
+      const lead = leads.find(l => l.id === leadId);
+      if (lead) {
+        const mensagem = getPreviewText(selectedTemplate, lead);
+        whatsappService.sendMessage({
+          contato_id: lead.telefone,
+          tipo: "text",
+          conteudo: mensagem,
+        })
+          .then(() => toast.success(`Mensagem "${selectedTemplate.nome}" enviada via WhatsApp`))
+          .catch((err) => {
+            console.error("Erro ao enviar mensagem WhatsApp:", err);
+            toast.error("Erro ao enviar mensagem via WhatsApp");
+          });
+      }
     }
     setPendingChange(null);
     setSelectedTemplate(null);
