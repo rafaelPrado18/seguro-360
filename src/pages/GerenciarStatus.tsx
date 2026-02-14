@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useCreateLeadStatus } from "@/hooks/useStatus";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, GripVertical, ArrowRight, MessageSquare } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import type { WhatsAppTemplate } from "@/services/whatsappService";
 
 const AVAILABLE_TEMPLATES: WhatsAppTemplate[] = [
@@ -51,6 +53,7 @@ const COLOR_OPTIONS = [
 ];
 
 const GerenciarStatus = () => {
+  const createStatusMutation = useCreateLeadStatus();
   const [statuses, setStatuses] = useState<LeadStatus[]>(DEFAULT_STATUSES);
   const [editingStatus, setEditingStatus] = useState<LeadStatus | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -91,6 +94,7 @@ const GerenciarStatus = () => {
           ? { ...s, label: formData.label, key: formData.key, bgColor: formData.bgColor, color: formData.color, tipo: formData.tipo, is_final: formData.tipo !== "ativo", template_id: formData.template_id }
           : s
       ));
+      setIsDialogOpen(false);
     } else {
       const newStatus: LeadStatus = {
         id: Date.now().toString(),
@@ -103,9 +107,17 @@ const GerenciarStatus = () => {
         tipo: formData.tipo,
         template_id: formData.template_id,
       };
-      setStatuses(prev => [...prev, newStatus]);
+      createStatusMutation.mutate(newStatus, {
+        onSuccess: () => {
+          setStatuses(prev => [...prev, newStatus]);
+          setIsDialogOpen(false);
+          toast({ title: "Status criado com sucesso!" });
+        },
+        onError: (err) => {
+          toast({ title: "Erro ao criar status", description: err.message, variant: "destructive" });
+        },
+      });
     }
-    setIsDialogOpen(false);
   };
 
   const handleDelete = (id: string) => {

@@ -42,13 +42,13 @@ const INITIAL_CONTACTS: WhatsAppContact[] = [
 ];
 
 const INITIAL_MESSAGES: (WhatsAppMessage & { reaction?: string; edited?: boolean; deleted?: boolean })[] = [
-  { id: "m1", contato_id: "1", tipo: "text", conteudo: "Boa tarde! Vi o anúncio de vocês e gostaria de cotar um seguro auto", media_url: null, media_mime_type: null, direcao: "recebida", status: "lida", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:00:00Z" },
-  { id: "m2", contato_id: "1", tipo: "text", conteudo: "Boa tarde Ricardo! Claro, ficarei feliz em ajudar. Qual é o modelo e ano do seu veículo?", media_url: null, media_mime_type: null, direcao: "enviada", status: "lida", remetente: "Corretor", created_at: "2026-02-12T14:05:00Z" },
-  { id: "m3", contato_id: "1", tipo: "text", conteudo: "É um Honda Civic EXL 2025, tenho 35 anos, garagem em casa e no trabalho", media_url: null, media_mime_type: null, direcao: "recebida", status: "lida", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:10:00Z" },
-  { id: "m4", contato_id: "1", tipo: "text", conteudo: "Excelente! Com esse perfil conseguimos boas condições. Vou preparar cotações com Porto Seguro, Tokio Marine e HDI.", media_url: null, media_mime_type: null, direcao: "enviada", status: "entregue", remetente: "Corretor", created_at: "2026-02-12T14:15:00Z" },
-  { id: "m5", contato_id: "1", tipo: "text", conteudo: "Claro! Segue a CNH", media_url: null, media_mime_type: null, direcao: "recebida", status: "lida", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:25:00Z" },
-  { id: "m6", contato_id: "1", tipo: "image", conteudo: "CNH_Ricardo.jpg", media_url: "/placeholder.svg", media_mime_type: "image/jpeg", direcao: "recebida", status: "lida", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:25:30Z" },
-  { id: "m7", contato_id: "1", tipo: "text", conteudo: "Gostaria de cotar um seguro auto para meu Civic 2025", media_url: null, media_mime_type: null, direcao: "recebida", status: "entregue", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:30:00Z" },
+  { id: "m1", chatId: "1", tipo: "text", conteudo: "Boa tarde! Vi o anúncio de vocês e gostaria de cotar um seguro auto", media_url: null, media_mime_type: null, direcao: "recebida", status: "lida", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:00:00Z" },
+  { id: "m2", chatId: "1", tipo: "text", conteudo: "Boa tarde Ricardo! Claro, ficarei feliz em ajudar. Qual é o modelo e ano do seu veículo?", media_url: null, media_mime_type: null, direcao: "enviada", status: "lida", remetente: "Corretor", created_at: "2026-02-12T14:05:00Z" },
+  { id: "m3", chatId: "1", tipo: "text", conteudo: "É um Honda Civic EXL 2025, tenho 35 anos, garagem em casa e no trabalho", media_url: null, media_mime_type: null, direcao: "recebida", status: "lida", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:10:00Z" },
+  { id: "m4", chatId: "1", tipo: "text", conteudo: "Excelente! Com esse perfil conseguimos boas condições. Vou preparar cotações com Porto Seguro, Tokio Marine e HDI.", media_url: null, media_mime_type: null, direcao: "enviada", status: "entregue", remetente: "Corretor", created_at: "2026-02-12T14:15:00Z" },
+  { id: "m5", chatId: "1", tipo: "text", conteudo: "Claro! Segue a CNH", media_url: null, media_mime_type: null, direcao: "recebida", status: "lida", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:25:00Z" },
+  { id: "m6", chatId: "1", tipo: "image", conteudo: "CNH_Ricardo.jpg", media_url: "/placeholder.svg", media_mime_type: "image/jpeg", direcao: "recebida", status: "lida", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:25:30Z" },
+  { id: "m7", chatId: "1", tipo: "text", conteudo: "Gostaria de cotar um seguro auto para meu Civic 2025", media_url: null, media_mime_type: null, direcao: "recebida", status: "entregue", remetente: "Ricardo Pereira", created_at: "2026-02-12T14:30:00Z" },
 ];
 
 type ExtMessage = WhatsAppMessage & { reaction?: string; edited?: boolean; deleted?: boolean };
@@ -75,7 +75,7 @@ const WhatsApp = () => {
     c.nome.toLowerCase().includes(searchQuery.toLowerCase()) || c.telefone.includes(searchQuery)
   );
 
-  const messages = selectedContact ? allMessages.filter(m => m.contato_id === selectedContact.id) : [];
+  const messages = selectedContact ? allMessages.filter(m => m.chatId === selectedContact.id) : [];
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -85,7 +85,7 @@ const WhatsApp = () => {
   const handleSend = () => {
     if (!messageInput.trim() || !selectedContact) return;
     const newMsg: ExtMessage = {
-      id: crypto.randomUUID(), contato_id: selectedContact.id, tipo: "text",
+      id: crypto.randomUUID(), chatId: selectedContact.id, tipo: "text",
       conteudo: messageInput, media_url: null, media_mime_type: null,
       direcao: "enviada", status: "enviada", remetente: "Corretor", created_at: new Date().toISOString(),
     };
@@ -124,7 +124,7 @@ const WhatsApp = () => {
     Array.from(files).forEach(file => {
       const isImage = file.type.startsWith("image/");
       const newMsg: ExtMessage = {
-        id: crypto.randomUUID(), contato_id: selectedContact.id,
+        id: crypto.randomUUID(), chatId: selectedContact.id,
         tipo: isImage ? "image" : "document",
         conteudo: file.name, media_url: URL.createObjectURL(file),
         media_mime_type: file.type, direcao: "enviada", status: "enviada",
@@ -147,7 +147,7 @@ const WhatsApp = () => {
     setIsRecording(false);
     if (send && selectedContact) {
       const newMsg: ExtMessage = {
-        id: crypto.randomUUID(), contato_id: selectedContact.id, tipo: "audio",
+        id: crypto.randomUUID(), chatId: selectedContact.id, tipo: "audio",
         conteudo: `audio_${recordingTime}s.ogg`, media_url: null, media_mime_type: "audio/ogg",
         direcao: "enviada", status: "enviada", remetente: "Corretor", created_at: new Date().toISOString(),
       };
