@@ -1,8 +1,6 @@
 // Service layer for Leads API integration
 // Replace BASE_URL and implement your API endpoints
 
-const BASE_URL = "http://localhost:5001/mango-softwares"; // TODO: Replace with your actual API base URL
-
 export interface LeadStatus {
   id: string;
   label: string;
@@ -15,16 +13,39 @@ export interface LeadStatus {
   template_id: string | null;
 }
 
+const BASE_URL = "http://localhost:5004/mango-softwares/v1";
 
-export const leadsService = { 
-  // POST /api/leads - Criar novo lead
-  async createLeadStatus(data: Omit<LeadStatus, "id" | "created_at" | "updated_at">): Promise<LeadStatus> {
-    const response = await fetch(`http://localhost:5004/mango-softwares/v1/create/lead/status`, {
+export const statusService = {
+  async getLeadStatuses(): Promise<LeadStatus[]> {
+    const response = await fetch(`${BASE_URL}/lead/status`);
+    if (!response.ok) throw new Error("Erro ao buscar status");
+    return response.json();
+  },
+
+  async createLeadStatus(data: Omit<LeadStatus, "id">): Promise<LeadStatus> {
+    const response = await fetch(`${BASE_URL}/create/lead/status`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Erro ao criar lead");
+    if (!response.ok) throw new Error("Erro ao criar status");
     return response.json();
+  },
+
+  async updateLeadStatus(id: string, data: Partial<LeadStatus>): Promise<LeadStatus> {
+    const response = await fetch(`${BASE_URL}/update/lead/status/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error("Erro ao atualizar status");
+    return response.json();
+  },
+
+  async deleteLeadStatus(id: string): Promise<void> {
+    const response = await fetch(`${BASE_URL}/delete/lead/status/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) throw new Error("Erro ao excluir status");
   },
 };

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useCreateLeadStatus } from "@/hooks/useStatus";
+import { useState, useEffect } from "react";
+import { useLeadStatuses, useCreateLeadStatus, useUpdateLeadStatus as useUpdateLeadStatusMutation, useDeleteLeadStatus as useDeleteLeadStatusMutation } from "@/hooks/useStatus";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,8 +53,17 @@ const COLOR_OPTIONS = [
 ];
 
 const GerenciarStatus = () => {
+  const { data: apiStatuses, isLoading } = useLeadStatuses();
   const createStatusMutation = useCreateLeadStatus();
+  const updateStatusMutation = useUpdateLeadStatusMutation();
+  const deleteStatusMutation = useDeleteLeadStatusMutation();
   const [statuses, setStatuses] = useState<LeadStatus[]>(DEFAULT_STATUSES);
+
+  useEffect(() => {
+    if (apiStatuses && apiStatuses.length > 0) {
+      setStatuses(apiStatuses);
+    }
+  }, [apiStatuses]);
   const [editingStatus, setEditingStatus] = useState<LeadStatus | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -88,40 +97,54 @@ const GerenciarStatus = () => {
   const handleSave = () => {
     if (!formData.label.trim() || !formData.key.trim()) return;
 
+    const statusData = {
+      label: formData.label,
+      key: formData.key,
+      bgColor: formData.bgColor,
+      color: formData.color,
+      tipo: formData.tipo,
+      is_final: formData.tipo !== "ativo",
+      template_id: formData.template_id,
+    };
+
     if (editingStatus) {
-      setStatuses(prev => prev.map(s =>
-        s.id === editingStatus.id
-          ? { ...s, label: formData.label, key: formData.key, bgColor: formData.bgColor, color: formData.color, tipo: formData.tipo, is_final: formData.tipo !== "ativo", template_id: formData.template_id }
-          : s
-      ));
-      setIsDialogOpen(false);
+      updateStatusMutation.mutate(
+        { id: editingStatus.id, data: statusData },
+        {
+          onSuccess: () => {
+            setIsDialogOpen(false);
+            toast({ title: "Status atualizado com sucesso!" });
+          },
+          onError: (err) => {
+            toast({ title: "Erro ao atualizar status", description: err.message, variant: "destructive" });
+          },
+        }
+      );
     } else {
-      const newStatus: LeadStatus = {
-        id: Date.now().toString(),
-        label: formData.label,
-        key: formData.key,
-        bgColor: formData.bgColor,
-        color: formData.color,
-        ordem: statuses.length + 1,
-        is_final: formData.tipo !== "ativo",
-        tipo: formData.tipo,
-        template_id: formData.template_id,
-      };
-      createStatusMutation.mutate(newStatus, {
-        onSuccess: () => {
-          setStatuses(prev => [...prev, newStatus]);
-          setIsDialogOpen(false);
-          toast({ title: "Status criado com sucesso!" });
-        },
-        onError: (err) => {
-          toast({ title: "Erro ao criar status", description: err.message, variant: "destructive" });
-        },
-      });
+      createStatusMutation.mutate(
+        { ...statusData, ordem: statuses.length + 1 },
+        {
+          onSuccess: () => {
+            setIsDialogOpen(false);
+            toast({ title: "Status criado com sucesso!" });
+          },
+          onError: (err) => {
+            toast({ title: "Erro ao criar status", description: err.message, variant: "destructive" });
+          },
+        }
+      );
     }
   };
 
   const handleDelete = (id: string) => {
-    setStatuses(prev => prev.filter(s => s.id !== id));
+    deleteStatusMutation.mutate(id, {
+      onSuccess: () => {
+        toast({ title: "Status excluído com sucesso!" });
+      },
+      onError: (err) => {
+        toast({ title: "Erro ao excluir status", description: err.message, variant: "destructive" });
+      },
+    });
   };
 
   const moveStatus = (id: string, direction: "up" | "down") => {
