@@ -27,6 +27,7 @@ import type { WhatsAppTemplate } from "@/services/whatsappService";
 import { whatsappService } from "@/services/whatsappService";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useLeads, useUpdateLeadStatus} from "@/hooks/useLeads";
+import { useLeadStatuses } from "@/hooks/useStatus";
 
 const PLACEHOLDER_DISTRIBUTION = [
   { corretor_id: "1", corretor_nome: "André Oliveira", total_leads: 32, convertidos: 12, taxa_conversao: 37.5, valor_total_convertido: 156000 },
@@ -38,7 +39,7 @@ const PLACEHOLDER_DISTRIBUTION = [
 
 const PLACEHOLDER_LEADS: Lead[] = [];
 
-const KANBAN_COLUMNS: KanbanColumn[] = [
+const KANBAN_COLUMNS_FALLBACK: KanbanColumn[] = [
   { id: "novo", label: "Novo", color: "text-info", bgColor: "bg-info" },
   { id: "em_contato", label: "Em Contato", color: "text-warning", bgColor: "bg-warning" },
   { id: "qualificado", label: "Qualificado", color: "text-primary", bgColor: "bg-primary" },
@@ -99,6 +100,22 @@ const Leads = () => {
   const { addNotification } = useNotifications();
   const { role } = useRole();
   const { data: apiData } = useLeads(null, currentUser.nome, role);
+  const { data: apiStatuses } = useLeadStatuses();
+
+  const kanbanColumns: KanbanColumn[] = useMemo(() => {
+    if (apiStatuses && apiStatuses.length > 0) {
+      return apiStatuses
+        .sort((a, b) => a.ordem - b.ordem)
+        .filter(s => s.tipo !== "perdido")
+        .map(s => ({
+          id: s.key,
+          label: s.label,
+          color: s.color,
+          bgColor: s.bgColor,
+        }));
+    }
+    return KANBAN_COLUMNS_FALLBACK;
+  }, [apiStatuses]);
   const updateLeadStatus = useUpdateLeadStatus();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -463,7 +480,7 @@ const Leads = () => {
         {viewMode === "kanban" ? (
           <LeadKanban
             leads={displayLeads}
-            columns={KANBAN_COLUMNS}
+            columns={kanbanColumns}
             onStatusChange={handleStatusChange}
             corretorFilter={isAdmin ? (corretorFilter !== "all" ? corretorFilter : null) : currentUser.nome}
             onLeadClick={(lead) => setSelectedLead(lead)}
