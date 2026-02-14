@@ -36,7 +36,7 @@ export function useSendWhatsAppMessage() {
   return useMutation({
     mutationFn: (payload: SendMessagePayload) => whatsappService.sendMessage(payload),
     onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ["whatsapp", "messages", vars.contato_id] });
+      qc.invalidateQueries({ queryKey: ["whatsapp", "messages", vars.chatId] });
       qc.invalidateQueries({ queryKey: ["whatsapp", "conversations"] });
     },
   });

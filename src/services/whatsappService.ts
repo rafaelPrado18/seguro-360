@@ -19,7 +19,7 @@ export interface WhatsAppContact {
 
 export interface WhatsAppMessage {
   id: string;
-  contato_id: string;
+  chatId: string;
   tipo: "text" | "image" | "document" | "audio" | "video" | "location" | "template";
   conteudo: string;
   media_url: string | null;
@@ -41,9 +41,10 @@ export interface WhatsAppTemplate {
 }
 
 export interface SendMessagePayload {
-  contato_id: string;
+  chatId: string;
   tipo: WhatsAppMessage["tipo"];
-  conteudo: string;
+  userId: string;
+  message: string;
   media_url?: string;
   template_id?: string;
   template_vars?: Record<string, string>;
@@ -58,7 +59,18 @@ export interface ConversationFilters {
   per_page?: number;
 }
 
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()!.split(";").shift()!;
+  return null;
+}  
+
+const userToken = getCookie('userToken')
+
 export const whatsappService = {
+
+  
   // GET /api/whatsapp/conversations - Listar conversas
   async getConversations(filters?: ConversationFilters): Promise<{
     data: WhatsAppContact[];
@@ -97,13 +109,13 @@ export const whatsappService = {
 
   // POST /api/whatsapp/messages/send - Enviar mensagem
   async sendMessage(payload: SendMessagePayload): Promise<WhatsAppMessage> {
-    const response = await fetch(`${BASE_URL}/whatsapp/messages/send`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch(`http://173.249.50.11:8000/v1/send/message`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "authorization": `Bearer ${userToken}`,},
       body: JSON.stringify(payload),
     });
     if (!response.ok) throw new Error("Erro ao enviar mensagem");
-    return response.json();
+    return;
   },
 
   // POST /api/whatsapp/messages/send-bulk - Enviar mensagem em massa

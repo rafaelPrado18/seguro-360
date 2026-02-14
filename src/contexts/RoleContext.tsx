@@ -13,7 +13,7 @@ export interface UserProfile {
 /** Map API "function" field to internal UserRole */
 const FUNCTION_TO_ROLE: Record<string, UserRole> = {
   "Super Admin": "super_admin",
-  "Administrador": "administrador",
+  "administrador": "administrador",
   "Admin": "administrador",
   "Corretor — Novo": "corretor",
   "Corretor — Renovação": "corretor_renovacao",
@@ -36,16 +36,21 @@ function getUserFromCookies(): UserProfile | null {
   const userName = getCookie("userName");
   const userEmail = getCookie("userEmail");
   const userFunction = getCookie("userFunction");
+  console.log('teste', userFunction)
 
   if (!userId || !userName) return null;
 
   const role = FUNCTION_TO_ROLE[userFunction] || "corretor";
 
+  console.log('teste 2', userFunction)
+  console.log('teste 3', FUNCTION_TO_ROLE)
+  console.log('teste 4', role)
+
   return {
     id: userId,
     nome: userName,
     email: userEmail,
-    role: userFunction,
+    role: role,
   };
 }
 

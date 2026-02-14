@@ -229,9 +229,10 @@ const Leads = () => {
       if (lead) {
         const mensagem = getPreviewText(selectedTemplate, lead);
         whatsappService.sendMessage({
-          contato_id: lead.telefone,
+          userId: currentUser.id,
+          chatId: '5514996142542',
           tipo: "text",
-          conteudo: mensagem,
+          message: mensagem,
         })
           .then(() => toast.success(`Mensagem "${selectedTemplate.nome}" enviada via WhatsApp`))
           .catch((err) => {

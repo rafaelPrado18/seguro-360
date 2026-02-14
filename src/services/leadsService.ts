@@ -154,12 +154,12 @@ export const leadsService = {
 
   // PUT /api/leads/:id/status - Alterar status do lead
   async updateStatus(id: string, status: Lead["status"], observacao?: string): Promise<Lead> {
-    const response = await fetch(`${BASE_URL}/leads/${id}/status`, {
+    const response = await fetch(`http://localhost:5007/mango-softwares/v1/update/lead/real/status`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status, observacao }),
+      body: JSON.stringify({ id, status, observacao }),
     });
     if (!response.ok) throw new Error("Erro ao atualizar status");
-    return response.json();
+    return;
   },
 };
