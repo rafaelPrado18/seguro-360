@@ -96,7 +96,7 @@ const DEFAULT_USER: UserProfile = { id: "guest", nome: "Visitante", email: "", r
 export function RoleProvider({ children }: { children: ReactNode }) {
   const cookieUser = getUserFromCookies();
   const [currentUser, setCurrentUser] = useState<UserProfile>(cookieUser || DEFAULT_USER);
-  const [role, setRole] = useState<string>(currentUser.role);
+  const [role, setRole] = useState<UserRole>(FUNCTION_TO_ROLE[currentUser.role] || "corretor");
   const [brokerStatus, setBrokerStatus] = useState<BrokerStatus>(
     (getCookie("userStatus") as BrokerStatus) || "online"
   );
@@ -106,7 +106,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     const u = getUserFromCookies();
     if (u && u.id !== currentUser.id) {
       setCurrentUser(u);
-      setRole(u.role);
+      setRole(FUNCTION_TO_ROLE[u.role] || "corretor");
     }
   }, []);
 
