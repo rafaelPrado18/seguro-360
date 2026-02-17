@@ -15,7 +15,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const location = useLocation();
   const [status, setStatus] = useState<"loading" | "ok" | "denied">("loading");
 
-  useEffect(() => {
+  const validate = (signal?: AbortSignal) => {
     const token = getCookie("userToken");
     const userId = getCookie("userId");
 
@@ -23,8 +23,6 @@ export function AuthGuard({ children }: AuthGuardProps) {
       setStatus("denied");
       return;
     }
-
-    const controller = new AbortController();
 
     fetch("http://173.249.50.11:8000/v1/valid/authorization/token", {
       method: "POST",
@@ -37,14 +35,11 @@ export function AuthGuard({ children }: AuthGuardProps) {
         target: location.pathname,
         action: "GET",
       }),
-      signal: controller.signal,
+      signal,
     })
       .then((res) => {
-        if (res.ok) {
-          setStatus("ok");
-        } else {
-          setStatus("denied");
-        }
+        if (res.ok) setStatus("ok");
+        else setStatus("denied");
       })
       .catch((err) => {
         if (err.name !== "AbortError") {
@@ -52,8 +47,21 @@ export function AuthGuard({ children }: AuthGuardProps) {
           setStatus("denied");
         }
       });
+  };
 
+  // Validate on route change
+  useEffect(() => {
+    const controller = new AbortController();
+    validate(controller.signal);
     return () => controller.abort();
+  }, [location.pathname]);
+
+  // Periodic revalidation every 5 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      validate();
+    }, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, [location.pathname]);
 
   useEffect(() => {
