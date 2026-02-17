@@ -1,4 +1,4 @@
-import { Bell, Search, Plus, Sun, Moon, Check, Menu, WifiOff } from "lucide-react";
+import { Bell, Search, Plus, Sun, Moon, Check, Menu, WifiOff, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -24,6 +24,12 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
   const [novaApoliceOpen, setNovaApoliceOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const navigate = useNavigate();
+
+  const handleLogout = () => {
+    const cookies = ["userToken", "userId", "userName", "userEmail", "userFunction", "userStatus", "assignedConsultant"];
+    cookies.forEach(c => document.cookie = `${c}=; path=/; max-age=0`);
+    navigate("/login", { replace: true });
+  };
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchValue.trim()) {
@@ -93,6 +99,10 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
 
         <Button variant="ghost" size="icon" className="h-9 w-9" onClick={toggleTheme}>
           {theme === "light" ? <Moon className="h-4 w-4 text-muted-foreground" /> : <Sun className="h-4 w-4 text-muted-foreground" />}
+        </Button>
+
+        <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleLogout} title="Sair">
+          <LogOut className="h-4 w-4" />
         </Button>
 
         <Button size="sm" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-9 text-sm font-semibold hidden md:flex" onClick={() => setNovaApoliceOpen(true)}>
