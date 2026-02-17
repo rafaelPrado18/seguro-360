@@ -1,7 +1,7 @@
 // Service layer for WhatsApp API integration
 // Replace BASE_URL and implement your API endpoints (e.g., WhatsApp Business API, Z-API, Evolution API)
 
-const BASE_URL = "/api"; // TODO: Replace with your actual API base URL
+const BASE_URL = "http://173.249.50.11:8000"; // TODO: Replace with your actual API base URL
 
 export interface WhatsAppContact {
   id: string;
@@ -109,7 +109,7 @@ export const whatsappService = {
 
   // POST /api/whatsapp/messages/send - Enviar mensagem
   async sendMessage(payload: SendMessagePayload): Promise<WhatsAppMessage> {
-    const response = await fetch(`http://173.249.50.11:8000/v1/send/message`, {
+    const response = await fetch(`${BASE_URL}/v1/send/message`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", "authorization": `Bearer ${userToken}`,},
       body: JSON.stringify(payload),

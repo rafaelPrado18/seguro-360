@@ -15,6 +15,7 @@ import {
   Edit, Trash2, Eye, BarChart3, Shield, Calendar, DollarSign,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { v4 as uuidv4 } from "uuid";
 
 type Plano = "free" | "pro" | "enterprise";
 
@@ -131,7 +132,7 @@ const Empresas = () => {
       toast({ title: "Empresa atualizada" });
     } else {
       const nova: Empresa = {
-        ...formData, id: crypto.randomUUID(),
+        ...formData, id: uuidv4(),
         stats: { usuarios_ativos: 0, leads: 0, apolices: 0, clientes: 0 },
       };
       setEmpresas(prev => [...prev, nova]);

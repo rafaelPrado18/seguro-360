@@ -12,6 +12,7 @@ import {
   Calendar, Tag, Building, Download,
 } from "lucide-react";
 import type { WhatsAppContact } from "@/services/whatsappService";
+import { v4 as uuidv4 } from "uuid";
 
 interface HistoryEntry {
   id: string;
@@ -78,7 +79,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   const handleAddNote = () => {
     if (!newNote.trim()) return;
     const entry: HistoryEntry = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       type: "note",
       title: "Nota adicionada",
       description: newNote,
@@ -95,7 +96,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
     Array.from(files).forEach(file => {
       const isImage = file.type.startsWith("image/");
       const entry: HistoryEntry = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         type: isImage ? "image" : "document",
         title: isImage ? "Imagem enviada" : "Documento enviado",
         description: file.name,

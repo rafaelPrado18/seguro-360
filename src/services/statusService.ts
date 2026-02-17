@@ -13,17 +13,17 @@ export interface LeadStatus {
   template_id: string | null;
 }
 
-const BASE_URL = "http://localhost:5004/mango-softwares/v1";
+const BASE_URL = "http://173.249.50.11:8000";
 
 export const statusService = {
   async getLeadStatuses(): Promise<LeadStatus[]> {
-    const response = await fetch(`http://localhost:5005/mango-softwares/v1/read/lead/status`);
+    const response = await fetch(`${BASE_URL}/v1/read/lead/status`);
     if (!response.ok) throw new Error("Erro ao buscar status");
     return response.json();
   },
 
   async createLeadStatus(data: Omit<LeadStatus, "id">): Promise<LeadStatus> {
-    const response = await fetch(`http://localhost:5004/mango-softwares/v1/create/lead/status`, {
+    const response = await fetch(`${BASE_URL}/v1/create/lead/status`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -43,8 +43,10 @@ export const statusService = {
   },
 
   async deleteLeadStatus(id: string): Promise<void> {
-    const response = await fetch(`${BASE_URL}/delete/lead/status/${id}`, {
+    const response = await fetch(`${BASE_URL}/v1/delete/lead/status`, {
       method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({id}),
     });
     if (!response.ok) throw new Error("Erro ao excluir status");
   },

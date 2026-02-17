@@ -1,7 +1,7 @@
 // Service layer for Leads API integration
 // Replace BASE_URL and implement your API endpoints
 
-const BASE_URL = "http://localhost:5001/mango-softwares"; // TODO: Replace with your actual API base URL
+const BASE_URL = "http://173.249.50.11:8000"; // TODO: Replace with your actual API base URL
 
 export interface Lead {
   id: string;
@@ -154,7 +154,7 @@ export const leadsService = {
 
   // PUT /api/leads/:id/status - Alterar status do lead
   async updateStatus(id: string, status: Lead["status"], observacao?: string): Promise<Lead> {
-    const response = await fetch(`http://localhost:5007/mango-softwares/v1/update/lead/real/status`, {
+    const response = await fetch(`${BASE_URL}/v1/update/lead/real/status`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status, observacao }),

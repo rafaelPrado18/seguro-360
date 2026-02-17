@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Car, Save, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
 
 export interface Veiculo {
   id: string;
@@ -70,7 +71,7 @@ export function RenovacaoDetailDialog({ open, onOpenChange, renovacao, onSave }:
       if (!prev) return prev;
       return {
         ...prev,
-        veiculos: [...prev.veiculos, { id: crypto.randomUUID(), marca: "", modelo: "", ano: "", placa: "", chassi: "" }],
+        veiculos: [...prev.veiculos, { id: uuidv4(), marca: "", modelo: "", ano: "", placa: "", chassi: "" }],
       };
     });
   };

@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Search, Pencil, Trash2, Shield, Users, UserCheck } from "lucide-react";
-import { useAgents, useCreateAgent, useUpdateAgent, useDeleteAgent } from "@/hooks/useAgents";
+import { useAgents, useCreateAgent, useUpdateAgent, useUpdateAgentStatus, useDeleteAgent } from "@/hooks/useAgents";
 import type { Agent } from "@/services/agentsService";
 
 const FUNCTION_LABELS: Record<string, string> = {
@@ -54,9 +54,17 @@ const EMPTY_FORM: AgentForm = {
   birthDate: "",
 };
 
+function getCookie(name) {
+  const match = document.cookie.match(
+    new RegExp('(?:^|; )' + name.replace(/([.*+?^${}()|[\\]\\])/g, '\\$1') + '=([^;]*)')
+  );
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 const Usuarios = () => {
   const { data: agents, isLoading } = useAgents();
   const createMutation = useCreateAgent();
+  const updateStatusMutation = useUpdateAgentStatus();
   const updateMutation = useUpdateAgent();
   const deleteMutation = useDeleteAgent();
 
@@ -111,7 +119,10 @@ const Usuarios = () => {
         }
       );
     } else {
-      const newAgent: Omit<Agent, "agentId"> = {
+      var userId = getCookie("userId");
+      const newAgent: Agent = {
+        userId: userId,
+        agentId: '1',
         name: form.name,
         email: form.email,
         telefone: form.telefone,
@@ -142,13 +153,37 @@ const Usuarios = () => {
     );
   };
 
-  const handleDelete = (id: string) => {
-    deleteMutation.mutate(id, {
+  const toggleOnline = (agent: Agent, checked: boolean) => {
+
+    const newStatus = checked ? "online" : "offline";
+
+    updateStatusMutation.mutate(
+      {
+        data: {
+          status: newStatus,
+          agentId: agent.agentId,
+          userId: getCookie("userId")
+        }
+      },
+      {
+        onSuccess: () =>
+          toast({ title: checked ? "Usuário ficou online" : "Usuário ficou offline" }),
+        onError: () =>
+          toast({ title: "Erro ao alterar estado do usuário", variant: "destructive" }),
+      }
+    );
+  };
+
+  const handleDelete = (agent: Partial<Agent>) => {
+    deleteMutation.mutate( 
+    { data: { agentId: agent.agentId, userId: getCookie("userId") } },
+    {
       onSuccess: () => toast({ title: "Usuário removido" }),
       onError: () => toast({ title: "Erro ao remover usuário", variant: "destructive" }),
     });
   };
 
+  const totalOnline = usuarios.filter(u => u.status == "online").length;
   const totalAtivos = usuarios.filter(u => u.isActive).length;
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
@@ -229,7 +264,7 @@ const Usuarios = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <Card className="kpi-card-shadow">
             <CardContent className="flex items-center gap-3 p-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -249,6 +284,17 @@ const Usuarios = () => {
               <div>
                 <p className="text-2xl font-bold text-foreground">{totalAtivos}</p>
                 <p className="text-xs text-muted-foreground">Ativos</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="kpi-card-shadow">
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <UserCheck className="h-5 w-5 text-success" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-foreground">{totalOnline}</p>
+                <p className="text-xs text-muted-foreground">Online</p>
               </div>
             </CardContent>
           </Card>
@@ -294,6 +340,7 @@ const Usuarios = () => {
                     <TableHead>Função</TableHead>
                     <TableHead className="hidden lg:table-cell">Vínculo</TableHead>
                     <TableHead className="text-center">Ativo</TableHead>
+                    <TableHead className="text-center">Online</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -321,12 +368,19 @@ const Usuarios = () => {
                         <TableCell className="text-center">
                           <Switch checked={u.isActive} onCheckedChange={() => toggleAtivo(u)} className="scale-75" />
                         </TableCell>
+                        <TableCell className="text-center">
+                          <Switch
+                            checked={u.status === "online"}
+                            onCheckedChange={(checked) => toggleOnline(u, checked)}
+                            className="scale-75"
+                          />
+                          </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(u)}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(u.agentId)}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(u)}>
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>

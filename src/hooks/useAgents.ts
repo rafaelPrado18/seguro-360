@@ -13,10 +13,19 @@ export function useAgents() {
 export function useCreateAgent() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: Omit<Agent, "agentId">) => agentsService.createAgent(payload),
+    mutationFn: (payload: Agent) => agentsService.createAgent(payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: AGENTS_KEY }),
   });
 }
+
+export function useUpdateAgentStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ data }: { data: Partial<Agent> }) => agentsService.updateAgentStatus(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: AGENTS_KEY }),
+  });
+}
+
 
 export function useUpdateAgent() {
   const qc = useQueryClient();
@@ -29,7 +38,7 @@ export function useUpdateAgent() {
 export function useDeleteAgent() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => agentsService.deleteAgent(id),
+    mutationFn: ({ data }: { data: Partial<Agent> }) => agentsService.deleteAgent(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: AGENTS_KEY }),
   });
 }

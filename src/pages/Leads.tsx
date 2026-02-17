@@ -28,6 +28,7 @@ import { whatsappService } from "@/services/whatsappService";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useLeads, useUpdateLeadStatus} from "@/hooks/useLeads";
 import { useLeadStatuses } from "@/hooks/useStatus";
+import { v4 as uuidv4 } from "uuid";
 
 const PLACEHOLDER_DISTRIBUTION = [
   { corretor_id: "1", corretor_nome: "André Oliveira", total_leads: 32, convertidos: 12, taxa_conversao: 37.5, valor_total_convertido: 156000 },
@@ -103,10 +104,10 @@ const Leads = () => {
   const { data: apiStatuses } = useLeadStatuses();
 
   const kanbanColumns: KanbanColumn[] = useMemo(() => {
+    console.log(apiStatuses)
     if (apiStatuses && apiStatuses.length > 0) {
       return apiStatuses
         .sort((a, b) => a.ordem - b.ordem)
-        .filter(s => s.tipo !== "perdido")
         .map(s => ({
           id: s.key,
           label: s.label,
@@ -370,7 +371,7 @@ const Leads = () => {
           ))}
         </div>
 
-        {/* Admin: Distribution Table 
+        {/* Admin: Distribution Table */}
         {isAdmin && (
           <Card>
             <CardHeader className="pb-3">
@@ -550,7 +551,7 @@ const Leads = () => {
           onLeadCreated={(lead) => {
             const newLead: Lead = {
               ...lead as Lead,
-              id: crypto.randomUUID(),
+              id: uuidv4(),
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             };

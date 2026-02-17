@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { leadsService } from "@/services/leadsService";
 import { toast } from "sonner";
 import { useRole } from "@/contexts/RoleContext";
+import { v4 as uuidv4 } from "uuid";
 
 export interface Notification {
   id: string;
@@ -65,7 +66,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const addNotification = useCallback((n: Omit<Notification, "id" | "read" | "timestamp">) => {
     const newNotif: Notification = {
       ...n,
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       read: false,
       timestamp: new Date().toISOString(),
     };

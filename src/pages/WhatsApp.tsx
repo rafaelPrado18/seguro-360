@@ -15,6 +15,7 @@ import { LeadDetailsPanel } from "@/components/whatsapp/LeadDetailsPanel";
 import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
 import { toast } from "@/hooks/use-toast";
 import type { WhatsAppContact, WhatsAppMessage } from "@/services/whatsappService";
+import { v4 as uuidv4 } from "uuid";
 
 const REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 
@@ -85,7 +86,7 @@ const WhatsApp = () => {
   const handleSend = () => {
     if (!messageInput.trim() || !selectedContact) return;
     const newMsg: ExtMessage = {
-      id: crypto.randomUUID(), chatId: selectedContact.id, tipo: "text",
+      id: uuidv4(), chatId: selectedContact.id, tipo: "text",
       conteudo: messageInput, media_url: null, media_mime_type: null,
       direcao: "enviada", status: "enviada", remetente: "Corretor", created_at: new Date().toISOString(),
     };
@@ -124,7 +125,7 @@ const WhatsApp = () => {
     Array.from(files).forEach(file => {
       const isImage = file.type.startsWith("image/");
       const newMsg: ExtMessage = {
-        id: crypto.randomUUID(), chatId: selectedContact.id,
+        id: uuidv4(), chatId: selectedContact.id,
         tipo: isImage ? "image" : "document",
         conteudo: file.name, media_url: URL.createObjectURL(file),
         media_mime_type: file.type, direcao: "enviada", status: "enviada",
@@ -147,7 +148,7 @@ const WhatsApp = () => {
     setIsRecording(false);
     if (send && selectedContact) {
       const newMsg: ExtMessage = {
-        id: crypto.randomUUID(), chatId: selectedContact.id, tipo: "audio",
+        id: uuidv4(), chatId: selectedContact.id, tipo: "audio",
         conteudo: `audio_${recordingTime}s.ogg`, media_url: null, media_mime_type: "audio/ogg",
         direcao: "enviada", status: "enviada", remetente: "Corretor", created_at: new Date().toISOString(),
       };
@@ -162,8 +163,8 @@ const WhatsApp = () => {
     const nome = String(lead.nome || "Novo Lead");
     const telefone = String(lead.telefone || "");
     const newContact: WhatsAppContact = {
-      id: crypto.randomUUID(), nome, telefone, foto_url: null,
-      lead_id: crypto.randomUUID(), cliente_id: null,
+      id: uuidv4(), nome, telefone, foto_url: null,
+      lead_id: uuidv4(), cliente_id: null,
       ultima_mensagem: "Lead criado — Iniciar conversa", ultima_mensagem_at: new Date().toISOString(),
       nao_lidas: 0, status: "ativo", tags: ["lead", String(lead.ramo_interesse || "novo")],
     };

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
 import { formatPhone } from "@/lib/utils";
+import { v4 as uuidv4 } from "uuid";
 
 const statusLabels: Record<Lead["status"], string> = {
   novo: "Novo", em_contato: "Em Contato", qualificado: "Qualificado",
@@ -87,7 +88,7 @@ function generateTimeline(lead: Lead, notes: NoteEntry[]): TimelineEvent[] {
     events.push({ date: n.date, type: "nota", description: n.text, icon: "note" });
   });
 
-  return events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return events;
 }
 
 function formatDate(iso: string) {
@@ -172,7 +173,7 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
   const addNote = () => {
     if (!newNote.trim()) return;
     const entry: NoteEntry = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       text: newNote.trim(),
       date: new Date().toISOString(),
       author: "Você",
@@ -340,8 +341,8 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
                   <InfoRow icon={<Target className="h-3.5 w-3.5" />} label="Ramo de Interesse" value={lead.ramo_interesse} />
                   <InfoRow icon={<DollarSign className="h-3.5 w-3.5" />} label="Valor Estimado" value={`R$ ${lead.valor_estimado.toLocaleString()}`} />
                   <InfoRow icon={<User className="h-3.5 w-3.5" />} label="Corretor" value={lead.corretor_responsavel || "Não atribuído"} muted={!lead.corretor_responsavel} />
-                  <InfoRow icon={<Calendar className="h-3.5 w-3.5" />} label="Criado em" value={formatDate(lead.created_at)} />
-                  <InfoRow icon={<Clock className="h-3.5 w-3.5" />} label="Última atualização" value={formatDate(lead.updated_at)} />
+                  <InfoRow icon={<Calendar className="h-3.5 w-3.5" />} label="Criado em" value={lead.created_at} />
+                  <InfoRow icon={<Clock className="h-3.5 w-3.5" />} label="Última atualização" value={lead.updated_at} />
                 </div>
               )}
             </div>
@@ -413,7 +414,7 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
                         <p className={`text-sm ${event.type === "nota" ? "text-foreground bg-accent/5 rounded-md p-2 -mt-0.5" : "text-foreground"}`}>
                           {event.description}
                         </p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">{formatDateTime(event.date)}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">{event.date}</p>
                       </div>
                     </div>
                   ))}

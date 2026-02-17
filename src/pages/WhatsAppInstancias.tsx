@@ -19,6 +19,7 @@ import {
   CheckCircle2, XCircle, Clock, Settings2, Users, ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
 
 interface WhatsAppInstance {
   id: string;
@@ -129,7 +130,7 @@ const WhatsAppInstancias = () => {
       return;
     }
     const inst: WhatsAppInstance = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       nome: newForm.nome,
       telefone: newForm.telefone || "—",
       corretores: newForm.corretores,
