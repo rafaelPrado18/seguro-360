@@ -1,9 +1,8 @@
-import { createContext, useContext, useState, useCallback, useRef, useEffect, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { leadsService } from "@/services/leadsService";
-import { toast } from "sonner";
+import { createContext, useContext, useRef, useEffect, type ReactNode } from "react";
 import { useRole } from "@/contexts/RoleContext";
-import { v4 as uuidv4 } from "uuid";
+import { toast } from "sonner";
+import { useNotificationEvents, useMarkEventAsRead, useMarkAllEventsAsRead } from "@/hooks/useNotifications";
+import type { NotificationEvent } from "@/services/notificationsService";
 
 export interface Notification {
   id: string;
@@ -53,70 +52,72 @@ const playNewLeadSound = () => {
   } catch {}
 };
 
-export function NotificationProvider({ children }: { children: ReactNode }) {
-  const { isAdmin, currentUser } = useRole();
-  
-  const [notifications, setNotifications] = useState<Notification[]>([
-    { id: "demo-1", type: "lead", title: "Novo Lead via WhatsApp", message: "Ricardo Pereira enviou mensagem", read: false, timestamp: new Date().toISOString() },
-    { id: "demo-2", type: "whatsapp", title: "Mensagem recebida", message: "Luciana Mendes respondeu", read: false, timestamp: new Date(Date.now() - 300000).toISOString() },
-  ]);
+function mapEventToNotification(event: NotificationEvent): Notification {
+  return {
+    id: event.id,
+    type: event.type === "leads_novos" ? "lead" : event.type === "mensagens_novas" ? "whatsapp" : "system",
+    title: event.title,
+    message: event.message,
+    read: event.read,
+    timestamp: event.timestamp,
+    leadId: event.leadId,
+  };
+}
 
+export function NotificationProvider({ children }: { children: ReactNode }) {
+  const { currentUser } = useRole();
+
+  const { data: apiEvents } = useNotificationEvents(currentUser.id);
+  const markReadMutation = useMarkEventAsRead();
+  const markAllReadMutation = useMarkAllEventsAsRead();
+
+  const prevEventIdsRef = useRef<Set<string>>(new Set());
+
+  const notifications: Notification[] = (apiEvents || []).map(mapEventToNotification);
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const addNotification = useCallback((n: Omit<Notification, "id" | "read" | "timestamp">) => {
-    const newNotif: Notification = {
-      ...n,
-      id: uuidv4(),
-      read: false,
-      timestamp: new Date().toISOString(),
-    };
-    setNotifications(prev => [newNotif, ...prev].slice(0, 50));
-  }, []);
-  // Global lead polling every 10 seconds
-  const { data: apiLeads } = useQuery({
-    queryKey: ["leads"],
-    queryFn: () => leadsService.getLeads(null, currentUser.nome, currentUser.role),
-    refetchInterval: 10000,
-    refetchIntervalInBackground: false,
-    retry: 1,
-  });
-
-  const prevLeadIdsRef = useRef<Set<string>>(new Set());
-
+  // Sound + toast for new events
   useEffect(() => {
-    if (apiLeads?.data && apiLeads.data.length > 0) {
-      console.log('testeeee', apiLeads?.data)
-      const prevIds = prevLeadIdsRef.current;
-      const newLeads = apiLeads.data.filter(l => !prevIds.has(l.id));
+    if (apiEvents && apiEvents.length > 0) {
+      const prevIds = prevEventIdsRef.current;
+      const newEvents = apiEvents.filter(e => !e.read && !prevIds.has(e.id));
 
-      if (newLeads.length > 0 && prevIds.size > 0) {
+      if (newEvents.length > 0 && prevIds.size > 0) {
         playNewLeadSound();
-        newLeads.forEach(lead => {
-          addNotification({
-            type: "lead",
-            title: "🔔 Novo Lead!",
-            message: `${lead.nome} — ${lead.ramo_interesse} (${lead.origem})`,
-            leadId: lead.id,
+        const leadEvents = newEvents.filter(e => e.type === "leads_novos");
+        const msgEvents = newEvents.filter(e => e.type === "mensagens_novas");
+
+        if (leadEvents.length > 0) {
+          toast.success(`${leadEvents.length} novo${leadEvents.length > 1 ? "s" : ""} lead${leadEvents.length > 1 ? "s" : ""}!`, {
+            description: leadEvents.map(e => e.message).join(", "),
           });
-        });
-        toast.success(`${newLeads.length} novo${newLeads.length > 1 ? "s" : ""} lead${newLeads.length > 1 ? "s" : ""} recebido${newLeads.length > 1 ? "s" : ""}!`, {
-          description: newLeads.map(l => l.nome).join(", "),
-        });
+        }
+        if (msgEvents.length > 0) {
+          toast.info(`${msgEvents.length} nova${msgEvents.length > 1 ? "s" : ""} mensagen${msgEvents.length > 1 ? "s" : ""}!`, {
+            description: msgEvents.map(e => e.message).join(", "),
+          });
+        }
       }
 
-      prevLeadIdsRef.current = new Set(apiLeads.data.map(l => l.id));
+      prevEventIdsRef.current = new Set(apiEvents.map(e => e.id));
     }
-  }, [apiLeads, addNotification]);
+  }, [apiEvents]);
 
-  const markAsRead = useCallback((id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-  }, []);
+  const markAsRead = (id: string) => {
+    markReadMutation.mutate(id);
+  };
 
-  const markAllAsRead = useCallback(() => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  }, []);
+  const markAllAsRead = () => {
+    markAllReadMutation.mutate(currentUser.id);
+  };
 
-  const clearAll = useCallback(() => setNotifications([]), []);
+  const addNotification = () => {
+    // No-op: notifications now come from API
+  };
+
+  const clearAll = () => {
+    markAllAsRead();
+  };
 
   return (
     <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, markAsRead, markAllAsRead, clearAll }}>
