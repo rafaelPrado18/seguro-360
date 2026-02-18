@@ -10,6 +10,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Search, Plus, MoreHorizontal, Users, Target,
   TrendingUp, UserCheck, Shuffle, Phone, Kanban, List, Settings2, Send, MessageSquare, CalendarDays
@@ -121,7 +122,7 @@ const Leads = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
   const [leads, setLeads] = useState(PLACEHOLDER_LEADS);
-  const [corretorFilter, setCorretorFilter] = useState<string>("all");
+  const [corretorFilter, setCorretorFilter] = useState<string[]>([]);
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const [redistribuirOpen, setRedistribuirOpen] = useState(false);
@@ -317,7 +318,7 @@ const Leads = () => {
     const matchesSearch = l.nome?.toLowerCase()?.includes(search?.toLowerCase()) || l.telefone?.includes(search);
     const matchesStatus = statusFilter === "all" || l.status === statusFilter;
     const matchesCorretor = isAdmin
-      ? corretorFilter === "all" || l.corretor_responsavel === corretorFilter
+      ? corretorFilter.length === 0 || corretorFilter.includes(l.corretor_responsavel || "")
       : l.corretor_responsavel === currentUser.nome || !l.corretor_responsavel;
     
     let matchesDate = true;
@@ -446,17 +447,49 @@ const Leads = () => {
               <Input placeholder="Buscar leads..." className="pl-9 h-9 text-sm" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
             {isAdmin && (
-              <Select value={corretorFilter} onValueChange={setCorretorFilter}>
-                <SelectTrigger className="w-[160px] sm:w-[180px] h-9 text-sm">
-                  <SelectValue placeholder="Corretor" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os Corretores</SelectItem>
-                  {distribution.map(d => (
-                    <SelectItem key={d.corretor_id} value={d.corretor_nome}>{d.corretor_nome}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-[160px] sm:w-[200px] h-9 text-sm justify-between font-normal">
+                    <span className="truncate">
+                      {corretorFilter.length === 0
+                        ? "Todos os Corretores"
+                        : corretorFilter.length === 1
+                        ? distribution.find(d => d.corretor_nome === corretorFilter[0])?.corretor_nome || "1 corretor"
+                        : `${corretorFilter.length} corretores`}
+                    </span>
+                    <Users className="h-3.5 w-3.5 ml-1 shrink-0 text-muted-foreground" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-2" align="start">
+                  <div className="space-y-1">
+                    <label
+                      className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/60 cursor-pointer transition-colors"
+                      onClick={() => setCorretorFilter([])}
+                    >
+                      <Checkbox checked={corretorFilter.length === 0} onCheckedChange={() => setCorretorFilter([])} />
+                      <span className="text-sm font-medium">Todos</span>
+                    </label>
+                    {distribution.map(d => (
+                      <label
+                        key={d.corretor_id}
+                        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/60 cursor-pointer transition-colors"
+                      >
+                        <Checkbox
+                          checked={corretorFilter.includes(d.corretor_nome)}
+                          onCheckedChange={(checked) => {
+                            setCorretorFilter(prev =>
+                              checked
+                                ? [...prev, d.corretor_nome]
+                                : prev.filter(n => n !== d.corretor_nome)
+                            );
+                          }}
+                        />
+                        <span className="text-sm">{d.corretor_nome}</span>
+                      </label>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             )}
             <Select value={dateFilter} onValueChange={setDateFilter}>
               <SelectTrigger className="w-[140px] sm:w-[160px] h-9 text-sm">
@@ -499,7 +532,7 @@ const Leads = () => {
             leads={displayLeads}
             columns={kanbanColumns}
             onStatusChange={handleStatusChange}
-            corretorFilter={isAdmin ? (corretorFilter !== "all" ? corretorFilter : null) : currentUser.nome}
+            corretorFilter={isAdmin ? (corretorFilter.length > 0 ? corretorFilter[0] : null) : currentUser.nome}
             onLeadClick={(lead) => setSelectedLead(lead)}
           />
         ) : (
