@@ -162,4 +162,19 @@ export const leadsService = {
     if (!response.ok) throw new Error("Erro ao atualizar status");
     return;
   },
+
+  // POST /v1/redistribute/leads - Redistribuir leads
+  async redistributeLeads(params: {
+    data: string;
+    horarioPartir: string;
+    corretorOrigem: string[];
+    corretoresDestino: string[];
+  }): Promise<void> {
+    const response = await fetch(`${BASE_URL}/v1/redistribute/leads`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(params),
+    });
+    if (!response.ok) throw new Error("Erro ao redistribuir leads");
+  },
 };

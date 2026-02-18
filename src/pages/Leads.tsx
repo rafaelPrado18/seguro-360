@@ -27,7 +27,7 @@ import type { Lead } from "@/services/leadsService";
 import type { WhatsAppTemplate } from "@/services/whatsappService";
 import { whatsappService } from "@/services/whatsappService";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { useLeads, useUpdateLeadStatus} from "@/hooks/useLeads";
+import { useLeads, useUpdateLeadStatus, useRedistributeLeads } from "@/hooks/useLeads";
 import { useLeadStatuses } from "@/hooks/useStatus";
 import { useAgents } from "@/hooks/useAgents";
 import { v4 as uuidv4 } from "uuid";
@@ -118,6 +118,7 @@ const Leads = () => {
     return KANBAN_COLUMNS_FALLBACK;
   }, [apiStatuses]);
   const updateLeadStatus = useUpdateLeadStatus();
+  const redistributeLeads = useRedistributeLeads();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
@@ -627,27 +628,13 @@ const Leads = () => {
           corretores={distribution.map(d => ({ id: d.corretor_id, nome: d.corretor_nome }))}
           onRedistribuir={({ data, horarioPartir, corretorOrigem, corretoresDestino }) => {
             const dateStr = data.toISOString().split("T")[0];
-            const cutoff = new Date(`${dateStr}T${horarioPartir}:00`).getTime();
-            // Get destination corretor names
-            const destinoNames = corretoresDestino.map(id => {
-              const agent = agentCorretores.find(a => a.agentId === id);
-              return agent?.name || id;
-            });
-            // Get origin corretor names
-            const origemNames = corretorOrigem.length > 0
-              ? corretorOrigem.map(id => agentCorretores.find(a => a.agentId === id)?.name).filter(Boolean)
-              : [];
-            setLeads(prev => {
-              let idx = 0;
-              return prev.map(l => {
-                const leadTime = new Date(l.created_at).getTime();
-                if (leadTime < cutoff) return l;
-                if (origemNames.length > 0 && !origemNames.includes(l.corretor_responsavel || "")) return l;
-                const assigned = destinoNames[idx % destinoNames.length];
-                idx++;
-                return { ...l, corretor_responsavel: assigned, updated_at: new Date().toISOString() };
-              });
-            });
+            redistributeLeads.mutate(
+              { data: dateStr, horarioPartir, corretorOrigem, corretoresDestino },
+              {
+                onSuccess: () => toast.success("Leads redistribuídos com sucesso!"),
+                onError: () => toast.error("Erro ao redistribuir leads."),
+              }
+            );
           }}
         />
         {/* Template Send Confirmation Dialog */}
