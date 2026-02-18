@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
+import { useAgents } from "@/hooks/useAgents";
 
 interface WhatsAppInstance {
   id: string;
@@ -32,12 +33,7 @@ interface WhatsAppInstance {
   autoReply: boolean;
 }
 
-const corretores = [
-  { id: "corretor-novo-1", nome: "André Oliveira" },
-  { id: "corretor-renov-1", nome: "Beatriz Costa" },
-  { id: "corretor-sin-1", nome: "Carlos Neto" },
-  { id: "corretor-fin-1", nome: "Diana Alves" },
-];
+// corretores will be loaded from API inside the component
 
 const initialInstances: WhatsAppInstance[] = [
   {
@@ -67,10 +63,12 @@ function CorretorMultiSelect({
   selected,
   onChange,
   size = "sm",
+  corretores,
 }: {
   selected: string[];
   onChange: (ids: string[]) => void;
   size?: "sm" | "md";
+  corretores: { id: string; nome: string }[];
 }) {
   const toggle = (id: string) => {
     onChange(
@@ -118,6 +116,11 @@ function CorretorMultiSelect({
 }
 
 const WhatsAppInstancias = () => {
+  const { data: agents } = useAgents();
+  const corretores = useMemo(() => {
+    if (!agents) return [];
+    return agents.filter(a => a.isActive).map(a => ({ id: a.agentId, nome: a.name }));
+  }, [agents]);
   const [instances, setInstances] = useState<WhatsAppInstance[]>(initialInstances);
   const [selectedInstance, setSelectedInstance] = useState<WhatsAppInstance | null>(null);
   const [showQr, setShowQr] = useState<string | null>(null);
@@ -405,6 +408,7 @@ const WhatsAppInstancias = () => {
                     selected={selectedInstance.corretores}
                     onChange={ids => setSelectedInstance(prev => prev ? { ...prev, corretores: ids } : prev)}
                     size="md"
+                    corretores={corretores}
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -479,6 +483,7 @@ const WhatsAppInstancias = () => {
                   selected={newForm.corretores}
                   onChange={ids => setNewForm(f => ({ ...f, corretores: ids }))}
                   size="md"
+                  corretores={corretores}
                 />
               </div>
             </div>
