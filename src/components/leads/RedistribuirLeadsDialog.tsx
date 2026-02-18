@@ -61,7 +61,38 @@ export function RedistribuirLeadsDialog({ open, onOpenChange, corretores, onRedi
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5 text-sm font-medium">
               <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
-              Data
+              Data inicio
+            </Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal h-9 text-sm",
+                    !data && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {data ? format(data, "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={data}
+                  onSelect={(d) => d && setData(d)}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Data */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5 text-sm font-medium">
+              <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
+              Data final
             </Label>
             <Popover>
               <PopoverTrigger asChild>
@@ -103,6 +134,24 @@ export function RedistribuirLeadsDialog({ open, onOpenChange, corretores, onRedi
             />
             <p className="text-[11px] text-muted-foreground">
               Todos os leads recebidos a partir desta data/horário serão redistribuídos.
+            </p>
+          </div>
+
+          {/* Horário */}
+          <div className="space-y-2">
+            <Label htmlFor="horario" className="flex items-center gap-1.5 text-sm font-medium">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+              Horário até
+            </Label>
+            <Input
+              id="horario"
+              type="time"
+              value={horario}
+              onChange={(e) => setHorario(e.target.value)}
+              className="h-9"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Todos os leads recebidos até esta data/horário serão redistribuídos.
             </p>
           </div>
 

@@ -35,7 +35,8 @@ export const notificationsService = {
   },
 
   async markAsRead(eventId: string): Promise<void> {
-    const response = await fetch(`${BASE_URL}/v1/update/event/ok`, {
+    console.log(eventId)
+    const response = await fetch(`${BASE_URL}/v1/read/event`, {
       method: "PUT",
       headers: getAuthHeaders(),
       body: JSON.stringify({ eventId }),
@@ -44,7 +45,7 @@ export const notificationsService = {
   },
 
   async markAllAsRead(userId: string): Promise<void> {
-    const response = await fetch(`${BASE_URL}/v1/update/events/ok`, {
+    const response = await fetch(`${BASE_URL}/v1/read/events`, {
       method: "PUT",
       headers: getAuthHeaders(),
       body: JSON.stringify({ userId }),
@@ -52,3 +53,4 @@ export const notificationsService = {
     if (!response.ok) throw new Error("Erro ao marcar todos eventos como lidos");
   },
 };
+

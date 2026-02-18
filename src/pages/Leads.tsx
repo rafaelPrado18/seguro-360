@@ -343,9 +343,11 @@ const Leads = () => {
                 </Button>
               </>
             )}
+            {/*
             <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90" size="sm" onClick={() => setNewLeadOpen(true)}>
               <Plus className="h-4 w-4" /> Novo Lead
             </Button>
+            */}
           </div>
         </div>
 

@@ -149,7 +149,7 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
                         <p className="text-sm font-medium truncate">{n.title}</p>
                         <p className="text-xs text-muted-foreground truncate">{n.message}</p>
                         <p className="text-[10px] text-muted-foreground mt-1">
-                          {formatDistanceToNow(new Date(n.timestamp), { addSuffix: true, locale: ptBR })}
+                          {n.timestamp}
                         </p>
                       </div>
                     </div>

@@ -152,10 +152,10 @@ export const leadsService = {
     return response.json();
   },
 
-  // PUT /api/leads/:id/status - Alterar status do lead
+  // PATCH /api/leads/:id/status - Alterar status do lead
   async updateStatus(id: string, status: Lead["status"], observacao?: string): Promise<Lead> {
     const response = await fetch(`${BASE_URL}/v1/update/lead/real/status`, {
-      method: "PUT",
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status, observacao }),
     });
