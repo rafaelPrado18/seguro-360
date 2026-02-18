@@ -59,7 +59,7 @@ export const leadsService = {
       });
     }
 
-    if (userFunction != 'administrador'){
+    if (userFunction !== 'administrador' && userFunction !== 'super_admin'){
       const response = await fetch(`${BASE_URL}/v1/read/leads?leadTag=corretor_responsavel&leadValue=${currentUser}`);
       if (!response.ok) throw new Error("Erro ao buscar leads");
       return response.json();
