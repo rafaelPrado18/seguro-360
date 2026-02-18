@@ -318,8 +318,8 @@ const Leads = () => {
     const matchesSearch = l.nome?.toLowerCase()?.includes(search?.toLowerCase()) || l.telefone?.includes(search);
     const matchesStatus = statusFilter === "all" || l.status === statusFilter;
     const matchesCorretor = isAdmin
-      ? corretorFilter.length === 0 || corretorFilter.includes(l.corretor_responsavel || "")
-      : l.corretor_responsavel === currentUser.nome || !l.corretor_responsavel;
+      ? corretorFilter.length === 0 || corretorFilter.some(f => f.toLowerCase() === (l.corretor_responsavel || "").toLowerCase())
+      : (l.corretor_responsavel || "").toLowerCase() === currentUser.nome.toLowerCase() || !l.corretor_responsavel;
     
     let matchesDate = true;
     if (dateFilter !== "all" && l.created_at) {
