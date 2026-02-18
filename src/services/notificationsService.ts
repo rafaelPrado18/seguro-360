@@ -26,7 +26,7 @@ export interface NotificationEvent {
 
 export const notificationsService = {
   async getEvents(userId: string): Promise<NotificationEvent[]> {
-    const response = await fetch(`${BASE_URL}/v1/read/events?userId=${userId}`, {
+    const response = await fetch(`${BASE_URL}/v1/read/events?userId=${userId.toLowerCase()}`, {
       method: "GET",
       headers: getAuthHeaders(),
     });

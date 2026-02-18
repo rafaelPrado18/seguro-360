@@ -97,7 +97,6 @@ const Leads = () => {
   const { data: apiData } = useLeads(null, currentUser.nome, role);
   const { data: apiStatuses } = useLeadStatuses();
   const { data: agents } = useAgents();
-
   const agentCorretores = useMemo(() => {
     if (!agents) return [];
     return agents.filter(a => a.isActive && a.function !== "administrador" && a.function !== "Super Admin");

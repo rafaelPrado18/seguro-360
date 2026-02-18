@@ -33,7 +33,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
 
   const filteredLeads = corretorFilter
-    ? leads.filter(l => l.corretor_responsavel === corretorFilter)
+    ? leads.filter(l => l.corretor_responsavel.toLowerCase() === corretorFilter.toLowerCase())
     : leads;
 
   const getColumnLeads = (columnId: string) =>
