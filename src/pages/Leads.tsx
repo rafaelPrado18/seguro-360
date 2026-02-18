@@ -28,15 +28,8 @@ import { whatsappService } from "@/services/whatsappService";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useLeads, useUpdateLeadStatus} from "@/hooks/useLeads";
 import { useLeadStatuses } from "@/hooks/useStatus";
+import { useAgents } from "@/hooks/useAgents";
 import { v4 as uuidv4 } from "uuid";
-
-const PLACEHOLDER_DISTRIBUTION = [
-  { corretor_id: "1", corretor_nome: "André Oliveira", total_leads: 32, convertidos: 12, taxa_conversao: 37.5, valor_total_convertido: 156000 },
-  { corretor_id: "2", corretor_nome: "Beatriz Costa", total_leads: 28, convertidos: 10, taxa_conversao: 35.7, valor_total_convertido: 132000 },
-  { corretor_id: "3", corretor_nome: "Carlos Neto", total_leads: 25, convertidos: 8, taxa_conversao: 32.0, valor_total_convertido: 98000 },
-  { corretor_id: "4", corretor_nome: "Diana Alves", total_leads: 30, convertidos: 9, taxa_conversao: 30.0, valor_total_convertido: 115000 },
-  { corretor_id: "5", corretor_nome: "Eduardo Ramos", total_leads: 27, convertidos: 6, taxa_conversao: 22.2, valor_total_convertido: 78000 },
-];
 
 const PLACEHOLDER_LEADS: Lead[] = [];
 
@@ -102,6 +95,12 @@ const Leads = () => {
   const { role } = useRole();
   const { data: apiData } = useLeads(null, currentUser.nome, role);
   const { data: apiStatuses } = useLeadStatuses();
+  const { data: agents } = useAgents();
+
+  const agentCorretores = useMemo(() => {
+    if (!agents) return [];
+    return agents.filter(a => a.isActive && a.function !== "administrador" && a.function !== "Super Admin");
+  }, [agents]);
 
   const kanbanColumns: KanbanColumn[] = useMemo(() => {
     console.log(apiStatuses)
@@ -204,7 +203,21 @@ const Leads = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<WhatsAppTemplate | null>(null);
   const [sendMessage, setSendMessage] = useState(true);
 
-  const distribution = PLACEHOLDER_DISTRIBUTION;
+  const distribution = useMemo(() => {
+    return agentCorretores.map(a => ({
+      corretor_id: a.agentId,
+      corretor_nome: a.name,
+      total_leads: leads.filter(l => l.corretor_responsavel === a.name).length,
+      convertidos: leads.filter(l => l.corretor_responsavel === a.name && l.status === "convertido").length,
+      taxa_conversao: (() => {
+        const total = leads.filter(l => l.corretor_responsavel === a.name).length;
+        const conv = leads.filter(l => l.corretor_responsavel === a.name && l.status === "convertido").length;
+        return total > 0 ? Number(((conv / total) * 100).toFixed(1)) : 0;
+      })(),
+      valor_total_convertido: leads.filter(l => l.corretor_responsavel === a.name && l.status === "convertido")
+        .reduce((sum, l) => sum + (l.valor_estimado || 0), 0),
+    }));
+  }, [agentCorretores, leads]);
 
   const getTemplateForStatus = (status: string): WhatsAppTemplate | null => {
     console.log('status:', status)
