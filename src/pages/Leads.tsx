@@ -625,21 +625,25 @@ const Leads = () => {
           open={redistribuirOpen}
           onOpenChange={setRedistribuirOpen}
           corretores={distribution.map(d => ({ id: d.corretor_id, nome: d.corretor_nome }))}
-          onRedistribuir={({ data, horarioPartir, corretorOrigem }) => {
-            // Filter leads from the given date/time and corretor, then redistribute
+          onRedistribuir={({ data, horarioPartir, corretorOrigem, corretoresDestino }) => {
             const dateStr = data.toISOString().split("T")[0];
             const cutoff = new Date(`${dateStr}T${horarioPartir}:00`).getTime();
+            // Get destination corretor names
+            const destinoNames = corretoresDestino.map(id => {
+              const agent = agentCorretores.find(a => a.agentId === id);
+              return agent?.name || id;
+            });
+            // Get origin corretor names
+            const origemNames = corretorOrigem.length > 0
+              ? corretorOrigem.map(id => agentCorretores.find(a => a.agentId === id)?.name).filter(Boolean)
+              : [];
             setLeads(prev => {
-              const corretorNames = distribution.map(d => d.corretor_nome);
               let idx = 0;
               return prev.map(l => {
                 const leadTime = new Date(l.created_at).getTime();
                 if (leadTime < cutoff) return l;
-                if (corretorOrigem !== "all") {
-                  const corretorNome = distribution.find(d => d.corretor_id === corretorOrigem)?.corretor_nome;
-                  if (l.corretor_responsavel !== corretorNome && l.corretor_responsavel !== null) return l;
-                }
-                const assigned = corretorNames[idx % corretorNames.length];
+                if (origemNames.length > 0 && !origemNames.includes(l.corretor_responsavel || "")) return l;
+                const assigned = destinoNames[idx % destinoNames.length];
                 idx++;
                 return { ...l, corretor_responsavel: assigned, updated_at: new Date().toISOString() };
               });
