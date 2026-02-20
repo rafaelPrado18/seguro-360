@@ -107,15 +107,28 @@ export const whatsappService = {
     return response.json();
   },
 
-  // POST /api/whatsapp/messages/send - Enviar mensagem
-  async sendMessage(payload: SendMessagePayload): Promise<WhatsAppMessage> {
+  // PUT /v1/send/message - Enviar mensagem
+  async sendMessage(payload: SendMessagePayload): Promise<void> {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({
+      userId: payload.userId,
+      chatId: payload.chatId,
+      message: payload.message,
+    });
+
     const response = await fetch(`${BASE_URL}/v1/send/message`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json", "authorization": `Bearer ${userToken}`,},
-      body: JSON.stringify(payload),
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
     });
+
+    const result = await response.text();
+    console.log("sendMessage result:", result);
+
     if (!response.ok) throw new Error("Erro ao enviar mensagem");
-    return;
   },
 
   // POST /api/whatsapp/messages/send-bulk - Enviar mensagem em massa

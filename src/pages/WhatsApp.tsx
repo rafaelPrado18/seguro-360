@@ -106,9 +106,14 @@ const WhatsApp = () => {
   // --- Send text ---
   const handleSend = () => {
     if (!messageInput.trim() || !selectedContact) return;
+
+    // Garante o sufixo @c.us no chatId conforme formato da API
+    const rawPhone = selectedContact.telefone.replace(/\D/g, "");
+    const chatId = rawPhone.includes("@") ? rawPhone : `${rawPhone}@c.us`;
+
     sendMessageMutation.mutate(
       {
-        chatId: selectedContact.id,
+        chatId,
         tipo: "text",
         userId,
         message: messageInput,
