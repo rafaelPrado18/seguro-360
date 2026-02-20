@@ -21,11 +21,11 @@ interface RedistribuirLeadsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   corretores: { id: string; nome: string }[];
-  onRedistribuir: (params: { data: Date; horarioPartir: string; corretorOrigem: string[]; corretoresDestino: string[] }) => void;
+  onRedistribuir: (params: { startDate: Date; startHour: string; corretorOrigem: string[]; corretoresDestino: string[] }) => void;
 }
 
 export function RedistribuirLeadsDialog({ open, onOpenChange, corretores, onRedistribuir }: RedistribuirLeadsDialogProps) {
-  const [data, setData] = useState<Date>(new Date());
+  const [startDate, setStartDate] = useState<Date>(new Date());
   const [horario, setHorario] = useState("08:00");
   const [selectedOrigem, setSelectedOrigem] = useState<string[]>([]);
   const [selectedDestino, setSelectedDestino] = useState<string[]>([]);
@@ -63,7 +63,7 @@ export function RedistribuirLeadsDialog({ open, onOpenChange, corretores, onRedi
       toast.error("Selecione ao menos um corretor de destino.");
       return;
     }
-    onRedistribuir({ data, horarioPartir: horario, corretorOrigem: selectedOrigem, corretoresDestino: selectedDestino });
+    onRedistribuir({ startDate, startHour: horario, corretorOrigem: selectedOrigem, corretoresDestino: selectedDestino });
     toast.success(`Leads redistribuídos para ${selectedDestino.length} corretor(es) com sucesso!`);
     onOpenChange(false);
   };
@@ -98,14 +98,14 @@ export function RedistribuirLeadsDialog({ open, onOpenChange, corretores, onRedi
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className={cn("w-full justify-start text-left font-normal h-9 text-sm", !data && "text-muted-foreground")}
+                  className={cn("w-full justify-start text-left font-normal h-9 text-sm", !startDate && "text-muted-foreground")}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {data ? format(data, "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
+                  {startDate ? format(startDate, "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={data} onSelect={(d) => d && setData(d)} initialFocus className={cn("p-3 pointer-events-auto")} />
+                <Calendar mode="single" selected={startDate} onSelect={(d) => d && setStartDate(d)} initialFocus className={cn("p-3 pointer-events-auto")} />
               </PopoverContent>
             </Popover>
           </div>
@@ -142,10 +142,10 @@ export function RedistribuirLeadsDialog({ open, onOpenChange, corretores, onRedi
                     <span className="text-sm font-medium">Todos</span>
                   </label>
                   {allCorretores.map(a => (
-                    <label key={a.agentId} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/60 cursor-pointer transition-colors">
+                    <label key={a.name} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/60 cursor-pointer transition-colors">
                       <Checkbox
-                        checked={selectedOrigem.includes(a.agentId)}
-                        onCheckedChange={() => toggleOrigem(a.agentId)}
+                        checked={selectedOrigem.includes(a.name)}
+                        onCheckedChange={() => toggleOrigem(a.name)}
                       />
                       <span className="text-sm">{a.name}</span>
                     </label>
@@ -179,7 +179,7 @@ export function RedistribuirLeadsDialog({ open, onOpenChange, corretores, onRedi
                     id="select-all-dest"
                     checked={selectedDestino.length === onlineCorretores.length && onlineCorretores.length > 0}
                     onCheckedChange={(checked) => {
-                      setSelectedDestino(checked ? onlineCorretores.map(c => c.agentId) : []);
+                      setSelectedDestino(checked ? onlineCorretores.map(c => c.name) : []);
                     }}
                   />
                   <label htmlFor="select-all-dest" className="text-sm font-medium cursor-pointer">
@@ -190,11 +190,11 @@ export function RedistribuirLeadsDialog({ open, onOpenChange, corretores, onRedi
                   <div className="divide-y">
                     {onlineCorretores.map((agent) => (
                       <div
-                        key={agent.agentId}
+                        key={agent.name}
                         className="flex items-center gap-2 px-3 py-2 hover:bg-muted/20 cursor-pointer"
-                        onClick={() => toggleDestino(agent.agentId)}
+                        onClick={() => toggleDestino(agent.name)}
                       >
-                        <Checkbox checked={selectedDestino.includes(agent.agentId)} onCheckedChange={() => toggleDestino(agent.agentId)} />
+                        <Checkbox checked={selectedDestino.includes(agent.name)} onCheckedChange={() => toggleDestino(agent.name)} />
                         <Circle className="h-2 w-2 fill-emerald-500 text-emerald-500" />
                         <span className="text-sm">{agent.name}</span>
                       </div>

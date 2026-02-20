@@ -86,7 +86,7 @@ export function useUpdateLeadStatus() {
 export function useRedistributeLeads() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (params: { data: string; horarioPartir: string; corretorOrigem: string[]; corretoresDestino: string[] }) =>
+    mutationFn: (params: { startDate: string; startHour: string; corretorOrigem: string[]; corretoresDestino: string[] }) =>
       leadsService.redistributeLeads(params),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["leads"] }),
   });

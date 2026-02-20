@@ -59,7 +59,7 @@ export const leadsService = {
       });
     }
 
-    if (userFunction !== 'administrador' && userFunction !== 'super_admin'){
+    if (userFunction != 'administrador'){
       const response = await fetch(`${BASE_URL}/v1/read/leads?leadTag=corretor_responsavel&leadValue=${currentUser}`);
       if (!response.ok) throw new Error("Erro ao buscar leads");
       return response.json();
@@ -164,16 +164,18 @@ export const leadsService = {
 
   // POST /v1/redistribute/leads - Redistribuir leads
   async redistributeLeads(params: {
-    data: string;
-    horarioPartir: string;
+    startDate: string;
+    startHour: string;
     corretorOrigem: string[];
     corretoresDestino: string[];
   }): Promise<void> {
+    console.log
     const response = await fetch(`${BASE_URL}/v1/redistribute/leads`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(params),
     });
+    console.log(response.status)
     if (!response.ok) throw new Error("Erro ao redistribuir leads");
   },
 };

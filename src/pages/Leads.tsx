@@ -97,6 +97,7 @@ const Leads = () => {
   const { data: apiData } = useLeads(null, currentUser.nome, role);
   const { data: apiStatuses } = useLeadStatuses();
   const { data: agents } = useAgents();
+
   const agentCorretores = useMemo(() => {
     if (!agents) return [];
     return agents.filter(a => a.isActive && a.function !== "administrador" && a.function !== "Super Admin");
@@ -207,15 +208,15 @@ const Leads = () => {
   const distribution = useMemo(() => {
     return agentCorretores.map(a => ({
       corretor_id: a.agentId,
-      corretor_nome: a.name,
-      total_leads: leads.filter(l => l.corretor_responsavel === a.name).length,
-      convertidos: leads.filter(l => l.corretor_responsavel === a.name && l.status === "convertido").length,
+      corretor_nome: a.name.toLowerCase(),
+      total_leads: leads.filter(l => l.corretor_responsavel.toLowerCase() === a.name.toLowerCase()).length,
+      convertidos: leads.filter(l => l.corretor_responsavel.toLowerCase() === a.name.toLowerCase() && l.status === "convertido").length,
       taxa_conversao: (() => {
-        const total = leads.filter(l => l.corretor_responsavel === a.name).length;
-        const conv = leads.filter(l => l.corretor_responsavel === a.name && l.status === "convertido").length;
+        const total = leads.filter(l => l.corretor_responsavel.toLowerCase() === a.name.toLowerCase()).length;
+        const conv = leads.filter(l => l.corretor_responsavel.toLowerCase() === a.name.toLowerCase() && l.status === "convertido").length;
         return total > 0 ? Number(((conv / total) * 100).toFixed(1)) : 0;
       })(),
-      valor_total_convertido: leads.filter(l => l.corretor_responsavel === a.name && l.status === "convertido")
+      valor_total_convertido: leads.filter(l => l.corretor_responsavel.toLowerCase() === a.name.toLowerCase() && l.status === "convertido")
         .reduce((sum, l) => sum + (l.valor_estimado || 0), 0),
     }));
   }, [agentCorretores, leads]);
@@ -318,8 +319,8 @@ const Leads = () => {
     const matchesSearch = l.nome?.toLowerCase()?.includes(search?.toLowerCase()) || l.telefone?.includes(search);
     const matchesStatus = statusFilter === "all" || l.status === statusFilter;
     const matchesCorretor = isAdmin
-      ? corretorFilter.length === 0 || corretorFilter.some(f => f.toLowerCase() === (l.corretor_responsavel || "").toLowerCase())
-      : (l.corretor_responsavel || "").toLowerCase() === currentUser.nome.toLowerCase() || !l.corretor_responsavel;
+      ? corretorFilter.length === 0 || corretorFilter.includes(l.corretor_responsavel.toLowerCase() || "")
+      : l.corretor_responsavel.toLowerCase() === currentUser.nome.toLowerCase() || !l.corretor_responsavel.toLowerCase();
     
     let matchesDate = true;
     if (dateFilter !== "all" && l.created_at) {
@@ -454,7 +455,7 @@ const Leads = () => {
                       {corretorFilter.length === 0
                         ? "Todos os Corretores"
                         : corretorFilter.length === 1
-                        ? distribution.find(d => d.corretor_nome === corretorFilter[0])?.corretor_nome || "1 corretor"
+                        ? distribution.find(d => d.corretor_nome.toLowerCase() === corretorFilter[0])?.corretor_nome.toLowerCase() || "1 corretor"
                         : `${corretorFilter.length} corretores`}
                     </span>
                     <Users className="h-3.5 w-3.5 ml-1 shrink-0 text-muted-foreground" />
@@ -475,16 +476,16 @@ const Leads = () => {
                         className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/60 cursor-pointer transition-colors"
                       >
                         <Checkbox
-                          checked={corretorFilter.includes(d.corretor_nome)}
+                          checked={corretorFilter.includes(d.corretor_nome.toLowerCase())}
                           onCheckedChange={(checked) => {
                             setCorretorFilter(prev =>
                               checked
-                                ? [...prev, d.corretor_nome]
-                                : prev.filter(n => n !== d.corretor_nome)
+                                ? [...prev, d.corretor_nome.toLowerCase()]
+                                : prev.filter(n => n !== d.corretor_nome.toLowerCase())
                             );
                           }}
                         />
-                        <span className="text-sm">{d.corretor_nome}</span>
+                        <span className="text-sm">{d.corretor_nome.toLowerCase()}</span>
                       </label>
                     ))}
                   </div>
@@ -625,10 +626,10 @@ const Leads = () => {
           open={redistribuirOpen}
           onOpenChange={setRedistribuirOpen}
           corretores={distribution.map(d => ({ id: d.corretor_id, nome: d.corretor_nome }))}
-          onRedistribuir={({ data, horarioPartir, corretorOrigem, corretoresDestino }) => {
-            const dateStr = data.toISOString().split("T")[0];
+          onRedistribuir={({ startDate, startHour, corretorOrigem, corretoresDestino }) => {
+            const dateStr = startDate.toISOString().split("T")[0];
             redistributeLeads.mutate(
-              { data: dateStr, horarioPartir, corretorOrigem, corretoresDestino },
+              { startDate: dateStr, startHour, corretorOrigem, corretoresDestino },
               {
                 onSuccess: () => toast.success("Leads redistribuídos com sucesso!"),
                 onError: () => toast.error("Erro ao redistribuir leads."),
