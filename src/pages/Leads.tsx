@@ -208,15 +208,15 @@ const Leads = () => {
   const distribution = useMemo(() => {
     return agentCorretores.map(a => ({
       corretor_id: a.agentId,
-      corretor_nome: a.name.toLowerCase(),
-      total_leads: leads.filter(l => l.corretor_responsavel.toLowerCase() === a.name.toLowerCase()).length,
-      convertidos: leads.filter(l => l.corretor_responsavel.toLowerCase() === a.name.toLowerCase() && l.status === "convertido").length,
+      corretor_nome: a.name?.toLowerCase(),
+      total_leads: leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase()).length,
+      convertidos: leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase() && l.status === "convertido").length,
       taxa_conversao: (() => {
-        const total = leads.filter(l => l.corretor_responsavel.toLowerCase() === a.name.toLowerCase()).length;
-        const conv = leads.filter(l => l.corretor_responsavel.toLowerCase() === a.name.toLowerCase() && l.status === "convertido").length;
+        const total = leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase()).length;
+        const conv = leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase() && l.status === "convertido").length;
         return total > 0 ? Number(((conv / total) * 100).toFixed(1)) : 0;
       })(),
-      valor_total_convertido: leads.filter(l => l.corretor_responsavel.toLowerCase() === a.name.toLowerCase() && l.status === "convertido")
+      valor_total_convertido: leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase() && l.status === "convertido")
         .reduce((sum, l) => sum + (l.valor_estimado || 0), 0),
     }));
   }, [agentCorretores, leads]);
@@ -319,8 +319,8 @@ const Leads = () => {
     const matchesSearch = l.nome?.toLowerCase()?.includes(search?.toLowerCase()) || l.telefone?.includes(search);
     const matchesStatus = statusFilter === "all" || l.status === statusFilter;
     const matchesCorretor = isAdmin
-      ? corretorFilter.length === 0 || corretorFilter.includes(l.corretor_responsavel.toLowerCase() || "")
-      : l.corretor_responsavel.toLowerCase() === currentUser.nome.toLowerCase() || !l.corretor_responsavel.toLowerCase();
+      ? corretorFilter.length === 0 || corretorFilter.includes(l.corretor_responsavel?.toLowerCase() || "")
+      : l.corretor_responsavel?.toLowerCase() === currentUser.nome.toLowerCase() || !l.corretor_responsavel?.toLowerCase();
     
     let matchesDate = true;
     if (dateFilter !== "all" && l.created_at) {
@@ -476,16 +476,16 @@ const Leads = () => {
                         className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/60 cursor-pointer transition-colors"
                       >
                         <Checkbox
-                          checked={corretorFilter.includes(d.corretor_nome.toLowerCase())}
+                          checked={corretorFilter.includes(d.corretor_nome?.toLowerCase())}
                           onCheckedChange={(checked) => {
                             setCorretorFilter(prev =>
                               checked
-                                ? [...prev, d.corretor_nome.toLowerCase()]
-                                : prev.filter(n => n !== d.corretor_nome.toLowerCase())
+                                ? [...prev, d.corretor_nome?.toLowerCase()]
+                                : prev.filter(n => n !== d.corretor_nome?.toLowerCase())
                             );
                           }}
                         />
-                        <span className="text-sm">{d.corretor_nome.toLowerCase()}</span>
+                        <span className="text-sm">{d.corretor_nome?.toLowerCase()}</span>
                       </label>
                     ))}
                   </div>

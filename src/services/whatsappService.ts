@@ -76,7 +76,7 @@ export const whatsappService = {
     data: WhatsAppContact[];
     total: number;
   }> {
-    const response = await fetch(`http://localhost:5002/mango-softwares/v1/whatsapp/conversations?name=${name}`);
+    const response = await fetch(`${BASE_URL}/v1/whatsapp/conversations?name=${name}`);
     if (!response.ok) throw new Error("Erro ao buscar conversas");
     return response.json();
   },
@@ -96,6 +96,7 @@ export const whatsappService = {
   async sendMessage(payload: SendMessagePayload): Promise<void> {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Authorization", `Bearer ${userToken}`);
     
     const raw = JSON.stringify({
       userId: payload.userId,
@@ -135,21 +136,21 @@ export const whatsappService = {
     });
 
     // TODO: Substituir pelo fetch real. Exemplo esperado:
-    // const formData = new FormData();
-    // formData.append("userId", payload.userId);
-    // formData.append("chatId", payload.chatId);
-    // formData.append("tipo", payload.tipo);
-    // formData.append("file", payload.file);
-    // if (payload.caption) formData.append("caption", payload.caption);
-    //
-    // const response = await fetch(`${BASE_URL}/v1/send/media`, {
-    //   method: "POST",
-    //   body: formData,
-    // });
-    // if (!response.ok) throw new Error("Erro ao enviar mídia");
+     const formData = new FormData();
+     formData.append("userId", payload.userId);
+     formData.append("chatId", payload.chatId);
+     formData.append("tipo", payload.tipo);
+     formData.append("file", payload.file);
+     if (payload.caption) formData.append("caption", payload.caption);
+    
+     const response = await fetch(`${BASE_URL}/v1/send/media`, {
+       method: "POST",
+       body: formData,
+     });
+     if (!response.ok) throw new Error("Erro ao enviar mídia");
 
     // Mock: simula delay
-    await new Promise(r => setTimeout(r, 800));
+    //await new Promise(r => setTimeout(r, 800));
   },
 
   // POST /api/whatsapp/messages/send-bulk - Enviar mensagem em massa

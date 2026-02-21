@@ -60,7 +60,6 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
     setDragOverColumn(null);
     if (draggedLead && draggedLead.status !== columnId) {
       onStatusChange(draggedLead.id, columnId);
-      console.log('teste')
     }
     setDraggedLead(null);
   };

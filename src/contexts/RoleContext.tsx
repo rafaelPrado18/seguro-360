@@ -36,15 +36,11 @@ function getUserFromCookies(): UserProfile | null {
   const userName = getCookie("userName");
   const userEmail = getCookie("userEmail");
   const userFunction = getCookie("userFunction");
-  console.log('teste', userFunction)
 
   if (!userId || !userName) return null;
 
   const role = FUNCTION_TO_ROLE[userFunction] || "corretor";
 
-  console.log('teste 2', userFunction)
-  console.log('teste 3', FUNCTION_TO_ROLE)
-  console.log('teste 4', role)
 
   return {
     id: userId,

@@ -462,7 +462,7 @@ const WhatsApp = () => {
                               </>
                             )}
                             <div className={`flex items-center gap-1 mt-1 ${msg.direcao === "enviada" ? "justify-end" : ""}`}>
-                              <span className="text-[10px] opacity-60">{formatTime(msg.created_at)}</span>
+                              <span className="text-[10px] opacity-60">{msg.created_at}</span>
                               {msg.direcao === "enviada" && <StatusIcon status={msg.status} />}
                             </div>
                           </div>
