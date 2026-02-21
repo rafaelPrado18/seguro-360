@@ -79,10 +79,10 @@ const WhatsApp = () => {
   const contacts = conversationsData?.data || [];
   const filteredContacts = contacts;
 
-  const rawMessages: WhatsAppMessage[] = messagesData?.success || [];
+  const rawMessages: WhatsAppMessage[] = (messagesData as any)?.success || (messagesData as any)?.data || [];
   const messages: ExtMessage[] = rawMessages.map(m => ({
     ...m,
-    conteudo: deletedMsgs.has(m.id) ? "Mensagem apagada" : (editedMsgs[m.id] ?? m.conteudo),
+    conteudo: deletedMsgs.has(m.id) ? "Mensagem apagada" : (editedMsgs[m.id] ?? (m.conteudo || "").replace(/^\*[^*]+\*:\s*\n?/, "")),
     reaction: localReactions[m.id],
     deleted: deletedMsgs.has(m.id),
     edited: !!editedMsgs[m.id],
