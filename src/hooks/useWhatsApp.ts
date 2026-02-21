@@ -42,6 +42,18 @@ export function useSendWhatsAppMessage() {
   });
 }
 
+export function useSendWhatsAppMedia() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { userId: string; chatId: string; tipo: "image" | "document" | "audio"; file: File; caption?: string }) =>
+      whatsappService.sendMedia(payload),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["whatsapp", "messages"] });
+      qc.invalidateQueries({ queryKey: ["whatsapp", "conversations"] });
+    },
+  });
+}
+
 export function useSendBulkWhatsAppMessage() {
   const qc = useQueryClient();
   return useMutation({

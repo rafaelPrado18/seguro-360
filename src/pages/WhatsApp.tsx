@@ -21,6 +21,7 @@ import {
   useWhatsAppConversations,
   useWhatsAppMessages,
   useSendWhatsAppMessage,
+  useSendWhatsAppMedia,
   useArchiveConversation,
   useMarkAsRead,
 } from "@/hooks/useWhatsApp";
@@ -73,6 +74,7 @@ const WhatsApp = () => {
   const { data: conversationsData, isLoading: loadingConversations } = useWhatsAppConversations(currentUser.nome);
   const { data: messagesData, isLoading: loadingMessages } = useWhatsAppMessages(`${selectedContact?.telefone}@c.us` || null, currentUser.nome);
   const sendMessageMutation = useSendWhatsAppMessage();
+  const sendMediaMutation = useSendWhatsAppMedia();
   const archiveMutation = useArchiveConversation();
   const markAsReadMutation = useMarkAsRead();
 
@@ -155,40 +157,79 @@ const WhatsApp = () => {
     });
   };
 
-  // --- File attach ---
+  // --- File attach (image/document) ---
   const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || !selectedContact) return;
+
+    const rawPhone = selectedContact.telefone.replace(/\D/g, "");
+    const chatId = rawPhone.includes("@") ? rawPhone : `${rawPhone}@c.us`;
+
     Array.from(files).forEach(file => {
       const isImage = file.type.startsWith("image/");
-      sendMessageMutation.mutate({
-        chatId: selectedContact.id,
-        tipo: isImage ? "image" : "document",
-        userId,
-        message: file.name,
-        media_url: URL.createObjectURL(file),
-      });
+      const isAudio = file.type.startsWith("audio/");
+      const tipo = isImage ? "image" : isAudio ? "audio" : "document";
+
+      sendMediaMutation.mutate(
+        { userId, chatId, tipo, file, caption: file.name },
+        {
+          onSuccess: () => {
+            toast({ title: `${isImage ? "Foto" : isAudio ? "Áudio" : "Documento"} enviado`, description: file.name });
+          },
+          onError: () => {
+            toast({ title: "Erro", description: `Falha ao enviar ${file.name}`, variant: "destructive" });
+          },
+        }
+      );
     });
     e.target.value = "";
   };
 
   // --- Audio recording ---
-  const startRecording = () => {
-    setIsRecording(true);
-    setRecordingTime(0);
-    recordingRef.current = window.setInterval(() => setRecordingTime(t => t + 1), 1000);
+  const audioRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.start();
+      audioRecorderRef.current = recorder;
+      setIsRecording(true);
+      setRecordingTime(0);
+      recordingRef.current = window.setInterval(() => setRecordingTime(t => t + 1), 1000);
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível acessar o microfone", variant: "destructive" });
+    }
   };
+
   const stopRecording = (send: boolean) => {
     if (recordingRef.current) clearInterval(recordingRef.current);
     setIsRecording(false);
-    if (send && selectedContact) {
-      sendMessageMutation.mutate({
-        chatId: selectedContact.id,
-        tipo: "audio",
-        userId,
-        message: `audio_${recordingTime}s.ogg`,
-      });
-      toast({ title: "Áudio enviado", description: `Duração: ${recordingTime}s` });
+
+    const recorder = audioRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.onstop = () => {
+        recorder.stream.getTracks().forEach(t => t.stop());
+        if (send && selectedContact) {
+          const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+          const file = new File([blob], `audio_${recordingTime}s.webm`, { type: "audio/webm" });
+
+          const rawPhone = selectedContact.telefone.replace(/\D/g, "");
+          const chatId = rawPhone.includes("@") ? rawPhone : `${rawPhone}@c.us`;
+
+          sendMediaMutation.mutate(
+            { userId, chatId, tipo: "audio", file },
+            {
+              onSuccess: () => toast({ title: "Áudio enviado", description: `Duração: ${recordingTime}s` }),
+              onError: () => toast({ title: "Erro", description: "Falha ao enviar áudio", variant: "destructive" }),
+            }
+          );
+        }
+      };
+      recorder.stop();
     }
     setRecordingTime(0);
   };
@@ -497,7 +538,7 @@ const WhatsApp = () => {
                     <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0">
                       <Smile className="h-5 w-5 text-muted-foreground" />
                     </Button>
-                    <input type="file" ref={fileInputRef} className="hidden" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileAttach} />
+                    <input type="file" ref={fileInputRef} className="hidden" multiple accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip" onChange={handleFileAttach} />
                     <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0" onClick={() => fileInputRef.current?.click()}>
                       <Paperclip className="h-5 w-5 text-muted-foreground" />
                     </Button>
