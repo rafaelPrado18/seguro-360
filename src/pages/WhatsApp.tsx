@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -578,12 +579,22 @@ const WhatsApp = () => {
                         </ScrollArea>
                       </PopoverContent>
                     </Popover>
-                    <Input
+                    <Textarea
                       placeholder="Digite uma mensagem..."
-                      className="flex-1 h-9 text-sm bg-muted border-0"
+                      className="flex-1 min-h-[36px] max-h-[120px] text-sm bg-muted border-0 resize-none py-2 overflow-y-auto"
                       value={messageInput}
-                      onChange={(e) => setMessageInput(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                      onChange={(e) => {
+                        setMessageInput(e.target.value);
+                        e.target.style.height = "36px";
+                        e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSend();
+                        }
+                      }}
+                      rows={1}
                     />
                     {messageInput.trim() ? (
                       <Button
