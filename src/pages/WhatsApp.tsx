@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useRole } from "@/contexts/RoleContext";
 import {
   Search, Send, Paperclip, Smile, MoreVertical, Phone, Download,
   Image, FileText, Mic, Check, CheckCheck, Clock, Archive, Tag, Link2,
@@ -66,22 +67,19 @@ const WhatsApp = () => {
   const recordingRef = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { isAdmin, currentUser } = useRole();
 
   // API hooks
-  const { data: conversationsData, isLoading: loadingConversations } = useWhatsAppConversations({
-    search: searchQuery || undefined,
-  });
-  const { data: messagesData, isLoading: loadingMessages } = useWhatsAppMessages(selectedContact?.id || null);
+  const { data: conversationsData, isLoading: loadingConversations } = useWhatsAppConversations(currentUser.nome);
+  const { data: messagesData, isLoading: loadingMessages } = useWhatsAppMessages(`${selectedContact?.telefone}@c.us` || null, currentUser.nome);
   const sendMessageMutation = useSendWhatsAppMessage();
   const archiveMutation = useArchiveConversation();
   const markAsReadMutation = useMarkAsRead();
 
   const contacts = conversationsData?.data || [];
-  const filteredContacts = contacts.filter(c =>
-    c.nome.toLowerCase().includes(searchQuery.toLowerCase()) || c.telefone.includes(searchQuery)
-  );
+  const filteredContacts = contacts;
 
-  const rawMessages: WhatsAppMessage[] = messagesData?.data || [];
+  const rawMessages: WhatsAppMessage[] = messagesData?.success || [];
   const messages: ExtMessage[] = rawMessages.map(m => ({
     ...m,
     conteudo: deletedMsgs.has(m.id) ? "Mensagem apagada" : (editedMsgs[m.id] ?? m.conteudo),
@@ -281,10 +279,10 @@ const WhatsApp = () => {
                       <span className="text-[10px] text-muted-foreground flex-shrink-0 ml-2">{formatTime(c.ultima_mensagem_at)}</span>
                     </div>
                     <p className={`text-xs truncate mt-0.5 ${c.nao_lidas > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                      {c.ultima_mensagem}
+                        {c.ultima_mensagem ? c.ultima_mensagem : "lead novo"}
                     </p>
                     <div className="flex gap-1 mt-1">
-                      {c.tags.slice(0, 2).map(tag => (
+                      {c.tags?.slice(0, 2).map(tag => (
                         <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{tag}</span>
                       ))}
                     </div>

@@ -1,17 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { whatsappService, type ConversationFilters, type SendMessagePayload } from "@/services/whatsappService";
 
-export function useWhatsAppConversations(filters?: ConversationFilters) {
+export function useWhatsAppConversations(name?: string) {
   return useQuery({
-    queryKey: ["whatsapp", "conversations", filters],
-    queryFn: () => whatsappService.getConversations(filters),
+    queryKey: ["whatsapp", "conversations", name],
+    queryFn: () => whatsappService.getConversations(name),
   });
 }
 
-export function useWhatsAppMessages(contatoId: string | null, page?: number) {
+export function useWhatsAppMessages(contatoId: string, consultantId: string) {
   return useQuery({
-    queryKey: ["whatsapp", "messages", contatoId, page],
-    queryFn: () => whatsappService.getMessages(contatoId!, page),
+    queryKey: ["whatsapp", "messages", contatoId, consultantId],
+    queryFn: () => whatsappService.getMessages(contatoId!, consultantId),
     enabled: !!contatoId,
   });
 }

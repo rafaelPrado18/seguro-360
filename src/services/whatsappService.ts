@@ -72,37 +72,22 @@ export const whatsappService = {
 
   
   // GET /api/whatsapp/conversations - Listar conversas
-  async getConversations(filters?: ConversationFilters): Promise<{
+  async getConversations(name?: string): Promise<{
     data: WhatsAppContact[];
     total: number;
   }> {
-    const params = new URLSearchParams();
-    if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          if (Array.isArray(value)) {
-            params.append(key, value.join(","));
-          } else {
-            params.append(key, String(value));
-          }
-        }
-      });
-    }
-    const response = await fetch(`${BASE_URL}/whatsapp/conversations?${params.toString()}`);
+    const response = await fetch(`http://localhost:5002/mango-softwares/v1/whatsapp/conversations?name=${name}`);
     if (!response.ok) throw new Error("Erro ao buscar conversas");
     return response.json();
   },
 
   // GET /api/whatsapp/conversations/:id/messages - Buscar mensagens de uma conversa
-  async getMessages(contatoId: string, page?: number, perPage?: number): Promise<{
+  async getMessages(contatoId: string, consultantId: string): Promise<{
     data: WhatsAppMessage[];
     total: number;
     has_more: boolean;
   }> {
-    const params = new URLSearchParams();
-    if (page) params.append("page", String(page));
-    if (perPage) params.append("per_page", String(perPage));
-    const response = await fetch(`${BASE_URL}/whatsapp/conversations/${contatoId}/messages?${params.toString()}`);
+    const response = await fetch(`${BASE_URL}/whatsapp/conversations/${contatoId}/${consultantId}/messages`);
     if (!response.ok) throw new Error("Erro ao buscar mensagens");
     return response.json();
   },
@@ -111,7 +96,8 @@ export const whatsappService = {
   async sendMessage(payload: SendMessagePayload): Promise<void> {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
-
+    myHeaders.append("Authorization", `Bearer ${userToken}`);
+    
     const raw = JSON.stringify({
       userId: payload.userId,
       chatId: payload.chatId,
