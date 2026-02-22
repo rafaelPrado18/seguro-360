@@ -66,6 +66,8 @@ const WhatsApp = () => {
   const [localReactions, setLocalReactions] = useState<Record<string, string>>({});
   const [deletedMsgs, setDeletedMsgs] = useState<Set<string>>(new Set());
   const [editedMsgs, setEditedMsgs] = useState<Record<string, string>>({});
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [pendingPreviews, setPendingPreviews] = useState<string[]>([]);
   const recordingRef = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -158,15 +160,30 @@ const WhatsApp = () => {
     });
   };
 
-  // --- File attach (image/document) ---
+  // --- File attach (image/document) → shows preview ---
   const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || !selectedContact) return;
 
+    const newFiles = Array.from(files);
+    const newPreviews = newFiles.map(f => f.type.startsWith("image/") ? URL.createObjectURL(f) : "");
+    setPendingFiles(prev => [...prev, ...newFiles]);
+    setPendingPreviews(prev => [...prev, ...newPreviews]);
+    e.target.value = "";
+  };
+
+  const cancelPendingFile = (index: number) => {
+    if (pendingPreviews[index]) URL.revokeObjectURL(pendingPreviews[index]);
+    setPendingFiles(prev => prev.filter((_, i) => i !== index));
+    setPendingPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const sendPendingFiles = () => {
+    if (!selectedContact || pendingFiles.length === 0) return;
     const rawPhone = selectedContact.telefone.replace(/\D/g, "");
     const chatId = rawPhone.includes("@") ? rawPhone : `${rawPhone}@c.us`;
 
-    Array.from(files).forEach(file => {
+    pendingFiles.forEach(file => {
       const isImage = file.type.startsWith("image/");
       const isAudio = file.type.startsWith("audio/");
       const tipo = isImage ? "image" : isAudio ? "audio" : "document";
@@ -174,16 +191,14 @@ const WhatsApp = () => {
       sendMediaMutation.mutate(
         { userId, chatId, tipo, file, caption: file.name },
         {
-          onSuccess: () => {
-            toast({ title: `${isImage ? "Foto" : isAudio ? "Áudio" : "Documento"} enviado`, description: file.name });
-          },
-          onError: () => {
-            toast({ title: "Erro", description: `Falha ao enviar ${file.name}`, variant: "destructive" });
-          },
+          onSuccess: () => toast({ title: `${isImage ? "Foto" : isAudio ? "Áudio" : "Documento"} enviado`, description: file.name }),
+          onError: () => toast({ title: "Erro", description: `Falha ao enviar ${file.name}`, variant: "destructive" }),
         }
       );
     });
-    e.target.value = "";
+    pendingPreviews.forEach(p => { if (p) URL.revokeObjectURL(p); });
+    setPendingFiles([]);
+    setPendingPreviews([]);
   };
 
   // --- Audio recording ---
@@ -215,8 +230,8 @@ const WhatsApp = () => {
       recorder.onstop = () => {
         recorder.stream.getTracks().forEach(t => t.stop());
         if (send && selectedContact) {
-          const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-          const file = new File([blob], `audio_${recordingTime}s.webm`, { type: "audio/webm" });
+          const blob = new Blob(audioChunksRef.current, { type: "audio/ogg; codecs=opus" });
+          const file = new File([blob], `audio_${recordingTime}s.ogg`, { type: "audio/ogg" });
 
           const rawPhone = selectedContact.telefone.replace(/\D/g, "");
           const chatId = rawPhone.includes("@") ? rawPhone : `${rawPhone}@c.us`;
@@ -535,7 +550,38 @@ const WhatsApp = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 max-w-2xl mx-auto">
+                  <div className="max-w-2xl mx-auto">
+                    {/* Preview area for pending files */}
+                    {pendingFiles.length > 0 && (
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        {pendingFiles.map((f, i) => (
+                          <div key={i} className="relative group/preview border border-border rounded-lg overflow-hidden bg-muted/30">
+                            {f.type.startsWith("image/") && pendingPreviews[i] ? (
+                              <img src={pendingPreviews[i]} alt={f.name} className="h-20 w-20 object-cover" />
+                            ) : (
+                              <div className="h-20 w-20 flex flex-col items-center justify-center p-2">
+                                <FileText className="h-6 w-6 text-muted-foreground mb-1" />
+                                <span className="text-[9px] text-muted-foreground text-center truncate w-full">{f.name}</span>
+                              </div>
+                            )}
+                            <button
+                              onClick={() => cancelPendingFile(i)}
+                              className="absolute top-0.5 right-0.5 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover/preview:opacity-100 transition-opacity"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                            <span className="absolute bottom-0.5 left-0.5 text-[8px] bg-background/70 rounded px-1">
+                              {(f.size / 1024).toFixed(0)}KB
+                            </span>
+                          </div>
+                        ))}
+                        <Button size="sm" className="h-8 gap-1 bg-success hover:bg-success/90 text-success-foreground" onClick={sendPendingFiles} disabled={sendMediaMutation.isPending}>
+                          {sendMediaMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                          Enviar {pendingFiles.length > 1 ? `(${pendingFiles.length})` : ""}
+                        </Button>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0">
                       <Smile className="h-5 w-5 text-muted-foreground" />
                     </Button>
@@ -610,6 +656,7 @@ const WhatsApp = () => {
                         <Mic className="h-5 w-5" />
                       </Button>
                     )}
+                    </div>
                   </div>
                 )}
               </div>
