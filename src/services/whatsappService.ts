@@ -126,31 +126,29 @@ export const whatsappService = {
     file: File;
     caption?: string;
   }): Promise<void> {
-    console.log("sendMedia (mock):", {
-      userId: payload.userId,
-      chatId: payload.chatId,
-      tipo: payload.tipo,
-      fileName: payload.file.name,
-      fileSize: payload.file.size,
-      caption: payload.caption,
+    const fileTypeMap: Record<string, string> = {
+      image: "image",
+      document: "document",
+      audio: "audio",
+    };
+
+    const myHeaders = new Headers();
+    myHeaders.append("Authorization", `Bearer ${userToken}`);
+
+    const formdata = new FormData();
+    formdata.append("file", payload.file, payload.file.name);
+    formdata.append("fileType", fileTypeMap[payload.tipo]);
+    formdata.append("userId", payload.userId);
+    formdata.append("chatId", payload.chatId);
+
+    const response = await fetch(`${BASE_URL}/v1/send/media`, {
+      method: "POST",
+      headers: myHeaders,
+      body: formdata,
+      redirect: "follow",
     });
 
-    // TODO: Substituir pelo fetch real. Exemplo esperado:
-     const formData = new FormData();
-     formData.append("userId", payload.userId);
-     formData.append("chatId", payload.chatId);
-     formData.append("tipo", payload.tipo);
-     formData.append("file", payload.file);
-     if (payload.caption) formData.append("caption", payload.caption);
-    
-     const response = await fetch(`${BASE_URL}/v1/send/media`, {
-       method: "POST",
-       body: formData,
-     });
-     if (!response.ok) throw new Error("Erro ao enviar mídia");
-
-    // Mock: simula delay
-    //await new Promise(r => setTimeout(r, 800));
+    if (!response.ok) throw new Error("Erro ao enviar mídia");
   },
 
   // POST /api/whatsapp/messages/send-bulk - Enviar mensagem em massa
