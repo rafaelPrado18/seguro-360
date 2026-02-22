@@ -51,6 +51,53 @@ function getCookie(name: string): string | null {
 
 type ExtMessage = WhatsAppMessage & { reaction?: string; edited?: boolean; deleted?: boolean };
 
+const AudioPlayer = ({ src }: { src: string }) => {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  const toggle = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    if (playing) { a.pause(); } else { a.play(); }
+    setPlaying(!playing);
+  };
+
+  return (
+    <div className="flex items-center gap-2 py-1 min-w-[180px]">
+      <audio
+        ref={audioRef}
+        src={src}
+        preload="metadata"
+        onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
+        onTimeUpdate={() => {
+          const a = audioRef.current;
+          if (a && a.duration) setProgress((a.currentTime / a.duration) * 100);
+        }}
+        onEnded={() => { setPlaying(false); setProgress(0); }}
+      />
+      <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={toggle}>
+        {playing ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+      </Button>
+      <div
+        className="flex-1 h-1 rounded-full bg-background/20 cursor-pointer"
+        onClick={(e) => {
+          const a = audioRef.current;
+          if (!a || !a.duration) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          a.currentTime = ((e.clientX - rect.left) / rect.width) * a.duration;
+        }}
+      >
+        <div className="h-1 rounded-full bg-current transition-all" style={{ width: `${progress}%` }} />
+      </div>
+      <span className="text-[10px] opacity-60">
+        {duration > 0 ? `${Math.floor(duration / 60)}:${Math.floor(duration % 60).toString().padStart(2, "0")}` : "0:00"}
+      </span>
+    </div>
+  );
+};
+
 const WhatsApp = () => {
   const [selectedContact, setSelectedContact] = useState<WhatsAppContact | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -464,13 +511,7 @@ const WhatsApp = () => {
                                     <Download className="h-3.5 w-3.5 opacity-50" />
                                   </a>
                                 ) : msg.tipo === "audio" ? (
-                                  <div className="flex items-center gap-2 py-1 min-w-[180px]">
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0"><Play className="h-3 w-3" /></Button>
-                                    <div className="flex-1 h-1 rounded-full bg-background/20">
-                                      <div className="h-1 rounded-full bg-current w-1/3" />
-                                    </div>
-                                    <span className="text-[10px] opacity-60">0:{msg.conteudo.match(/(\d+)s/)?.[1] || "00"}</span>
-                                  </div>
+                                  <AudioPlayer src={msg.media_url || ""} />
                                 ) : (
                                   <p className="text-sm whitespace-pre-wrap">{msg.conteudo}</p>
                                 )}
