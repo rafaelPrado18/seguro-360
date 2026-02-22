@@ -267,10 +267,16 @@ const WhatsApp = () => {
     setPendingPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+
   const sendPendingFiles = () => {
     if (!selectedContact || pendingFiles.length === 0) return;
     const rawPhone = selectedContact.telefone.replace(/\D/g, "");
     const chatId = rawPhone.includes("@") ? rawPhone : `${rawPhone}@c.us`;
+
+    setUploadingFiles(true);
+    let completed = 0;
+    const total = pendingFiles.length;
 
     pendingFiles.forEach(file => {
       const isImage = file.type.startsWith("image/");
@@ -280,14 +286,29 @@ const WhatsApp = () => {
       sendMediaMutation.mutate(
         { userId, chatId, tipo, file, caption: file.name },
         {
-          onSuccess: () => toast({ title: `${isImage ? "Foto" : isAudio ? "Áudio" : "Documento"} enviado`, description: file.name }),
-          onError: () => toast({ title: "Erro", description: `Falha ao enviar ${file.name}`, variant: "destructive" }),
+          onSuccess: () => {
+            toast({ title: `${isImage ? "Foto" : isAudio ? "Áudio" : "Documento"} enviado`, description: file.name });
+            completed++;
+            if (completed >= total) {
+              pendingPreviews.forEach(p => { if (p) URL.revokeObjectURL(p); });
+              setPendingFiles([]);
+              setPendingPreviews([]);
+              setUploadingFiles(false);
+            }
+          },
+          onError: () => {
+            toast({ title: "Erro", description: `Falha ao enviar ${file.name}`, variant: "destructive" });
+            completed++;
+            if (completed >= total) {
+              pendingPreviews.forEach(p => { if (p) URL.revokeObjectURL(p); });
+              setPendingFiles([]);
+              setPendingPreviews([]);
+              setUploadingFiles(false);
+            }
+          },
         }
       );
     });
-    pendingPreviews.forEach(p => { if (p) URL.revokeObjectURL(p); });
-    setPendingFiles([]);
-    setPendingPreviews([]);
   };
 
   // --- Audio recording ---
@@ -640,27 +661,34 @@ const WhatsApp = () => {
                         {pendingFiles.map((f, i) => (
                           <div key={i} className="relative group/preview border border-border rounded-lg overflow-hidden bg-muted/30">
                             {f.type.startsWith("image/") && pendingPreviews[i] ? (
-                              <img src={pendingPreviews[i]} alt={f.name} className="h-20 w-20 object-cover" />
+                              <img src={pendingPreviews[i]} alt={f.name} className={`h-20 w-20 object-cover ${uploadingFiles ? "opacity-50" : ""}`} />
                             ) : (
-                              <div className="h-20 w-20 flex flex-col items-center justify-center p-2">
+                              <div className={`h-20 w-20 flex flex-col items-center justify-center p-2 ${uploadingFiles ? "opacity-50" : ""}`}>
                                 <FileText className="h-6 w-6 text-muted-foreground mb-1" />
                                 <span className="text-[9px] text-muted-foreground text-center truncate w-full">{f.name}</span>
                               </div>
                             )}
-                            <button
-                              onClick={() => cancelPendingFile(i)}
-                              className="absolute top-0.5 right-0.5 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover/preview:opacity-100 transition-opacity"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
+                            {uploadingFiles && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-background/40">
+                                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                              </div>
+                            )}
+                            {!uploadingFiles && (
+                              <button
+                                onClick={() => cancelPendingFile(i)}
+                                className="absolute top-0.5 right-0.5 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover/preview:opacity-100 transition-opacity"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            )}
                             <span className="absolute bottom-0.5 left-0.5 text-[8px] bg-background/70 rounded px-1">
                               {(f.size / 1024).toFixed(0)}KB
                             </span>
                           </div>
                         ))}
-                        <Button size="sm" className="h-8 gap-1 bg-success hover:bg-success/90 text-success-foreground" onClick={sendPendingFiles} disabled={sendMediaMutation.isPending}>
-                          {sendMediaMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-                          Enviar {pendingFiles.length > 1 ? `(${pendingFiles.length})` : ""}
+                        <Button size="sm" className="h-8 gap-1 bg-success hover:bg-success/90 text-success-foreground" onClick={sendPendingFiles} disabled={uploadingFiles}>
+                          {uploadingFiles ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                          {uploadingFiles ? "Enviando..." : `Enviar ${pendingFiles.length > 1 ? `(${pendingFiles.length})` : ""}`}
                         </Button>
                       </div>
                     )}
