@@ -51,11 +51,14 @@ function getCookie(name: string): string | null {
 
 type ExtMessage = WhatsAppMessage & { reaction?: string; edited?: boolean; deleted?: boolean };
 
+const SPEEDS = [1, 1.5, 2];
+
 const AudioPlayer = ({ src }: { src: string }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [speedIdx, setSpeedIdx] = useState(0);
 
   const toggle = () => {
     const a = audioRef.current;
@@ -64,8 +67,14 @@ const AudioPlayer = ({ src }: { src: string }) => {
     setPlaying(!playing);
   };
 
+  const cycleSpeed = () => {
+    const next = (speedIdx + 1) % SPEEDS.length;
+    setSpeedIdx(next);
+    if (audioRef.current) audioRef.current.playbackRate = SPEEDS[next];
+  };
+
   return (
-    <div className="flex items-center gap-2 py-1 min-w-[180px]">
+    <div className="flex items-center gap-2 py-1 min-w-[200px]">
       <audio
         ref={audioRef}
         src={src}
@@ -91,6 +100,12 @@ const AudioPlayer = ({ src }: { src: string }) => {
       >
         <div className="h-1 rounded-full bg-current transition-all" style={{ width: `${progress}%` }} />
       </div>
+      <button
+        onClick={cycleSpeed}
+        className="text-[10px] font-semibold opacity-70 hover:opacity-100 bg-background/20 rounded px-1.5 py-0.5 shrink-0 transition-opacity"
+      >
+        {SPEEDS[speedIdx]}x
+      </button>
       <span className="text-[10px] opacity-60">
         {duration > 0 ? `${Math.floor(duration / 60)}:${Math.floor(duration % 60).toString().padStart(2, "0")}` : "0:00"}
       </span>
@@ -102,6 +117,7 @@ const WhatsApp = () => {
   const [selectedContact, setSelectedContact] = useState<WhatsAppContact | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [messageInput, setMessageInput] = useState("");
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [showLeadDetails, setShowLeadDetails] = useState(false);
   const [editingMsg, setEditingMsg] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
@@ -486,7 +502,7 @@ const WhatsApp = () => {
                               <>
                                 {msg.tipo === "image" ? (
                                   <div className="space-y-1">
-                                    {msg.media_url && <img src={msg.media_url} alt={msg.conteudo} className="rounded max-w-[240px] max-h-[200px] object-cover" />}
+                                    {msg.media_url && <img src={msg.media_url} alt={msg.conteudo} className="rounded max-w-[240px] max-h-[200px] object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setLightboxUrl(msg.media_url!)} />}
                                     <div className="flex items-center gap-2 py-0.5">
                                       <Image className="h-3 w-3 opacity-70" />
                                       <span className="text-[10px] opacity-80">{msg.conteudo}</span>
@@ -723,6 +739,16 @@ const WhatsApp = () => {
         onOpenChange={setNewLeadOpen}
         onLeadCreated={handleLeadCreated}
       />
+
+      {/* Image Lightbox */}
+      {lightboxUrl && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center" onClick={() => setLightboxUrl(null)}>
+          <button className="absolute top-4 right-4 text-white/80 hover:text-white" onClick={() => setLightboxUrl(null)}>
+            <X className="h-6 w-6" />
+          </button>
+          <img src={lightboxUrl} alt="Preview" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
     </AppLayout>
   );
 };
