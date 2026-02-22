@@ -53,12 +53,25 @@ type ExtMessage = WhatsAppMessage & { reaction?: string; edited?: boolean; delet
 
 const SPEEDS = [1, 1.5, 2];
 
+// Generate deterministic pseudo-random waveform bars from src string
+const generateWaveform = (src: string, bars: number = 32): number[] => {
+  let hash = 0;
+  for (let i = 0; i < src.length; i++) {
+    hash = ((hash << 5) - hash + src.charCodeAt(i)) | 0;
+  }
+  return Array.from({ length: bars }, (_, i) => {
+    const v = Math.abs(Math.sin(hash * (i + 1) * 0.1)) * 0.7 + 0.3;
+    return v;
+  });
+};
+
 const AudioPlayer = ({ src }: { src: string }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [speedIdx, setSpeedIdx] = useState(0);
+  const waveform = useRef(generateWaveform(src)).current;
 
   const toggle = () => {
     const a = audioRef.current;
@@ -71,6 +84,13 @@ const AudioPlayer = ({ src }: { src: string }) => {
     const next = (speedIdx + 1) % SPEEDS.length;
     setSpeedIdx(next);
     if (audioRef.current) audioRef.current.playbackRate = SPEEDS[next];
+  };
+
+  const handleWaveformClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const a = audioRef.current;
+    if (!a || !a.duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    a.currentTime = ((e.clientX - rect.left) / rect.width) * a.duration;
   };
 
   return (
@@ -90,15 +110,20 @@ const AudioPlayer = ({ src }: { src: string }) => {
         {playing ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
       </Button>
       <div
-        className="flex-1 h-1 rounded-full bg-background/20 cursor-pointer"
-        onClick={(e) => {
-          const a = audioRef.current;
-          if (!a || !a.duration) return;
-          const rect = e.currentTarget.getBoundingClientRect();
-          a.currentTime = ((e.clientX - rect.left) / rect.width) * a.duration;
-        }}
+        className="flex-1 flex items-center gap-[2px] h-6 cursor-pointer"
+        onClick={handleWaveformClick}
       >
-        <div className="h-1 rounded-full bg-current transition-all" style={{ width: `${progress}%` }} />
+        {waveform.map((h, i) => {
+          const barProgress = (i / waveform.length) * 100;
+          const isPlayed = barProgress < progress;
+          return (
+            <div
+              key={i}
+              className={`flex-1 rounded-full transition-colors ${isPlayed ? "bg-current opacity-90" : "bg-current opacity-25"}`}
+              style={{ height: `${h * 100}%`, minWidth: 2, maxWidth: 4 }}
+            />
+          );
+        })}
       </div>
       <button
         onClick={cycleSpeed}
@@ -113,6 +138,7 @@ const AudioPlayer = ({ src }: { src: string }) => {
   );
 };
 
+const EMOJI_LIST = ["😀","😂","😍","🥰","😎","🤩","😢","😡","👍","👎","❤️","🔥","🎉","👏","🙏","💪","🤝","✅","⭐","💯"];
 const WhatsApp = () => {
   const [selectedContact, setSelectedContact] = useState<WhatsAppContact | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -639,9 +665,26 @@ const WhatsApp = () => {
                       </div>
                     )}
                     <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0">
-                      <Smile className="h-5 w-5 text-muted-foreground" />
-                    </Button>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0">
+                          <Smile className="h-5 w-5 text-muted-foreground" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-2" side="top" align="start">
+                        <div className="grid grid-cols-5 gap-1">
+                          {EMOJI_LIST.map(e => (
+                            <button
+                              key={e}
+                              className="h-8 w-8 flex items-center justify-center text-lg hover:bg-muted rounded transition-colors"
+                              onClick={() => setMessageInput(prev => prev + e)}
+                            >
+                              {e}
+                            </button>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                     <input type="file" ref={fileInputRef} className="hidden" multiple accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip" onChange={handleFileAttach} />
                     <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0" onClick={() => fileInputRef.current?.click()}>
                       <Paperclip className="h-5 w-5 text-muted-foreground" />
