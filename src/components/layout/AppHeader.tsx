@@ -25,7 +25,33 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
   const [searchValue, setSearchValue] = useState("");
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Update status to offline before clearing cookies
+    const token = document.cookie.match(/(?:^| )userToken=([^;]+)/)?.[1];
+    const userId = document.cookie.match(/(?:^| )userId=([^;]+)/)?.[1];
+    const userName = document.cookie.match(/(?:^| )userName=([^;]+)/)?.[1];
+    const userEmail = document.cookie.match(/(?:^| )userEmail=([^;]+)/)?.[1];
+
+    if (token && userId) {
+      try {
+        await fetch("https://crm-hataseg.com.br/v1/update/agent/status", {
+          method: "PATCH",
+          headers: {
+            "Authorization": `Bearer ${decodeURIComponent(token)}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            agentName: userName ? decodeURIComponent(userName) : "",
+            email: userEmail ? decodeURIComponent(userEmail) : "",
+            status: "offline",
+            userId: decodeURIComponent(userId),
+          }),
+        });
+      } catch (err) {
+        console.error("Erro ao atualizar status para offline:", err);
+      }
+    }
+
     const cookies = ["userToken", "userId", "userName", "userEmail", "userFunction", "userStatus", "assignedConsultant"];
     cookies.forEach(c => document.cookie = `${c}=; path=/; max-age=0`);
     navigate("/login", { replace: true });
