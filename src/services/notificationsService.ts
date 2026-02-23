@@ -1,4 +1,4 @@
-const BASE_URL = "http://173.249.50.11:8000";
+const BASE_URL = "https://crm-hataseg.com.br";
 
 function getCookie(name: string): string {
   const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));

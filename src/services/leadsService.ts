@@ -1,7 +1,7 @@
 // Service layer for Leads API integration
 // Replace BASE_URL and implement your API endpoints
 
-const BASE_URL = "http://173.249.50.11:8000"; // TODO: Replace with your actual API base URL
+const BASE_URL = "https://crm-hataseg.com.br"; // TODO: Replace with your actual API base URL
 
 export interface Lead {
   id: string;

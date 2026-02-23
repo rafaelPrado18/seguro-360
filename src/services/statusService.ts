@@ -13,7 +13,7 @@ export interface LeadStatus {
   template_id: string | null;
 }
 
-const BASE_URL = "http://173.249.50.11:8000";
+const BASE_URL = "https://crm-hataseg.com.br";
 
 export const statusService = {
   async getLeadStatuses(): Promise<LeadStatus[]> {

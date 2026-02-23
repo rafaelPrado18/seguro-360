@@ -1,7 +1,7 @@
 // Service layer for WhatsApp API integration
 // Replace BASE_URL and implement your API endpoints (e.g., WhatsApp Business API, Z-API, Evolution API)
 
-const BASE_URL = "http://173.249.50.11:8000"; // TODO: Replace with your actual API base URL
+const BASE_URL = "https://crm-hataseg.com.br"; // TODO: Replace with your actual API base URL
 
 export interface WhatsAppContact {
   id: string;
@@ -25,7 +25,7 @@ export interface WhatsAppMessage {
   media_url: string | null;
   media_mime_type: string | null;
   direcao: "enviada" | "recebida";
-  status: "enviada" | "entregue" | "lida" | "erro";
+  status: "enviada" | "SERVER" | "DELIVERY" | "READ" | "erro";
   remetente: string;
   created_at: string;
   metadata?: Record<string, unknown>;
@@ -105,7 +105,7 @@ export const whatsappService = {
     });
 
     const response = await fetch(`${BASE_URL}/v1/send/message`, {
-      method: "PUT",
+      method: "POST",
       headers: myHeaders,
       body: raw,
       redirect: "follow",

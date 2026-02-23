@@ -19,7 +19,7 @@ function getCookie(name) {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-const BASE_URL = "http://173.249.50.11:8000";
+const BASE_URL = "https://crm-hataseg.com.br";
 
 export const agentsService = {
   async getAgents(): Promise<Agent[]> {

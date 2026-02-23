@@ -383,8 +383,9 @@ const WhatsApp = () => {
   const StatusIcon = ({ status }: { status: WhatsAppMessage["status"] }) => {
     switch (status) {
       case "enviada": return <Check className="h-3 w-3 text-muted-foreground" />;
-      case "entregue": return <CheckCheck className="h-3 w-3 text-muted-foreground" />;
-      case "lida": return <CheckCheck className="h-3 w-3 text-info" />;
+      case "SERVER": return <Check className="h-3 w-3 text-muted-foreground" />;
+      case "DELIVERY": return <CheckCheck className="h-3 w-3 text-muted-foreground" />;
+      case "READ": return <CheckCheck className="h-3 w-3 text-info" />;
       case "erro": return <Clock className="h-3 w-3 text-destructive" />;
       default: return null;
     }

@@ -24,7 +24,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
       return;
     }
 
-    fetch("http://173.249.50.11:8000/v1/valid/authorization/token", {
+    fetch("https://crm-hataseg.com.br/v1/valid/authorization/token", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

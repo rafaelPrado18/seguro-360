@@ -21,7 +21,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://173.249.50.11:8000/v1/create/authorization/token", {
+      const response = await fetch("https://crm-hataseg.com.br/v1/create/authorization/token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -61,7 +61,7 @@ const Login = () => {
       // ATUALIZAR STATUS DO USUÁRIO
       // ================================
       try {
-        const statusResponse = await fetch("http://173.249.50.11:8000/v1/update/agent/status", {
+        const statusResponse = await fetch("https://crm-hataseg.com.br/v1/update/agent/status", {
           method: "PATCH",
           headers: {
             "Authorization": `Bearer ${data.userToken}`,
