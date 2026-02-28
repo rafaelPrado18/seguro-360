@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useCreateLead } from "@/hooks/useLeads";
 import { toast } from "@/hooks/use-toast";
+import { leadsService } from "@/services/leadsService";
+import { Loader2 } from "lucide-react";
 import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
 import { Separator } from "@/components/ui/separator";
 import type { Lead } from "@/services/leadsService";
@@ -48,10 +49,11 @@ interface NewLeadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onLeadCreated?: (lead: Partial<Lead>) => void;
+  corretorResponsavel?: string;
 }
 
-export function NewLeadDialog({ open, onOpenChange, onLeadCreated }: NewLeadDialogProps) {
-  const createLead = useCreateLead();
+export function NewLeadDialog({ open, onOpenChange, onLeadCreated, corretorResponsavel }: NewLeadDialogProps) {
+  const [loading, setLoading] = useState(false);
   const [arquivoApolice, setArquivoApolice] = useState<File | null>(null);
   const [arquivoProposta, setArquivoProposta] = useState<File | null>(null);
   const form = useForm<LeadFormData>({
@@ -64,20 +66,27 @@ export function NewLeadDialog({ open, onOpenChange, onLeadCreated }: NewLeadDial
 
   const onSubmit = async (data: LeadFormData) => {
     try {
+      setLoading(true);
+      const telefoneDigits = data.telefone.replace(/\D/g, "");
+      await leadsService.createLead({
+        nome: data.nome,
+        email: data.email,
+        telefone: `55${telefoneDigits}`,
+        origem: data.origem,
+        corretor_responsavel: corretorResponsavel || "",
+        valor_estimado: String(data.valor_estimado),
+        modelo: data.ramo_interesse,
+        observacoes: data.observacoes || "",
+      });
       const payload = {
         nome: data.nome,
         email: data.email,
         telefone: data.telefone,
-        veiculo: data.veiculo || "",
         origem: data.origem,
         ramo_interesse: data.ramo_interesse,
         valor_estimado: data.valor_estimado,
         observacoes: data.observacoes || "",
-        status: "novo" as const,
-        corretor_responsavel: null,
       };
-      // Will call the API when integrated
-      // await createLead.mutateAsync(payload);
       onLeadCreated?.(payload);
       toast({ title: "Lead cadastrado!", description: `${data.nome} adicionado com sucesso.` });
       form.reset();
@@ -86,6 +95,8 @@ export function NewLeadDialog({ open, onOpenChange, onLeadCreated }: NewLeadDial
       onOpenChange(false);
     } catch {
       toast({ title: "Erro ao cadastrar lead", variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -174,8 +185,11 @@ export function NewLeadDialog({ open, onOpenChange, onLeadCreated }: NewLeadDial
               setArquivoProposta={setArquivoProposta}
             />
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-              <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/90">Cadastrar Lead</Button>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>Cancelar</Button>
+              <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
+                {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Cadastrar Lead
+              </Button>
             </DialogFooter>
           </form>
         </Form>

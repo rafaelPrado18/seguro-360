@@ -78,9 +78,18 @@ export const leadsService = {
     return response.json();
   },
 
-  // POST /api/leads - Criar novo lead
-  async createLead(data: Omit<Lead, "id" | "created_at" | "updated_at">): Promise<Lead> {
-    const response = await fetch(`${BASE_URL}/leads`, {
+  // POST /v1/create/lead - Criar novo lead
+  async createLead(data: {
+    nome: string;
+    email: string;
+    telefone: string;
+    origem: string;
+    corretor_responsavel: string;
+    valor_estimado: string;
+    modelo: string;
+    observacoes: string;
+  }): Promise<unknown> {
+    const response = await fetch(`${BASE_URL}/v1/create/lead`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
