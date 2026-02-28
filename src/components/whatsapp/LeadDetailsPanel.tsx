@@ -399,7 +399,7 @@ function TransferSection({ leadId, currentCorretor, onTransferred }: { leadId: s
   const handleTransfer = async (nome: string) => {
     setTransferring(true);
     try {
-      const res = await fetch(`${BASE_URL}/v1/update/lead`, {
+      const res = await fetch(`${BASE_URL}/v1/update/assignedConsultant/conversation`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: leadId, corretor_responsavel: nome }),
