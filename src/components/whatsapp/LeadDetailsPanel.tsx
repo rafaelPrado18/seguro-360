@@ -14,11 +14,26 @@ import {
   X, User, Mail, Phone, MapPin, Target, DollarSign,
   FileText, Image, MessageSquare, Upload, Plus, Clock,
   Calendar, Tag, Building, Download, Pencil, Check, Loader2, ArrowRightLeft,
+  Car, ChevronDown, ChevronUp, Trash2,
 } from "lucide-react";
 import { useAgents } from "@/hooks/useAgents";
 import { toast } from "@/hooks/use-toast";
 import type { WhatsAppContact } from "@/services/whatsappService";
 import { v4 as uuidv4 } from "uuid";
+
+// --- Types ---
+
+interface VeiculoProposta {
+  id: string;
+  veiculo: string;
+  numero_proposta: string;
+  numero_apolice: string;
+  codigo_ci: string;
+  premio: number;
+  premio_liquido: number;
+  numero_parcelas: number;
+  valor_parcelas: number;
+}
 
 interface HistoryEntry {
   id: string;
@@ -33,6 +48,10 @@ interface HistoryEntry {
 
 const BASE_URL = "https://crm-hataseg.com.br";
 
+function buildEmptyVeiculo(): VeiculoProposta {
+  return { id: uuidv4(), veiculo: "", numero_proposta: "", numero_apolice: "", codigo_ci: "", premio: 0, premio_liquido: 0, numero_parcelas: 0, valor_parcelas: 0 };
+}
+
 function buildEmptyLead(contact: WhatsAppContact) {
   return {
     id: contact.id,
@@ -43,19 +62,9 @@ function buildEmptyLead(contact: WhatsAppContact) {
     endereco: "",
     cep: "",
     origem: "WhatsApp",
-    ramo_interesse: "",
-    valor_estimado: 0,
-    premio: 0,
-    premio_liquido: 0,
-    numero_parcelas: 0,
-    valor_parcelas: 0,
-    numero_proposta: "",
-    numero_apolice: "",
-    codigo_ci: "",
     status: "novo",
     corretor_responsavel: "",
     created_at: new Date().toISOString(),
-    veiculo: "",
     seguradora_atual: "",
     observacoes: "",
   };
@@ -69,17 +78,10 @@ interface LeadDetailsPanelProps {
 }
 
 const typeIcons: Record<HistoryEntry["type"], typeof FileText> = {
-  note: MessageSquare,
-  document: FileText,
-  image: Image,
-  message: MessageSquare,
+  note: MessageSquare, document: FileText, image: Image, message: MessageSquare,
 };
-
 const typeColors: Record<HistoryEntry["type"], string> = {
-  note: "bg-accent/15 text-accent",
-  document: "bg-info/15 text-info",
-  image: "bg-success/15 text-success",
-  message: "bg-muted text-muted-foreground",
+  note: "bg-accent/15 text-accent", document: "bg-info/15 text-info", image: "bg-success/15 text-success", message: "bg-muted text-muted-foreground",
 };
 
 export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
@@ -87,8 +89,11 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   const [newNote, setNewNote] = useState("");
   const [history, setHistory] = useState<HistoryEntry[]>(INITIAL_HISTORY);
   const [lead, setLead] = useState(() => buildEmptyLead(contact));
+  const [veiculos, setVeiculos] = useState<VeiculoProposta[]>([]);
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ nome: lead.nome, telefone: lead.telefone, email: lead.email, cpf: lead.cpf, endereco: lead.endereco, cep: lead.cep, ramo_interesse: lead.ramo_interesse, valor_estimado: lead.valor_estimado, premio: lead.premio, premio_liquido: lead.premio_liquido, numero_parcelas: lead.numero_parcelas, valor_parcelas: lead.valor_parcelas, numero_proposta: lead.numero_proposta, numero_apolice: lead.numero_apolice, codigo_ci: lead.codigo_ci, veiculo: lead.veiculo, observacoes: lead.observacoes });
+  const [editForm, setEditForm] = useState({ nome: lead.nome, telefone: lead.telefone, email: lead.email, cpf: lead.cpf, endereco: lead.endereco, cep: lead.cep, observacoes: lead.observacoes });
+  const [editVeiculos, setEditVeiculos] = useState<VeiculoProposta[]>([]);
+  const [expandedVeiculo, setExpandedVeiculo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch lead data from API by phone number
@@ -98,7 +103,6 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
     fetch(`${BASE_URL}/v1/read/leads?leadTag=telefone&leadValue=${phone}`)
       .then(res => res.json())
       .then((data) => {
-        // API may return array or paginated object
         const leads = Array.isArray(data) ? data : data?.data || [];
         if (leads.length > 0) {
           const apiLead = leads[0];
@@ -111,27 +115,42 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
             endereco: apiLead.endereco || "",
             cep: apiLead.cep || "",
             origem: apiLead.origem || "WhatsApp",
-            ramo_interesse: apiLead.ramo_interesse || apiLead.modelo || "",
-            valor_estimado: Number(apiLead.valor_estimado) || 0,
-            premio: Number(apiLead.premio) || 0,
-            premio_liquido: Number(apiLead.premio_liquido) || 0,
-            numero_parcelas: Number(apiLead.numero_parcelas) || 0,
-            valor_parcelas: Number(apiLead.valor_parcelas) || 0,
-            numero_proposta: apiLead.numero_proposta || "",
-            numero_apolice: apiLead.numero_apolice || "",
-            codigo_ci: apiLead.codigo_ci || "",
             status: apiLead.status || "novo",
             corretor_responsavel: apiLead.corretor_responsavel || "",
             created_at: apiLead.created_at || new Date().toISOString(),
-            veiculo: apiLead.modelo || apiLead.veiculo || "",
             seguradora_atual: apiLead.seguradora_atual || "",
             observacoes: apiLead.observacoes || "",
           });
+
+          // Parse veiculos from API (array) or build one from flat fields
+          if (Array.isArray(apiLead.veiculos) && apiLead.veiculos.length > 0) {
+            setVeiculos(apiLead.veiculos.map((v: any) => ({
+              id: v.id || uuidv4(),
+              veiculo: v.veiculo || v.modelo || "",
+              numero_proposta: v.numero_proposta || "",
+              numero_apolice: v.numero_apolice || "",
+              codigo_ci: v.codigo_ci || "",
+              premio: Number(v.premio) || 0,
+              premio_liquido: Number(v.premio_liquido) || 0,
+              numero_parcelas: Number(v.numero_parcelas) || 0,
+              valor_parcelas: Number(v.valor_parcelas) || 0,
+            })));
+          } else if (apiLead.modelo || apiLead.veiculo || apiLead.numero_proposta) {
+            setVeiculos([{
+              id: uuidv4(),
+              veiculo: apiLead.modelo || apiLead.veiculo || "",
+              numero_proposta: apiLead.numero_proposta || "",
+              numero_apolice: apiLead.numero_apolice || "",
+              codigo_ci: apiLead.codigo_ci || "",
+              premio: Number(apiLead.premio) || 0,
+              premio_liquido: Number(apiLead.premio_liquido) || 0,
+              numero_parcelas: Number(apiLead.numero_parcelas) || 0,
+              valor_parcelas: Number(apiLead.valor_parcelas) || 0,
+            }]);
+          }
         }
       })
-      .catch(() => {
-        // Keep empty lead on error
-      })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, [contact.id, contact.telefone]);
 
@@ -146,30 +165,24 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
           email: editForm.email,
           telefone: editForm.telefone,
           endereco: editForm.endereco,
-          ramo_interesse: editForm.ramo_interesse,
-          valor_estimado: editForm.valor_estimado,
-          modelo: editForm.veiculo,
+          cpf: editForm.cpf,
+          cep: editForm.cep,
           observacoes: editForm.observacoes,
+          veiculos: editVeiculos,
         }),
       });
       setLead(prev => ({ ...prev, ...editForm }));
+      setVeiculos(editVeiculos);
       setIsEditing(false);
-      toast({ title: "Lead atualizado!", description: "Informações salvas com sucesso." });
+      toast({ title: "Dados atualizados!", description: "Informações salvas com sucesso." });
     } catch {
-      toast({ title: "Erro", description: "Não foi possível atualizar o lead.", variant: "destructive" });
+      toast({ title: "Erro", description: "Não foi possível atualizar.", variant: "destructive" });
     }
   };
 
   const handleAddNote = () => {
     if (!newNote.trim()) return;
-    const entry: HistoryEntry = {
-      id: uuidv4(),
-      type: "note",
-      title: "Nota adicionada",
-      description: newNote,
-      created_at: new Date().toISOString(),
-      author: "Corretor",
-    };
+    const entry: HistoryEntry = { id: uuidv4(), type: "note", title: "Nota adicionada", description: newNote, created_at: new Date().toISOString(), author: "Corretor" };
     setHistory(prev => [entry, ...prev]);
     setNewNote("");
   };
@@ -179,16 +192,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
     if (!files) return;
     Array.from(files).forEach(file => {
       const isImage = file.type.startsWith("image/");
-      const entry: HistoryEntry = {
-        id: uuidv4(),
-        type: isImage ? "image" : "document",
-        title: isImage ? "Imagem enviada" : "Documento enviado",
-        description: file.name,
-        file_name: file.name,
-        file_url: URL.createObjectURL(file),
-        created_at: new Date().toISOString(),
-        author: "Corretor",
-      };
+      const entry: HistoryEntry = { id: uuidv4(), type: isImage ? "image" : "document", title: isImage ? "Imagem enviada" : "Documento enviado", description: file.name, file_name: file.name, file_url: URL.createObjectURL(file), created_at: new Date().toISOString(), author: "Corretor" };
       setHistory(prev => [entry, ...prev]);
     });
     e.target.value = "";
@@ -197,11 +201,31 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
+  const startEditing = () => {
+    setEditForm({ nome: lead.nome, telefone: lead.telefone, email: lead.email, cpf: lead.cpf, endereco: lead.endereco, cep: lead.cep, observacoes: lead.observacoes });
+    setEditVeiculos(veiculos.map(v => ({ ...v })));
+    setIsEditing(true);
+  };
+
+  const updateEditVeiculo = (id: string, field: keyof VeiculoProposta, value: string | number) => {
+    setEditVeiculos(prev => prev.map(v => v.id === id ? { ...v, [field]: value } : v));
+  };
+
+  const addEditVeiculo = () => {
+    const nv = buildEmptyVeiculo();
+    setEditVeiculos(prev => [...prev, nv]);
+    setExpandedVeiculo(nv.id);
+  };
+
+  const removeEditVeiculo = (id: string) => {
+    setEditVeiculos(prev => prev.filter(v => v.id !== id));
+  };
+
   return (
     <div className="w-[360px] flex-shrink-0 border-l border-border flex flex-col bg-card">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-        <h3 className="text-sm font-semibold text-foreground">Detalhes do Lead</h3>
+        <h3 className="text-sm font-semibold text-foreground">Detalhes do Cliente</h3>
         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
@@ -244,15 +268,13 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                     </Button>
                   </div>
                 ) : (
-                  <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => {
-                    setEditForm({ nome: lead.nome, telefone: lead.telefone, email: lead.email, cpf: lead.cpf, endereco: lead.endereco, cep: lead.cep, ramo_interesse: lead.ramo_interesse, valor_estimado: lead.valor_estimado, premio: lead.premio, premio_liquido: lead.premio_liquido, numero_parcelas: lead.numero_parcelas, valor_parcelas: lead.valor_parcelas, numero_proposta: lead.numero_proposta, numero_apolice: lead.numero_apolice, codigo_ci: lead.codigo_ci, veiculo: lead.veiculo, observacoes: lead.observacoes });
-                    setIsEditing(true);
-                  }}>
+                  <Button size="sm" variant="outline" className="text-xs gap-1" onClick={startEditing}>
                     <Pencil className="h-3 w-3" /> Editar
                   </Button>
                 )}
               </div>
 
+              {/* Informações Pessoais */}
               <div className="space-y-3">
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Informações Pessoais</h4>
                 {isEditing ? (
@@ -274,31 +296,83 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                 )}
               </div>
 
+              {/* Veículos / Propostas */}
               <div className="border-t border-border pt-3 space-y-3">
-                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dados do Seguro</h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Veículos / Propostas</h4>
+                  {isEditing && (
+                    <Button size="sm" variant="outline" className="h-6 text-[10px] gap-1" onClick={addEditVeiculo}>
+                      <Plus className="h-3 w-3" /> Adicionar
+                    </Button>
+                  )}
+                </div>
+
                 {isEditing ? (
                   <div className="space-y-2">
-                    <EditField label="Prêmio" value={String(editForm.premio)} onChange={v => setEditForm(p => ({ ...p, premio: Number(v) || 0 }))} type="number" />
-                    <EditField label="Prêmio Líquido" value={String(editForm.premio_liquido)} onChange={v => setEditForm(p => ({ ...p, premio_liquido: Number(v) || 0 }))} type="number" />
-                    <EditField label="Nº de Parcelas" value={String(editForm.numero_parcelas)} onChange={v => setEditForm(p => ({ ...p, numero_parcelas: Number(v) || 0 }))} type="number" />
-                    <EditField label="Valor das Parcelas" value={String(editForm.valor_parcelas)} onChange={v => setEditForm(p => ({ ...p, valor_parcelas: Number(v) || 0 }))} type="number" />
-                    <EditField label="Nº da Proposta" value={editForm.numero_proposta} onChange={v => setEditForm(p => ({ ...p, numero_proposta: v }))} />
-                    <EditField label="Nº da Apólice" value={editForm.numero_apolice} onChange={v => setEditForm(p => ({ ...p, numero_apolice: v }))} />
-                    <EditField label="Código C.I" value={editForm.codigo_ci} onChange={v => setEditForm(p => ({ ...p, codigo_ci: v }))} />
+                    {editVeiculos.length === 0 && (
+                      <p className="text-[11px] text-muted-foreground italic">Nenhum veículo cadastrado. Clique em "Adicionar".</p>
+                    )}
+                    {editVeiculos.map((v, idx) => (
+                      <div key={v.id} className="border border-border rounded-md p-2 space-y-2 bg-muted/30">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-semibold text-foreground flex items-center gap-1"><Car className="h-3 w-3" /> Veículo {idx + 1}</span>
+                          <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive hover:text-destructive" onClick={() => removeEditVeiculo(v.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <EditField label="Veículo" value={v.veiculo} onChange={val => updateEditVeiculo(v.id, "veiculo", val)} />
+                        <EditField label="Nº da Proposta" value={v.numero_proposta} onChange={val => updateEditVeiculo(v.id, "numero_proposta", val)} />
+                        <EditField label="Nº da Apólice" value={v.numero_apolice} onChange={val => updateEditVeiculo(v.id, "numero_apolice", val)} />
+                        <EditField label="Código C.I" value={v.codigo_ci} onChange={val => updateEditVeiculo(v.id, "codigo_ci", val)} />
+                        <EditField label="Prêmio" value={String(v.premio)} onChange={val => updateEditVeiculo(v.id, "premio", Number(val) || 0)} type="number" />
+                        <EditField label="Prêmio Líquido" value={String(v.premio_liquido)} onChange={val => updateEditVeiculo(v.id, "premio_liquido", Number(val) || 0)} type="number" />
+                        <EditField label="Nº de Parcelas" value={String(v.numero_parcelas)} onChange={val => updateEditVeiculo(v.id, "numero_parcelas", Number(val) || 0)} type="number" />
+                        <EditField label="Valor das Parcelas" value={String(v.valor_parcelas)} onChange={val => updateEditVeiculo(v.id, "valor_parcelas", Number(val) || 0)} type="number" />
+                      </div>
+                    ))}
                   </div>
                 ) : (
-                  <>
-                    <InfoRow icon={DollarSign} label="Prêmio" value={`R$ ${lead.premio.toLocaleString()}`} />
-                    <InfoRow icon={DollarSign} label="Prêmio Líquido" value={`R$ ${lead.premio_liquido.toLocaleString()}`} />
-                    <InfoRow icon={FileText} label="Nº de Parcelas" value={String(lead.numero_parcelas)} />
-                    <InfoRow icon={DollarSign} label="Valor das Parcelas" value={`R$ ${lead.valor_parcelas.toLocaleString()}`} />
-                    <InfoRow icon={FileText} label="Nº da Proposta" value={lead.numero_proposta} />
-                    <InfoRow icon={FileText} label="Nº da Apólice" value={lead.numero_apolice} />
-                    <InfoRow icon={Tag} label="Código C.I" value={lead.codigo_ci} />
-                  </>
+                  <div className="space-y-2">
+                    {veiculos.length === 0 && (
+                      <p className="text-[11px] text-muted-foreground italic">Nenhum veículo/proposta cadastrado.</p>
+                    )}
+                    {veiculos.map((v, idx) => {
+                      const isOpen = expandedVeiculo === v.id;
+                      return (
+                        <button
+                          key={v.id}
+                          className="w-full text-left border border-border rounded-md p-2.5 bg-muted/20 hover:bg-muted/40 transition-colors"
+                          onClick={() => setExpandedVeiculo(isOpen ? null : v.id)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                              <Car className="h-3.5 w-3.5 text-accent" />
+                              {v.veiculo || `Veículo ${idx + 1}`}
+                            </span>
+                            {isOpen ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+                          </div>
+                          {v.numero_proposta && (
+                            <span className="text-[10px] text-muted-foreground">Proposta: {v.numero_proposta}</span>
+                          )}
+                          {isOpen && (
+                            <div className="mt-2 pt-2 border-t border-border space-y-1.5" onClick={e => e.stopPropagation()}>
+                              <InfoRow icon={FileText} label="Nº da Proposta" value={v.numero_proposta} />
+                              <InfoRow icon={FileText} label="Nº da Apólice" value={v.numero_apolice} />
+                              <InfoRow icon={Tag} label="Código C.I" value={v.codigo_ci} />
+                              <InfoRow icon={DollarSign} label="Prêmio" value={`R$ ${v.premio.toLocaleString()}`} />
+                              <InfoRow icon={DollarSign} label="Prêmio Líquido" value={`R$ ${v.premio_liquido.toLocaleString()}`} />
+                              <InfoRow icon={FileText} label="Nº de Parcelas" value={String(v.numero_parcelas)} />
+                              <InfoRow icon={DollarSign} label="Valor das Parcelas" value={`R$ ${v.valor_parcelas.toLocaleString()}`} />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
 
+              {/* Status */}
               <div className="border-t border-border pt-3 space-y-3">
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</h4>
                 <InfoRow icon={Tag} label="Origem" value={lead.origem} />
@@ -327,15 +401,9 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
 
         {/* Histórico Tab */}
         <TabsContent value="historico" className="flex-1 mt-0 flex flex-col">
-          {/* Add note / upload */}
           <div className="px-4 py-3 border-b border-border space-y-2">
             <div className="flex gap-2">
-              <Textarea
-                placeholder="Adicionar nota..."
-                className="text-xs min-h-[60px] resize-none"
-                value={newNote}
-                onChange={(e) => setNewNote(e.target.value)}
-              />
+              <Textarea placeholder="Adicionar nota..." className="text-xs min-h-[60px] resize-none" value={newNote} onChange={(e) => setNewNote(e.target.value)} />
             </div>
             <div className="flex gap-2">
               <Button size="sm" className="text-xs gap-1 bg-accent text-accent-foreground hover:bg-accent/90 flex-1" onClick={handleAddNote} disabled={!newNote.trim()}>
