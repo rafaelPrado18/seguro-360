@@ -225,7 +225,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
     <div className="w-[360px] flex-shrink-0 border-l border-border flex flex-col bg-card">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-        <h3 className="text-sm font-semibold text-foreground">Detalhes do Cliente</h3>
+        <h3 className="text-sm font-semibold text-foreground">{contact.cliente_id ? "Detalhes do Cliente" : "Detalhes do Lead"}</h3>
         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
@@ -296,7 +296,8 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                 )}
               </div>
 
-              {/* Veículos / Propostas */}
+              {/* Veículos / Propostas - Apenas para clientes */}
+              {contact.cliente_id && (
               <div className="border-t border-border pt-3 space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Veículos / Propostas</h4>
@@ -371,6 +372,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                   </div>
                 )}
               </div>
+              )}
 
               {/* Status */}
               <div className="border-t border-border pt-3 space-y-3">
