@@ -177,7 +177,7 @@ export function NewLeadDialog({ open, onOpenChange, onLeadCreated, corretorRespo
               <FormField control={form.control} name="valor_estimado" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Valor estimado (R$)</FormLabel>
-                  <FormControl><Input type="number" min={0} step={100} placeholder="0" {...field} /></FormControl>
+                  <FormControl><Input placeholder="0" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
