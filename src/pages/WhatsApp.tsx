@@ -246,6 +246,25 @@ const WhatsApp = () => {
     );
   };
 
+  // --- Retry failed optimistic message ---
+  const handleRetry = (msg: ExtMessage) => {
+    const chatId = msg.chatId;
+    // Reset status to sending
+    setOptimisticMsgs(prev => prev.map(m => m.id === msg.id ? { ...m, status: "enviada" } : m));
+    sendMessageMutation.mutate(
+      { chatId, tipo: "text", userId, message: msg.conteudo },
+      {
+        onSuccess: () => {
+          setOptimisticMsgs(prev => prev.filter(m => m.id !== msg.id));
+        },
+        onError: () => {
+          toast({ title: "Erro", description: "Falha ao reenviar mensagem", variant: "destructive" });
+          setOptimisticMsgs(prev => prev.map(m => m.id === msg.id ? { ...m, status: "erro" } : m));
+        },
+      }
+    );
+  };
+
   // --- Delete message (local only) ---
   const handleDelete = (msgId: string) => {
     setDeletedMsgs(prev => new Set(prev).add(msgId));
@@ -634,6 +653,14 @@ const WhatsApp = () => {
                             <div className={`flex items-center gap-1 mt-1 ${msg.direcao === "enviada" ? "justify-end" : ""}`}>
                               <span className="text-[10px] opacity-60">{msg.created_at}</span>
                               {msg.direcao === "enviada" && <StatusIcon status={msg.status} />}
+                              {msg.status === "erro" && (
+                                <button
+                                  onClick={() => handleRetry(msg)}
+                                  className="text-[10px] text-destructive hover:underline ml-1 font-medium"
+                                >
+                                  Reenviar
+                                </button>
+                              )}
                             </div>
                           </div>
 

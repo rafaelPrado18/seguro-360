@@ -284,7 +284,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                 </div>
               </div>
 
-              <TransferSection leadId={lead.id} currentCorretor={lead.corretor_responsavel} onTransferred={(nome) => setLead(prev => ({ ...prev, corretor_responsavel: nome }))} />
+              <TransferSection leadId={lead.id} currentCorretor={lead.corretor_responsavel} onTransferred={(nome) => { setLead(prev => ({ ...prev, corretor_responsavel: nome })); onClose(); }} />
 
               {(isEditing || lead.observacoes) && (
                 <div className="border-t border-border pt-3">
