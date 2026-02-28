@@ -849,6 +849,7 @@ const WhatsApp = () => {
         open={newLeadOpen}
         onOpenChange={setNewLeadOpen}
         onLeadCreated={handleLeadCreated}
+        corretorResponsavel={currentUser.nome}
       />
 
       {/* Image Lightbox */}

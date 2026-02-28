@@ -36,7 +36,7 @@ export function useLeadDistribution() {
 export function useCreateLead() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Omit<Lead, "id" | "created_at" | "updated_at">) => leadsService.createLead(data),
+    mutationFn: (data: Parameters<typeof leadsService.createLead>[0]) => leadsService.createLead(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["leads"] }),
   });
 }
