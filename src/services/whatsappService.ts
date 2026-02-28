@@ -20,7 +20,7 @@ export interface WhatsAppContact {
 export interface WhatsAppMessage {
   id: string;
   chatId: string;
-  tipo: "text" | "image" | "document" | "audio" | "video" | "location" | "template";
+  tipo: "text" | "image" | "document" | "audio" | "video/mp4" | "location" | "template";
   conteudo: string;
   media_url: string | null;
   media_mime_type: string | null;

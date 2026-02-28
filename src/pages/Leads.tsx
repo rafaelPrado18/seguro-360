@@ -297,13 +297,22 @@ const Leads = () => {
 
   const parseBrDate = (dateStr: string): Date | null => {
     if (!dateStr) return null;
-    // Try BR format: "DD/MM/YYYY HH:mm:ss"
-    const brMatch = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/);
-    if (brMatch) {
-      const [, dd, mm, yyyy, hh, min, ss] = brMatch;
+
+    // DD/MM/YYYY HH:mm
+    let match = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})$/);
+    if (match) {
+      const [, dd, mm, yyyy, hh, min] = match;
+      return new Date(Number(yyyy), Number(mm) - 1, Number(dd), Number(hh), Number(min), 0);
+    }
+
+    // DD/MM/YYYY HH:mm:ss
+    match = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/);
+    if (match) {
+      const [, dd, mm, yyyy, hh, min, ss] = match;
       return new Date(Number(yyyy), Number(mm) - 1, Number(dd), Number(hh), Number(min), Number(ss));
     }
-    // Fallback: try native Date parse (ISO, etc.)
+
+    // ISO
     const d = new Date(dateStr);
     return isNaN(d.getTime()) ? null : d;
   };
@@ -373,6 +382,16 @@ const Leads = () => {
     }
 
     return matchesSearch && matchesStatus && matchesCorretor && matchesDate;
+  });
+
+  const sortedLeads = [...displayLeads].sort((a, b) => {
+    const dateA = parseBrDate(a.created_at || "");
+    const dateB = parseBrDate(b.created_at || "");
+
+    if (!dateA || !dateB) return 0;
+
+    // MAIS NOVO PRIMEIRO
+    return dateB.getTime() - dateA.getTime();
   });
 
   return (
@@ -592,7 +611,7 @@ const Leads = () => {
         {/* Content */}
         {viewMode === "kanban" ? (
           <LeadKanban
-            leads={displayLeads}
+            leads={sortedLeads}
             columns={kanbanColumns}
             onStatusChange={handleStatusChange}
             corretorFilter={isAdmin ? (corretorFilter.length > 0 ? corretorFilter[0] : null) : currentUser.nome}

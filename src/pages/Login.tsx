@@ -68,8 +68,7 @@ const Login = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            agentName: data.name,
-            email: email,
+            agentId: data.userId,
             status: "online",
             userId: data.userId,
           }),

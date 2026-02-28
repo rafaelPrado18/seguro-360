@@ -41,10 +41,9 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            agentName: userName ? decodeURIComponent(userName) : "",
-            email: userEmail ? decodeURIComponent(userEmail) : "",
+            agentId: currentUser.id,
             status: "offline",
-            userId: decodeURIComponent(userId),
+            userId: userId,
           }),
         });
       } catch (err) {

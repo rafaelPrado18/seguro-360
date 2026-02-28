@@ -8,11 +8,19 @@ export function useWhatsAppConversations(name?: string) {
   });
 }
 
-export function useWhatsAppMessages(contatoId: string, consultantId: string) {
+export function useWhatsAppMessages(contatoId: string | null, consultantId: string) {
   return useQuery({
-    queryKey: ["whatsapp", "messages", contatoId, consultantId],
+    queryKey: ["whatsapp-messages", contatoId, consultantId],
     queryFn: () => whatsappService.getMessages(contatoId!, consultantId),
     enabled: !!contatoId,
+
+    // 👇 AQUI ESTÁ A MÁGICA
+    refetchInterval: contatoId ? 5000 : false, // 10 segundos
+    refetchIntervalInBackground: true,
+
+    // evita reload da tela
+    staleTime: 0,
+    refetchOnWindowFocus: false,
   });
 }
 

@@ -383,7 +383,7 @@ const WhatsApp = () => {
   const StatusIcon = ({ status }: { status: WhatsAppMessage["status"] }) => {
     switch (status) {
       case "enviada": return <Check className="h-3 w-3 text-muted-foreground" />;
-      case "SERVER": return <Check className="h-3 w-3 text-muted-foreground" />;
+      case "SERVER": return <CheckCheck className="h-3 w-3 text-muted-foreground" />;
       case "DELIVERY": return <CheckCheck className="h-3 w-3 text-muted-foreground" />;
       case "READ": return <CheckCheck className="h-3 w-3 text-info" />;
       case "erro": return <Clock className="h-3 w-3 text-destructive" />;
@@ -548,15 +548,23 @@ const WhatsApp = () => {
                               </div>
                             ) : (
                               <>
-                                {msg.tipo === "image" ? (
+                                {msg.media_mime_type === "image/jpeg" || msg.tipo === "image"? (
                                   <div className="space-y-1">
                                     {msg.media_url && <img src={msg.media_url} alt={msg.conteudo} className="rounded max-w-[240px] max-h-[200px] object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setLightboxUrl(msg.media_url!)} />}
                                     <div className="flex items-center gap-2 py-0.5">
-                                      <Image className="h-3 w-3 opacity-70" />
-                                      <span className="text-[10px] opacity-80">{msg.conteudo}</span>
                                     </div>
                                   </div>
-                                ) : msg.tipo === "document" ? (
+                                ) : msg.media_mime_type === "video/mp4" ? (
+                                  <div className="space-y-1">
+                                    {msg.media_url && 
+                                      <video
+                                        src={msg.media_url}
+                                        className="rounded max-w-[240px] max-h-[200px] object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                        controls
+                                      />
+                                    }
+                                  </div>
+                                ) : msg.media_mime_type?.includes("application") || msg.tipo === 'document' ? (
                                   <a
                                     href={msg.media_url || "#"}
                                     download={msg.conteudo}
@@ -574,7 +582,7 @@ const WhatsApp = () => {
                                     <span className="text-xs flex-1 underline">{msg.conteudo}</span>
                                     <Download className="h-3.5 w-3.5 opacity-50" />
                                   </a>
-                                ) : msg.tipo === "audio" ? (
+                                ) : msg.media_mime_type === "audio/ogg" ? (
                                   <AudioPlayer src={msg.media_url || ""} />
                                 ) : (
                                   <p className="text-sm whitespace-pre-wrap">{msg.conteudo}</p>
