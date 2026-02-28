@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,10 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   X, User, Mail, Phone, MapPin, Target, DollarSign,
   FileText, Image, MessageSquare, Upload, Plus, Clock,
-  Calendar, Tag, Building, Download, Pencil, Check,
+  Calendar, Tag, Building, Download, Pencil, Check, Loader2,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import type { WhatsAppContact } from "@/services/whatsappService";
@@ -26,7 +27,9 @@ interface HistoryEntry {
   author: string;
 }
 
-function buildLeadFromContact(contact: WhatsAppContact) {
+const BASE_URL = "https://crm-hataseg.com.br";
+
+function buildEmptyLead(contact: WhatsAppContact) {
   return {
     id: contact.id,
     nome: contact.nome,
@@ -37,9 +40,9 @@ function buildLeadFromContact(contact: WhatsAppContact) {
     origem: "WhatsApp",
     ramo_interesse: "",
     valor_estimado: 0,
-    status: contact.tags?.[0] || "novo",
+    status: "novo",
     corretor_responsavel: "",
-    created_at: contact.ultima_mensagem_at || new Date().toISOString(),
+    created_at: new Date().toISOString(),
     veiculo: "",
     seguradora_atual: "",
     observacoes: "",
@@ -71,9 +74,46 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   const [activeTab, setActiveTab] = useState("detalhes");
   const [newNote, setNewNote] = useState("");
   const [history, setHistory] = useState<HistoryEntry[]>(INITIAL_HISTORY);
-  const [lead, setLead] = useState(() => buildLeadFromContact(contact));
+  const [lead, setLead] = useState(() => buildEmptyLead(contact));
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ nome: lead.nome, telefone: lead.telefone, email: lead.email, endereco: lead.endereco, ramo_interesse: lead.ramo_interesse, valor_estimado: lead.valor_estimado, veiculo: lead.veiculo, observacoes: lead.observacoes });
+  const [loading, setLoading] = useState(true);
+
+  // Fetch lead data from API by phone number
+  useEffect(() => {
+    const phone = contact.telefone.replace(/\D/g, "");
+    setLoading(true);
+    fetch(`${BASE_URL}/v1/read/leads?leadTag=telefone&leadValue=${phone}`)
+      .then(res => res.json())
+      .then((data) => {
+        // API may return array or paginated object
+        const leads = Array.isArray(data) ? data : data?.data || [];
+        if (leads.length > 0) {
+          const apiLead = leads[0];
+          setLead({
+            id: apiLead.id || contact.id,
+            nome: apiLead.nome || contact.nome,
+            email: apiLead.email || "",
+            telefone: apiLead.telefone || contact.telefone,
+            cpf: apiLead.cpf || "",
+            endereco: apiLead.endereco || "",
+            origem: apiLead.origem || "WhatsApp",
+            ramo_interesse: apiLead.ramo_interesse || apiLead.modelo || "",
+            valor_estimado: Number(apiLead.valor_estimado) || 0,
+            status: apiLead.status || "novo",
+            corretor_responsavel: apiLead.corretor_responsavel || "",
+            created_at: apiLead.created_at || new Date().toISOString(),
+            veiculo: apiLead.modelo || apiLead.veiculo || "",
+            seguradora_atual: apiLead.seguradora_atual || "",
+            observacoes: apiLead.observacoes || "",
+          });
+        }
+      })
+      .catch(() => {
+        // Keep empty lead on error
+      })
+      .finally(() => setLoading(false));
+  }, [contact.id, contact.telefone]);
 
   const handleSaveEdit = () => {
     setLead(prev => ({ ...prev, ...editForm }));
