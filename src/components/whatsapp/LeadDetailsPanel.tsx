@@ -115,10 +115,29 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
       .finally(() => setLoading(false));
   }, [contact.id, contact.telefone]);
 
-  const handleSaveEdit = () => {
-    setLead(prev => ({ ...prev, ...editForm }));
-    setIsEditing(false);
-    toast({ title: "Lead atualizado!", description: "Informações salvas com sucesso." });
+  const handleSaveEdit = async () => {
+    try {
+      await fetch(`${BASE_URL}/v1/update/lead`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: lead.id,
+          nome: editForm.nome,
+          email: editForm.email,
+          telefone: editForm.telefone,
+          endereco: editForm.endereco,
+          ramo_interesse: editForm.ramo_interesse,
+          valor_estimado: editForm.valor_estimado,
+          modelo: editForm.veiculo,
+          observacoes: editForm.observacoes,
+        }),
+      });
+      setLead(prev => ({ ...prev, ...editForm }));
+      setIsEditing(false);
+      toast({ title: "Lead atualizado!", description: "Informações salvas com sucesso." });
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível atualizar o lead.", variant: "destructive" });
+    }
   };
 
   const handleAddNote = () => {
