@@ -374,7 +374,17 @@ const WhatsApp = () => {
   // --- Create lead & auto-create chat ---
   const handleLeadCreated = (lead: Record<string, unknown>) => {
     const nome = String(lead.nome || "Novo Lead");
+    const telefone = String(lead.telefone || "").replace(/\D/g, "");
     toast({ title: "Lead criado!", description: `Lead ${nome} criado com sucesso.` });
+
+    // Auto-select the new lead's conversation if a matching contact exists
+    if (telefone) {
+      const match = contacts.find((c) => c.telefone.replace(/\D/g, "").endsWith(telefone));
+      if (match) {
+        setSelectedContact(match);
+        setShowMobileContacts(false);
+      }
+    }
   };
 
   const formatTime = (d: string) => new Date(d).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
