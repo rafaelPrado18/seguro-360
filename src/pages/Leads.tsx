@@ -125,6 +125,8 @@ const Leads = () => {
   const [leads, setLeads] = useState(PLACEHOLDER_LEADS);
   const [corretorFilter, setCorretorFilter] = useState<string[]>([]);
   const [dateFilter, setDateFilter] = useState<string>("all");
+  const [customDateStart, setCustomDateStart] = useState<string>("");
+  const [customDateEnd, setCustomDateEnd] = useState<string>("");
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const [redistribuirOpen, setRedistribuirOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -298,6 +300,29 @@ const Leads = () => {
     return parse(dateStr, "dd/MM/yyyy HH:mm:ss", new Date());
   };
 
+  const getSmartShortcutLabel = (): string => {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    if (dayOfWeek === 1) return "Desde sáb 14h";
+    return "Desde ontem 18h";
+  };
+
+  const getSmartShortcutDate = (): { start: Date; end: Date } => {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    let start: Date;
+    if (dayOfWeek === 1) {
+      start = new Date(now);
+      start.setDate(now.getDate() - 2);
+      start.setHours(14, 0, 0, 0);
+    } else {
+      start = new Date(now);
+      start.setDate(now.getDate() - 1);
+      start.setHours(18, 0, 0, 0);
+    }
+    return { start, end: now };
+  };
+
   const getDateFilterStart = (filter: string): Date | null => {
     const now = new Date();
     switch (filter) {
@@ -306,12 +331,16 @@ const Leads = () => {
       case "7dias": return startOfDay(subDays(now, 7));
       case "15dias": return startOfDay(subDays(now, 15));
       case "30dias": return startOfDay(subDays(now, 30));
+      case "atalho": return getSmartShortcutDate().start;
+      case "custom": return customDateStart ? new Date(customDateStart) : null;
       default: return null;
     }
   };
 
   const getDateFilterEnd = (filter: string): Date | null => {
     if (filter === "ontem") return startOfDay(new Date());
+    if (filter === "atalho") return getSmartShortcutDate().end;
+    if (filter === "custom") return customDateEnd ? new Date(customDateEnd) : null;
     return null;
   };
 
@@ -492,20 +521,41 @@ const Leads = () => {
                 </PopoverContent>
               </Popover>
             )}
-            <Select value={dateFilter} onValueChange={setDateFilter}>
-              <SelectTrigger className="w-[140px] sm:w-[160px] h-9 text-sm">
+            <Select value={dateFilter} onValueChange={(v) => { setDateFilter(v); if (v !== "custom") { setCustomDateStart(""); setCustomDateEnd(""); } }}>
+              <SelectTrigger className="w-[160px] sm:w-[180px] h-9 text-sm">
                 <CalendarDays className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
                 <SelectValue placeholder="Período" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="atalho">{getSmartShortcutLabel()}</SelectItem>
                 <SelectItem value="hoje">Hoje</SelectItem>
                 <SelectItem value="ontem">Ontem</SelectItem>
                 <SelectItem value="7dias">Últimos 7 dias</SelectItem>
                 <SelectItem value="15dias">Últimos 15 dias</SelectItem>
                 <SelectItem value="30dias">Últimos 30 dias</SelectItem>
+                <SelectItem value="custom">Personalizado</SelectItem>
               </SelectContent>
             </Select>
+            {dateFilter === "custom" && (
+              <div className="flex items-center gap-1.5">
+                <Input
+                  type="datetime-local"
+                  className="h-9 text-sm w-[175px]"
+                  value={customDateStart}
+                  onChange={(e) => setCustomDateStart(e.target.value)}
+                  placeholder="De"
+                />
+                <span className="text-xs text-muted-foreground">até</span>
+                <Input
+                  type="datetime-local"
+                  className="h-9 text-sm w-[175px]"
+                  value={customDateEnd}
+                  onChange={(e) => setCustomDateEnd(e.target.value)}
+                  placeholder="Até"
+                />
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Button
