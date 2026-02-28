@@ -26,31 +26,27 @@ interface HistoryEntry {
   author: string;
 }
 
-const PLACEHOLDER_LEAD_DATA = {
-  id: "1",
-  nome: "Ricardo Pereira",
-  email: "ricardo@email.com",
-  telefone: "(11) 99900-1234",
-  cpf: "123.456.789-00",
-  endereco: "Rua das Flores, 123 - São Paulo/SP",
-  origem: "WhatsApp",
-  ramo_interesse: "Auto",
-  valor_estimado: 3500,
-  status: "novo",
-  corretor_responsavel: "André Oliveira",
-  created_at: "2026-02-12T10:00:00Z",
-  veiculo: "Honda Civic EXL 2025",
-  seguradora_atual: "Nenhuma",
-  observacoes: "Cliente interessado em seguro auto com cobertura completa. Perfil jovem, garagem em casa e trabalho.",
-};
+function buildLeadFromContact(contact: WhatsAppContact) {
+  return {
+    id: contact.id,
+    nome: contact.nome,
+    email: "",
+    telefone: contact.telefone,
+    cpf: "",
+    endereco: "",
+    origem: "WhatsApp",
+    ramo_interesse: "",
+    valor_estimado: 0,
+    status: contact.tags?.[0] || "novo",
+    corretor_responsavel: "",
+    created_at: contact.ultima_mensagem_at || new Date().toISOString(),
+    veiculo: "",
+    seguradora_atual: "",
+    observacoes: "",
+  };
+}
 
-const PLACEHOLDER_HISTORY: HistoryEntry[] = [
-  { id: "h1", type: "message", title: "Primeiro contato via WhatsApp", description: "Lead entrou em contato solicitando cotação de seguro auto", created_at: "2026-02-12T14:00:00Z", author: "Sistema" },
-  { id: "h2", type: "document", title: "CNH enviada", description: "Documento de habilitação do cliente", file_name: "CNH_Ricardo.pdf", file_url: "#", created_at: "2026-02-12T14:25:00Z", author: "Ricardo Pereira" },
-  { id: "h3", type: "image", title: "Foto do veículo", description: "Honda Civic EXL 2025 - Frente", file_name: "civic_frente.jpg", file_url: "#", created_at: "2026-02-12T14:26:00Z", author: "Ricardo Pereira" },
-  { id: "h4", type: "note", title: "Nota do corretor", description: "Cliente com bom perfil. Preparar cotações Porto Seguro, Tokio Marine e HDI. Prioridade alta.", created_at: "2026-02-12T14:30:00Z", author: "André Oliveira" },
-  { id: "h5", type: "document", title: "Proposta Porto Seguro", description: "Cotação seguro auto - R$ 3.200/ano", file_name: "proposta_porto.pdf", file_url: "#", created_at: "2026-02-12T15:00:00Z", author: "André Oliveira" },
-];
+const INITIAL_HISTORY: HistoryEntry[] = [];
 
 interface LeadDetailsPanelProps {
   contact: WhatsAppContact;
@@ -74,8 +70,8 @@ const typeColors: Record<HistoryEntry["type"], string> = {
 export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   const [activeTab, setActiveTab] = useState("detalhes");
   const [newNote, setNewNote] = useState("");
-  const [history, setHistory] = useState(PLACEHOLDER_HISTORY);
-  const [lead, setLead] = useState(PLACEHOLDER_LEAD_DATA);
+  const [history, setHistory] = useState<HistoryEntry[]>(INITIAL_HISTORY);
+  const [lead, setLead] = useState(() => buildLeadFromContact(contact));
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ nome: lead.nome, telefone: lead.telefone, email: lead.email, endereco: lead.endereco, ramo_interesse: lead.ramo_interesse, valor_estimado: lead.valor_estimado, veiculo: lead.veiculo, observacoes: lead.observacoes });
 
