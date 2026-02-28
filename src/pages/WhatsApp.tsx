@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { LeadDetailsPanel } from "@/components/whatsapp/LeadDetailsPanel";
 import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
+import { NewWhatsAppLeadDialog } from "@/components/whatsapp/NewWhatsAppLeadDialog";
 import { toast } from "@/hooks/use-toast";
 import type { WhatsAppContact, WhatsAppMessage } from "@/services/whatsappService";
 import { v4 as uuidv4 } from "uuid";
@@ -149,6 +150,7 @@ const WhatsApp = () => {
   const [editText, setEditText] = useState("");
   const [activeAction, setActiveAction] = useState<{ msgId: string; type: "reactions" | "menu" } | null>(null);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
+  const [newContactOpen, setNewContactOpen] = useState(false);
   const [showMobileContacts, setShowMobileContacts] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -423,7 +425,7 @@ const WhatsApp = () => {
                 <MessageSquare className="h-4 w-4 text-success" /> Conversas
               </h3>
               <div className="flex gap-1">
-                <Button variant="ghost" size="icon" className="h-7 w-7" title="Novo Lead + Chat" onClick={() => setNewLeadOpen(true)}>
+                <Button variant="ghost" size="icon" className="h-7 w-7" title="Novo Contato" onClick={() => setNewContactOpen(true)}>
                   <Plus className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
                 <Button variant="ghost" size="icon" className="h-7 w-7" title="Arquivadas">
@@ -834,7 +836,14 @@ const WhatsApp = () => {
         )}
       </div>
 
-      {/* New Lead Dialog */}
+      {/* New Contact Dialog (simple: name + phone) */}
+      <NewWhatsAppLeadDialog
+        open={newContactOpen}
+        onOpenChange={setNewContactOpen}
+        onLeadCreated={handleLeadCreated}
+      />
+
+      {/* New Lead Dialog (full form) */}
       <NewLeadDialog
         open={newLeadOpen}
         onOpenChange={setNewLeadOpen}
