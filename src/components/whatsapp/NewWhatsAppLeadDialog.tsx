@@ -11,10 +11,18 @@ import { toast } from "@/hooks/use-toast";
 
 const schema = z.object({
   nome: z.string().trim().min(2, "Nome deve ter ao menos 2 caracteres").max(100),
-  telefone: z.string().trim().min(10, "Telefone inválido").max(20),
+  telefone: z.string().trim().min(14, "Telefone inválido").max(20),
 });
 
 type FormData = z.infer<typeof schema>;
+
+/** Aplica máscara (DD) XXXXX-XXXX enquanto digita */
+function applyPhoneMask(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 2) return digits.length ? `(${digits}` : "";
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
 
 interface NewWhatsAppLeadDialogProps {
   open: boolean;
@@ -26,7 +34,7 @@ interface NewWhatsAppLeadDialogProps {
 export function NewWhatsAppLeadDialog({ open, onOpenChange, onLeadCreated, defaultPhone }: NewWhatsAppLeadDialogProps) {
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { nome: "", telefone: defaultPhone ?? "" } as FormData,
+    defaultValues: { nome: "", telefone: defaultPhone ? applyPhoneMask(defaultPhone) : "" } as FormData,
   });
 
   const onSubmit = (data: FormData) => {
@@ -55,7 +63,16 @@ export function NewWhatsAppLeadDialog({ open, onOpenChange, onLeadCreated, defau
             <FormField control={form.control} name="telefone" render={({ field }) => (
               <FormItem>
                 <FormLabel>Telefone</FormLabel>
-                <FormControl><Input placeholder="(11) 99999-9999" {...field} /></FormControl>
+                <FormControl>
+                  <Input
+                    placeholder="(11) 99999-9999"
+                    value={field.value}
+                    onChange={(e) => field.onChange(applyPhoneMask(e.target.value))}
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
