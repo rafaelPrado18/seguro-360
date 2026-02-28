@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -50,19 +50,31 @@ interface NewLeadDialogProps {
   onOpenChange: (open: boolean) => void;
   onLeadCreated?: (lead: Partial<Lead>) => void;
   corretorResponsavel?: string;
+  defaultNome?: string;
+  defaultTelefone?: string;
 }
 
-export function NewLeadDialog({ open, onOpenChange, onLeadCreated, corretorResponsavel }: NewLeadDialogProps) {
+export function NewLeadDialog({ open, onOpenChange, onLeadCreated, corretorResponsavel, defaultNome, defaultTelefone }: NewLeadDialogProps) {
   const [loading, setLoading] = useState(false);
   const [arquivoApolice, setArquivoApolice] = useState<File | null>(null);
   const [arquivoProposta, setArquivoProposta] = useState<File | null>(null);
+  const hasDefaults = !!(defaultNome || defaultTelefone);
   const form = useForm<LeadFormData>({
     resolver: zodResolver(leadSchema),
     defaultValues: {
-      nome: "", email: "", telefone: "", veiculo: "", origem: "whatsapp",
+      nome: defaultNome || "", email: "", telefone: defaultTelefone || "", veiculo: "", origem: "whatsapp",
       ramo_interesse: "", valor_estimado: 0, observacoes: "",
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        nome: defaultNome || "", email: "", telefone: defaultTelefone || "", veiculo: "", origem: "whatsapp",
+        ramo_interesse: "", valor_estimado: 0, observacoes: "",
+      });
+    }
+  }, [open, defaultNome, defaultTelefone]);
 
   const onSubmit = async (data: LeadFormData) => {
     try {
@@ -113,7 +125,7 @@ export function NewLeadDialog({ open, onOpenChange, onLeadCreated, corretorRespo
               <FormField control={form.control} name="nome" render={({ field }) => (
                 <FormItem className="col-span-2">
                   <FormLabel>Nome completo</FormLabel>
-                  <FormControl><Input placeholder="Nome do lead" {...field} /></FormControl>
+                  <FormControl><Input placeholder="Nome do lead" {...field} disabled={hasDefaults && !!defaultNome} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -127,7 +139,7 @@ export function NewLeadDialog({ open, onOpenChange, onLeadCreated, corretorRespo
               <FormField control={form.control} name="telefone" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Telefone</FormLabel>
-                  <FormControl><Input placeholder="(11) 99999-9999" {...field} /></FormControl>
+                  <FormControl><Input placeholder="(11) 99999-9999" {...field} disabled={hasDefaults && !!defaultTelefone} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
