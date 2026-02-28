@@ -295,9 +295,17 @@ const Leads = () => {
       .replace(/\{\{data_vencimento\}\}/g, "...")
   };
 
-  const parseBrDate = (dateStr: string): Date => {
-    // Format: "DD/MM/YYYY HH:mm:ss"
-    return parse(dateStr, "dd/MM/yyyy HH:mm:ss", new Date());
+  const parseBrDate = (dateStr: string): Date | null => {
+    if (!dateStr) return null;
+    // Try BR format: "DD/MM/YYYY HH:mm:ss"
+    const brMatch = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/);
+    if (brMatch) {
+      const [, dd, mm, yyyy, hh, min, ss] = brMatch;
+      return new Date(Number(yyyy), Number(mm) - 1, Number(dd), Number(hh), Number(min), Number(ss));
+    }
+    // Fallback: try native Date parse (ISO, etc.)
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? null : d;
   };
 
   const getSmartShortcutLabel = (): string => {
@@ -354,10 +362,14 @@ const Leads = () => {
     let matchesDate = true;
     if (dateFilter !== "all" && l.created_at) {
       const leadDate = parseBrDate(l.created_at);
-      const start = getDateFilterStart(dateFilter);
-      const end = getDateFilterEnd(dateFilter);
-      if (start) matchesDate = isAfter(leadDate, start) || isEqual(leadDate, start);
-      if (matchesDate && end) matchesDate = !isAfter(leadDate, end);
+      if (!leadDate) {
+        matchesDate = true; // can't parse → don't filter out
+      } else {
+        const start = getDateFilterStart(dateFilter);
+        const end = getDateFilterEnd(dateFilter);
+        if (start) matchesDate = isAfter(leadDate, start) || isEqual(leadDate, start);
+        if (matchesDate && end) matchesDate = !isAfter(leadDate, end);
+      }
     }
 
     return matchesSearch && matchesStatus && matchesCorretor && matchesDate;
