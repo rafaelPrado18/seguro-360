@@ -14,7 +14,7 @@ import {
   Laugh, MicOff, Play, Pause, X, Target, Square, FileStack, Loader2,
 } from "lucide-react";
 import { LeadDetailsPanel } from "@/components/whatsapp/LeadDetailsPanel";
-import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
+import { NewWhatsAppLeadDialog } from "@/components/whatsapp/NewWhatsAppLeadDialog";
 import { toast } from "@/hooks/use-toast";
 import type { WhatsAppContact, WhatsAppMessage } from "@/services/whatsappService";
 import { v4 as uuidv4 } from "uuid";
@@ -814,7 +814,7 @@ const WhatsApp = () => {
       </div>
 
       {/* New Lead Dialog */}
-      <NewLeadDialog
+      <NewWhatsAppLeadDialog
         open={newLeadOpen}
         onOpenChange={setNewLeadOpen}
         onLeadCreated={handleLeadCreated}
