@@ -83,7 +83,7 @@ export function NewLeadDialog({ open, onOpenChange, onLeadCreated, corretorRespo
       await leadsService.createLead({
         nome: data.nome,
         email: data.email,
-        telefone: `55${telefoneDigits}`,
+        telefone: `${telefoneDigits}`,
         origem: data.origem,
         corretor_responsavel: corretorResponsavel || "",
         valor_estimado: String(data.valor_estimado),

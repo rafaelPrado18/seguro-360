@@ -509,11 +509,6 @@ const WhatsApp = () => {
                   {selectedContact.cliente_id && (
                     <Badge variant="outline" className="text-[10px] border-success text-success mr-1 sm:mr-2 hidden sm:inline-flex">Cliente</Badge>
                   )}
-                  {!selectedContact.lead_id && (
-                    <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1 mr-1 sm:mr-2 hidden sm:flex" onClick={() => setNewLeadOpen(true)}>
-                      <Target className="h-3 w-3" /> Criar Lead
-                    </Button>
-                  )}
                   <Button
                     variant={showLeadDetails ? "default" : "ghost"} size="icon" className="h-8 w-8"
                     title="Ver detalhes do Lead" onClick={() => setShowLeadDetails(!showLeadDetails)}
@@ -605,7 +600,7 @@ const WhatsApp = () => {
                                     <span className="text-xs flex-1 underline">{msg.conteudo}</span>
                                     <Download className="h-3.5 w-3.5 opacity-50" />
                                   </a>
-                                ) : msg.media_mime_type === "audio/ogg" ? (
+                                ) : msg.media_mime_type === "audio/ogg" || msg.tipo === 'audio' ? (
                                   <AudioPlayer src={msg.media_url || ""} />
                                 ) : (
                                   <p className="text-sm whitespace-pre-wrap">{msg.conteudo}</p>

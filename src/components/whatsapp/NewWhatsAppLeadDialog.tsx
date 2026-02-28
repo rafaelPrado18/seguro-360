@@ -50,7 +50,7 @@ export function NewWhatsAppLeadDialog({ open, onOpenChange, onLeadCreated, defau
         telefone: `55${telefoneDigits}`,
         corretor_responsavel: corretorResponsavel || "",
       });
-      onLeadCreated?.({ nome: data.nome, telefone: data.telefone });
+      onLeadCreated?.({ nome: data.nome, telefone: `55${telefoneDigits}` });
       toast({ title: "Contato cadastrado!", description: `${data.nome} adicionado com sucesso.` });
       form.reset();
       onOpenChange(false);

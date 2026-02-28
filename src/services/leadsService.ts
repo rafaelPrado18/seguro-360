@@ -95,7 +95,7 @@ export const leadsService = {
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error("Erro ao criar lead");
-    return response.json();
+    return 
   },
 
   // PUT /api/leads/:id - Atualizar lead

@@ -255,7 +255,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</h4>
                 <InfoRow icon={Tag} label="Origem" value={lead.origem} />
                 <InfoRow icon={User} label="Corretor" value={lead.corretor_responsavel} />
-                <InfoRow icon={Calendar} label="Criado em" value={formatDate(lead.created_at)} />
+                <InfoRow icon={Calendar} label="Criado em" value={lead.created_at} />
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs border-info text-info">{lead.status === "novo" ? "Novo" : lead.status}</Badge>
                 </div>

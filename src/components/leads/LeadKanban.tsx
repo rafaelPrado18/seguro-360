@@ -93,9 +93,6 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                   <Badge variant="secondary" className="text-[10px] h-5 min-w-[20px] justify-center">{colLeads.length}</Badge>
                 </div>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1">
-                R$ {getColumnTotal(col.id).toLocaleString()}
-              </p>
             </div>
 
             {/* Cards */}

@@ -214,7 +214,7 @@ export const whatsappService = {
       body: JSON.stringify(payload),
     });
     if (!response.ok) throw new Error("Erro ao criar contato");
-    return response.json();
+    return ;
   },
 
   // GET /api/whatsapp/webhook - Endpoint de webhook para receber mensagens (server-side)
