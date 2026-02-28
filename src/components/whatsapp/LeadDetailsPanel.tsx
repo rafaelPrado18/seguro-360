@@ -65,6 +65,7 @@ function buildEmptyLead(contact: WhatsAppContact) {
     status: "novo",
     corretor_responsavel: "",
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
     seguradora_atual: "",
     observacoes: "",
   };
@@ -118,6 +119,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
             status: apiLead.status || "novo",
             corretor_responsavel: apiLead.corretor_responsavel || "",
             created_at: apiLead.created_at || new Date().toISOString(),
+            updated_at: apiLead.updated_at || apiLead.created_at || new Date().toISOString(),
             seguradora_atual: apiLead.seguradora_atual || "",
             observacoes: apiLead.observacoes || "",
           });
@@ -274,24 +276,51 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                 )}
               </div>
 
-              {/* Informações Pessoais */}
+              {/* Informações Pessoais / Lead */}
               <div className="space-y-3">
-                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Informações Pessoais</h4>
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {contact.cliente_id ? "Informações Pessoais" : "Informações do Lead"}
+                </h4>
                 {isEditing ? (
                   <div className="space-y-2">
                     <EditField label="Nome" value={editForm.nome} onChange={v => setEditForm(p => ({ ...p, nome: v }))} />
-                    <EditField label="CPF" value={editForm.cpf} onChange={v => setEditForm(p => ({ ...p, cpf: v }))} />
-                    <EditField label="Telefone" value={editForm.telefone} onChange={v => setEditForm(p => ({ ...p, telefone: v }))} />
-                    <EditField label="Endereço" value={editForm.endereco} onChange={v => setEditForm(p => ({ ...p, endereco: v }))} />
-                    <EditField label="CEP" value={editForm.cep} onChange={v => setEditForm(p => ({ ...p, cep: v }))} />
+                    {contact.cliente_id ? (
+                      <>
+                        <EditField label="CPF" value={editForm.cpf} onChange={v => setEditForm(p => ({ ...p, cpf: v }))} />
+                        <EditField label="Telefone" value={editForm.telefone} onChange={v => setEditForm(p => ({ ...p, telefone: v }))} />
+                        <EditField label="Endereço" value={editForm.endereco} onChange={v => setEditForm(p => ({ ...p, endereco: v }))} />
+                        <EditField label="CEP" value={editForm.cep} onChange={v => setEditForm(p => ({ ...p, cep: v }))} />
+                      </>
+                    ) : (
+                      <>
+                        <EditField label="Email" value={editForm.email} onChange={v => setEditForm(p => ({ ...p, email: v }))} />
+                        <EditField label="Telefone" value={editForm.telefone} onChange={v => setEditForm(p => ({ ...p, telefone: v }))} />
+                        <EditField label="Observações" value={editForm.observacoes} onChange={v => setEditForm(p => ({ ...p, observacoes: v }))} />
+                      </>
+                    )}
                   </div>
                 ) : (
                   <>
-                    <InfoRow icon={User} label="Nome" value={lead.nome} />
-                    <InfoRow icon={FileText} label="CPF" value={lead.cpf} />
-                    <InfoRow icon={Phone} label="Telefone" value={lead.telefone} />
-                    <InfoRow icon={MapPin} label="Endereço" value={lead.endereco} />
-                    <InfoRow icon={MapPin} label="CEP" value={lead.cep} />
+                    {contact.cliente_id ? (
+                      <>
+                        <InfoRow icon={User} label="Nome" value={lead.nome} />
+                        <InfoRow icon={FileText} label="CPF" value={lead.cpf} />
+                        <InfoRow icon={Phone} label="Telefone" value={lead.telefone} />
+                        <InfoRow icon={MapPin} label="Endereço" value={lead.endereco} />
+                        <InfoRow icon={MapPin} label="CEP" value={lead.cep} />
+                      </>
+                    ) : (
+                      <>
+                        <InfoRow icon={User} label="Nome" value={lead.nome} />
+                        <InfoRow icon={Mail} label="Email" value={lead.email || "Não informado"} />
+                        <InfoRow icon={Phone} label="Telefone" value={lead.telefone} />
+                        <InfoRow icon={Tag} label="Status" value={lead.status === "novo" ? "Novo" : lead.status} />
+                        <InfoRow icon={User} label="Corretor" value={lead.corretor_responsavel || "Não atribuído"} />
+                        <InfoRow icon={Calendar} label="Criado em" value={lead.created_at} />
+                        <InfoRow icon={Clock} label="Atualizado em" value={lead.updated_at || lead.created_at} />
+                        {lead.observacoes && <InfoRow icon={FileText} label="Observações" value={lead.observacoes} />}
+                      </>
+                    )}
                   </>
                 )}
               </div>
