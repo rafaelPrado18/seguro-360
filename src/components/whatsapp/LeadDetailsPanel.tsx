@@ -9,8 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   X, User, Mail, Phone, MapPin, Target, DollarSign,
   FileText, Image, MessageSquare, Upload, Plus, Clock,
-  Calendar, Tag, Building, Download,
+  Calendar, Tag, Building, Download, Pencil, Check,
 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import type { WhatsAppContact } from "@/services/whatsappService";
 import { v4 as uuidv4 } from "uuid";
 
@@ -74,7 +75,15 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   const [activeTab, setActiveTab] = useState("detalhes");
   const [newNote, setNewNote] = useState("");
   const [history, setHistory] = useState(PLACEHOLDER_HISTORY);
-  const lead = PLACEHOLDER_LEAD_DATA;
+  const [lead, setLead] = useState(PLACEHOLDER_LEAD_DATA);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ nome: lead.nome, telefone: lead.telefone, email: lead.email, endereco: lead.endereco, ramo_interesse: lead.ramo_interesse, valor_estimado: lead.valor_estimado, veiculo: lead.veiculo, observacoes: lead.observacoes });
+
+  const handleSaveEdit = () => {
+    setLead(prev => ({ ...prev, ...editForm }));
+    setIsEditing(false);
+    toast({ title: "Lead atualizado!", description: "Informações salvas com sucesso." });
+  };
 
   const handleAddNote = () => {
     if (!newNote.trim()) return;
@@ -151,20 +160,59 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
         <TabsContent value="detalhes" className="flex-1 mt-0">
           <ScrollArea className="h-[calc(100vh-22rem)]">
             <div className="px-4 py-3 space-y-4">
+              <div className="flex justify-end">
+                {isEditing ? (
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="text-xs" onClick={() => setIsEditing(false)}>Cancelar</Button>
+                    <Button size="sm" className="text-xs gap-1 bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSaveEdit}>
+                      <Check className="h-3 w-3" /> Salvar
+                    </Button>
+                  </div>
+                ) : (
+                  <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => {
+                    setEditForm({ nome: lead.nome, telefone: lead.telefone, email: lead.email, endereco: lead.endereco, ramo_interesse: lead.ramo_interesse, valor_estimado: lead.valor_estimado, veiculo: lead.veiculo, observacoes: lead.observacoes });
+                    setIsEditing(true);
+                  }}>
+                    <Pencil className="h-3 w-3" /> Editar
+                  </Button>
+                )}
+              </div>
+
               <div className="space-y-3">
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Informações Pessoais</h4>
-                <InfoRow icon={User} label="Nome" value={lead.nome} />
-                <InfoRow icon={Mail} label="Email" value={lead.email} />
-                <InfoRow icon={Phone} label="Telefone" value={lead.telefone} />
-                <InfoRow icon={MapPin} label="Endereço" value={lead.endereco} />
+                {isEditing ? (
+                  <div className="space-y-2">
+                    <EditField label="Nome" value={editForm.nome} onChange={v => setEditForm(p => ({ ...p, nome: v }))} />
+                    <EditField label="Email" value={editForm.email} onChange={v => setEditForm(p => ({ ...p, email: v }))} />
+                    <EditField label="Telefone" value={editForm.telefone} onChange={v => setEditForm(p => ({ ...p, telefone: v }))} />
+                    <EditField label="Endereço" value={editForm.endereco} onChange={v => setEditForm(p => ({ ...p, endereco: v }))} />
+                  </div>
+                ) : (
+                  <>
+                    <InfoRow icon={User} label="Nome" value={lead.nome} />
+                    <InfoRow icon={Mail} label="Email" value={lead.email} />
+                    <InfoRow icon={Phone} label="Telefone" value={lead.telefone} />
+                    <InfoRow icon={MapPin} label="Endereço" value={lead.endereco} />
+                  </>
+                )}
               </div>
 
               <div className="border-t border-border pt-3 space-y-3">
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dados do Seguro</h4>
-                <InfoRow icon={Target} label="Ramo" value={lead.ramo_interesse} />
-                <InfoRow icon={DollarSign} label="Valor Estimado" value={`R$ ${lead.valor_estimado.toLocaleString()}`} />
-                <InfoRow icon={Building} label="Seguradora Atual" value={lead.seguradora_atual} />
-                {lead.veiculo && <InfoRow icon={Target} label="Veículo" value={lead.veiculo} />}
+                {isEditing ? (
+                  <div className="space-y-2">
+                    <EditField label="Ramo" value={editForm.ramo_interesse} onChange={v => setEditForm(p => ({ ...p, ramo_interesse: v }))} />
+                    <EditField label="Valor Estimado" value={String(editForm.valor_estimado)} onChange={v => setEditForm(p => ({ ...p, valor_estimado: Number(v) || 0 }))} type="number" />
+                    <EditField label="Veículo" value={editForm.veiculo} onChange={v => setEditForm(p => ({ ...p, veiculo: v }))} />
+                  </div>
+                ) : (
+                  <>
+                    <InfoRow icon={Target} label="Ramo" value={lead.ramo_interesse} />
+                    <InfoRow icon={DollarSign} label="Valor Estimado" value={`R$ ${lead.valor_estimado.toLocaleString()}`} />
+                    <InfoRow icon={Building} label="Seguradora Atual" value={lead.seguradora_atual} />
+                    {lead.veiculo && <InfoRow icon={Target} label="Veículo" value={lead.veiculo} />}
+                  </>
+                )}
               </div>
 
               <div className="border-t border-border pt-3 space-y-3">
@@ -177,10 +225,14 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                 </div>
               </div>
 
-              {lead.observacoes && (
+              {(isEditing || lead.observacoes) && (
                 <div className="border-t border-border pt-3">
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Observações</h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{lead.observacoes}</p>
+                  {isEditing ? (
+                    <Textarea className="text-xs min-h-[60px] resize-none" value={editForm.observacoes} onChange={e => setEditForm(p => ({ ...p, observacoes: e.target.value }))} />
+                  ) : (
+                    <p className="text-xs text-muted-foreground leading-relaxed">{lead.observacoes}</p>
+                  )}
                 </div>
               )}
             </div>
@@ -261,6 +313,15 @@ function InfoRow({ icon: Icon, label, value }: { icon: typeof User; label: strin
         <p className="text-[10px] text-muted-foreground">{label}</p>
         <p className="text-xs font-medium text-foreground truncate">{value}</p>
       </div>
+    </div>
+  );
+}
+
+function EditField({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
+  return (
+    <div>
+      <p className="text-[10px] text-muted-foreground mb-1">{label}</p>
+      <Input className="h-7 text-xs" type={type} value={value} onChange={e => onChange(e.target.value)} />
     </div>
   );
 }
