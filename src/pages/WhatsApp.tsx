@@ -14,7 +14,7 @@ import {
   Laugh, MicOff, Play, Pause, X, Target, Square, FileStack, Loader2,
 } from "lucide-react";
 import { LeadDetailsPanel } from "@/components/whatsapp/LeadDetailsPanel";
-import { NewWhatsAppLeadDialog } from "@/components/whatsapp/NewWhatsAppLeadDialog";
+import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
 import { toast } from "@/hooks/use-toast";
 import type { WhatsAppContact, WhatsAppMessage } from "@/services/whatsappService";
 import { v4 as uuidv4 } from "uuid";
@@ -372,7 +372,7 @@ const WhatsApp = () => {
   };
 
   // --- Create lead & auto-create chat ---
-  const handleLeadCreated = (lead: Record<string, unknown>) => {
+  const handleLeadCreated = (lead: Partial<Record<string, unknown>>) => {
     const nome = String(lead.nome || "Novo Lead");
     const telefone = String(lead.telefone || "").replace(/\D/g, "");
     toast({ title: "Lead criado!", description: `Lead ${nome} criado com sucesso.` });
@@ -835,7 +835,7 @@ const WhatsApp = () => {
       </div>
 
       {/* New Lead Dialog */}
-      <NewWhatsAppLeadDialog
+      <NewLeadDialog
         open={newLeadOpen}
         onOpenChange={setNewLeadOpen}
         onLeadCreated={handleLeadCreated}
