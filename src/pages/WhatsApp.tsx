@@ -850,6 +850,8 @@ const WhatsApp = () => {
         onOpenChange={setNewLeadOpen}
         onLeadCreated={handleLeadCreated}
         corretorResponsavel={currentUser.nome}
+        defaultNome={selectedContact?.nome}
+        defaultTelefone={selectedContact?.telefone}
       />
 
       {/* Image Lightbox */}
