@@ -173,7 +173,12 @@ const WhatsApp = () => {
   const markAsReadMutation = useMarkAsRead();
 
   const contacts = conversationsData?.data || [];
-  const filteredContacts = contacts;
+  const filteredContacts = searchQuery.trim()
+    ? contacts.filter(c =>
+        c.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.telefone?.includes(searchQuery)
+      )
+    : contacts;
 
   // Local optimistic messages
   const [optimisticMsgs, setOptimisticMsgs] = useState<ExtMessage[]>([]);
