@@ -71,6 +71,20 @@ export const leadsService = {
 
   },
 
+  // GET /v1/read/leads?leadTag=telefone&leadValue=... - Buscar lead por telefone
+  async getLeadByPhone(telefone: string): Promise<Lead | null> {
+    try {
+      const response = await fetch(`${BASE_URL}/v1/read/leads?leadTag=telefone&leadValue=${telefone}`);
+      if (!response.ok) return null;
+      const result = await response.json();
+      const leads = result.data || result;
+      if (Array.isArray(leads) && leads.length > 0) return leads[0];
+      return null;
+    } catch {
+      return null;
+    }
+  },
+
   // GET /api/leads/:id - Buscar lead por ID
   async getLeadById(id: string): Promise<Lead> {
     const response = await fetch(`${BASE_URL}/leads/${id}`);
