@@ -377,13 +377,24 @@ const WhatsApp = () => {
     const telefone = String(lead.telefone || "").replace(/\D/g, "");
     toast({ title: "Lead criado!", description: `Lead ${nome} criado com sucesso.` });
 
-    // Auto-select the new lead's conversation if a matching contact exists
     if (telefone) {
+      // Try to find existing contact, otherwise create a virtual one to open the chat window
       const match = contacts.find((c) => c.telefone.replace(/\D/g, "").endsWith(telefone));
-      if (match) {
-        setSelectedContact(match);
-        setShowMobileContacts(false);
-      }
+      const contact: WhatsAppContact = match ?? {
+        id: uuidv4(),
+        nome,
+        telefone,
+        foto_url: null,
+        lead_id: null,
+        cliente_id: null,
+        ultima_mensagem: "",
+        ultima_mensagem_at: new Date().toISOString(),
+        nao_lidas: 0,
+        status: "ativo" as const,
+        tags: [],
+      };
+      setSelectedContact(contact);
+      setShowMobileContacts(false);
     }
   };
 
