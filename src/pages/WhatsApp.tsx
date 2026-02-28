@@ -175,14 +175,29 @@ const WhatsApp = () => {
   const contacts = conversationsData?.data || [];
   const filteredContacts = contacts;
 
+  // Local optimistic messages
+  const [optimisticMsgs, setOptimisticMsgs] = useState<ExtMessage[]>([]);
+
   const rawMessages: WhatsAppMessage[] = (messagesData as any)?.success || (messagesData as any)?.data || [];
-  const messages: ExtMessage[] = rawMessages.map(m => ({
-    ...m,
-    conteudo: deletedMsgs.has(m.id) ? "Mensagem apagada" : (editedMsgs[m.id] ?? (m.conteudo || "").replace(/^\*[^*]+\*:\s*\n?/, "")),
-    reaction: localReactions[m.id],
-    deleted: deletedMsgs.has(m.id),
-    edited: !!editedMsgs[m.id],
-  }));
+  const messages: ExtMessage[] = [
+    ...rawMessages.map(m => ({
+      ...m,
+      conteudo: deletedMsgs.has(m.id) ? "Mensagem apagada" : (editedMsgs[m.id] ?? (m.conteudo || "").replace(/^\*[^*]+\*:\s*\n?/, "")),
+      reaction: localReactions[m.id],
+      deleted: deletedMsgs.has(m.id),
+      edited: !!editedMsgs[m.id],
+    })),
+    ...optimisticMsgs,
+  ];
+
+  // Clear optimistic messages when real messages update
+  useEffect(() => {
+    if (rawMessages.length > 0 && optimisticMsgs.length > 0) {
+      setOptimisticMsgs([]);
+    }
+  }, [rawMessages.length]);
+
+  const userId = getCookie("userId") || "";
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -195,29 +210,37 @@ const WhatsApp = () => {
     }
   }, [selectedContact?.id]);
 
-  const userId = getCookie("userId") || "";
-
-  // --- Send text ---
+  // --- Send text (optimistic) ---
   const handleSend = () => {
     if (!messageInput.trim() || !selectedContact) return;
 
-    // Garante o sufixo @c.us no chatId conforme formato da API
     const rawPhone = selectedContact.telefone.replace(/\D/g, "");
     const chatId = rawPhone.includes("@") ? rawPhone : `${rawPhone}@c.us`;
+    const text = messageInput;
+
+    // Optimistic: show message immediately
+    const optimisticMsg: ExtMessage = {
+      id: `opt-${Date.now()}`,
+      chatId,
+      direcao: "enviada",
+      tipo: "text",
+      conteudo: text,
+      media_url: null,
+      media_mime_type: null,
+      status: "enviada",
+      remetente: userId,
+      created_at: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+    };
+    setOptimisticMsgs(prev => [...prev, optimisticMsg]);
+    setMessageInput("");
 
     sendMessageMutation.mutate(
+      { chatId, tipo: "text", userId, message: text },
       {
-        chatId,
-        tipo: "text",
-        userId,
-        message: messageInput,
-      },
-      {
-        onSuccess: () => {
-          setMessageInput("");
-        },
         onError: () => {
           toast({ title: "Erro", description: "Falha ao enviar mensagem", variant: "destructive" });
+          // Mark as failed
+          setOptimisticMsgs(prev => prev.map(m => m.id === optimisticMsg.id ? { ...m, status: "erro" } : m));
         },
       }
     );
@@ -802,9 +825,8 @@ const WhatsApp = () => {
                         size="icon"
                         className="h-9 w-9 flex-shrink-0 bg-success hover:bg-success/90 text-success-foreground"
                         onClick={handleSend}
-                        disabled={sendMessageMutation.isPending}
                       >
-                        {sendMessageMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                        <Send className="h-4 w-4" />
                       </Button>
                     ) : (
                       <Button size="icon" variant="ghost" className="h-9 w-9 flex-shrink-0 text-muted-foreground hover:text-destructive" onClick={startRecording}>

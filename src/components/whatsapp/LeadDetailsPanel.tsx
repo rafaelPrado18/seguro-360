@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,10 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
   X, User, Mail, Phone, MapPin, Target, DollarSign,
   FileText, Image, MessageSquare, Upload, Plus, Clock,
-  Calendar, Tag, Building, Download, Pencil, Check, Loader2,
+  Calendar, Tag, Building, Download, Pencil, Check, Loader2, ArrowRightLeft,
 } from "lucide-react";
+import { useAgents } from "@/hooks/useAgents";
 import { toast } from "@/hooks/use-toast";
 import type { WhatsAppContact } from "@/services/whatsappService";
 import { v4 as uuidv4 } from "uuid";
@@ -280,6 +284,8 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                 </div>
               </div>
 
+              <TransferSection leadId={lead.id} currentCorretor={lead.corretor_responsavel} onTransferred={(nome) => setLead(prev => ({ ...prev, corretor_responsavel: nome }))} />
+
               {(isEditing || lead.observacoes) && (
                 <div className="border-t border-border pt-3">
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Observações</h4>
@@ -377,6 +383,54 @@ function EditField({ label, value, onChange, type = "text" }: { label: string; v
     <div>
       <p className="text-[10px] text-muted-foreground mb-1">{label}</p>
       <Input className="h-7 text-xs" type={type} value={value} onChange={e => onChange(e.target.value)} />
+    </div>
+  );
+}
+
+function TransferSection({ leadId, currentCorretor, onTransferred }: { leadId: string; currentCorretor: string; onTransferred: (nome: string) => void }) {
+  const { data: agents } = useAgents();
+  const [transferring, setTransferring] = useState(false);
+
+  const corretores = useMemo(() => {
+    if (!agents) return [];
+    return agents.filter(a => a.isActive && a.name !== currentCorretor);
+  }, [agents, currentCorretor]);
+
+  const handleTransfer = async (nome: string) => {
+    setTransferring(true);
+    try {
+      const res = await fetch(`${BASE_URL}/v1/update/lead`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: leadId, corretor_responsavel: nome }),
+      });
+      if (!res.ok) throw new Error();
+      onTransferred(nome);
+      toast({ title: "Lead transferido!", description: `Transferido para ${nome}` });
+    } catch {
+      toast({ title: "Erro", description: "Falha ao transferir lead.", variant: "destructive" });
+    } finally {
+      setTransferring(false);
+    }
+  };
+
+  return (
+    <div className="border-t border-border pt-3 space-y-2">
+      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <ArrowRightLeft className="h-3 w-3" /> Transferir Lead
+      </h4>
+      <Select onValueChange={handleTransfer} disabled={transferring}>
+        <SelectTrigger className="h-8 text-xs">
+          <SelectValue placeholder={transferring ? "Transferindo..." : "Selecione o corretor"} />
+        </SelectTrigger>
+        <SelectContent>
+          {corretores.map(a => (
+            <SelectItem key={a.agentId} value={a.name} className="text-xs">
+              {a.name} — {a.function}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
