@@ -206,6 +206,17 @@ export const whatsappService = {
     if (!response.ok) throw new Error("Erro ao vincular lead");
   },
 
+  // POST /v1/create/contact - Criar contato
+  async createContact(payload: { nome: string; telefone: string; corretor_responsavel: string }): Promise<unknown> {
+    const response = await fetch(`${BASE_URL}/v1/create/contact`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error("Erro ao criar contato");
+    return response.json();
+  },
+
   // GET /api/whatsapp/webhook - Endpoint de webhook para receber mensagens (server-side)
   // POST /api/whatsapp/webhook - Receber notificações de mensagens (server-side)
   // Nota: O webhook deve ser configurado no painel da sua API WhatsApp apontando para o seu backend

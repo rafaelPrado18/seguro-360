@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
+import { whatsappService } from "@/services/whatsappService";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
 
 const schema = z.object({
   nome: z.string().trim().min(2, "Nome deve ter ao menos 2 caracteres").max(100),
@@ -15,7 +18,6 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
-
 /** Aplica máscara (DD) XXXXX-XXXX enquanto digita */
 function applyPhoneMask(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -29,19 +31,34 @@ interface NewWhatsAppLeadDialogProps {
   onOpenChange: (open: boolean) => void;
   onLeadCreated?: (lead: { nome: string; telefone: string }) => void;
   defaultPhone?: string;
+  corretorResponsavel?: string;
 }
 
-export function NewWhatsAppLeadDialog({ open, onOpenChange, onLeadCreated, defaultPhone }: NewWhatsAppLeadDialogProps) {
+export function NewWhatsAppLeadDialog({ open, onOpenChange, onLeadCreated, defaultPhone, corretorResponsavel }: NewWhatsAppLeadDialogProps) {
+  const [loading, setLoading] = useState(false);
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { nome: "", telefone: defaultPhone ? applyPhoneMask(defaultPhone) : "" } as FormData,
   });
 
-  const onSubmit = (data: FormData) => {
-    onLeadCreated?.({ nome: data.nome!, telefone: data.telefone! });
-    toast({ title: "Lead cadastrado!", description: `${data.nome} adicionado com sucesso.` });
-    form.reset();
-    onOpenChange(false);
+  const onSubmit = async (data: FormData) => {
+    try {
+      setLoading(true);
+      const telefoneDigits = data.telefone.replace(/\D/g, "");
+      await whatsappService.createContact({
+        nome: data.nome,
+        telefone: `55${telefoneDigits}`,
+        corretor_responsavel: corretorResponsavel || "",
+      });
+      onLeadCreated?.({ nome: data.nome, telefone: data.telefone });
+      toast({ title: "Contato cadastrado!", description: `${data.nome} adicionado com sucesso.` });
+      form.reset();
+      onOpenChange(false);
+    } catch {
+      toast({ title: "Erro ao criar contato", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -77,8 +94,11 @@ export function NewWhatsAppLeadDialog({ open, onOpenChange, onLeadCreated, defau
               </FormItem>
             )} />
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-              <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/90">Cadastrar</Button>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>Cancelar</Button>
+              <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
+                {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Cadastrar
+              </Button>
             </DialogFooter>
           </form>
         </Form>

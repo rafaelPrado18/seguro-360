@@ -841,6 +841,7 @@ const WhatsApp = () => {
         open={newContactOpen}
         onOpenChange={setNewContactOpen}
         onLeadCreated={handleLeadCreated}
+        corretorResponsavel={currentUser.nome}
       />
 
       {/* New Lead Dialog (full form) */}
