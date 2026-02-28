@@ -41,9 +41,17 @@ function buildEmptyLead(contact: WhatsAppContact) {
     telefone: contact.telefone,
     cpf: "",
     endereco: "",
+    cep: "",
     origem: "WhatsApp",
     ramo_interesse: "",
     valor_estimado: 0,
+    premio: 0,
+    premio_liquido: 0,
+    numero_parcelas: 0,
+    valor_parcelas: 0,
+    numero_proposta: "",
+    numero_apolice: "",
+    codigo_ci: "",
     status: "novo",
     corretor_responsavel: "",
     created_at: new Date().toISOString(),
@@ -80,7 +88,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   const [history, setHistory] = useState<HistoryEntry[]>(INITIAL_HISTORY);
   const [lead, setLead] = useState(() => buildEmptyLead(contact));
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ nome: lead.nome, telefone: lead.telefone, email: lead.email, endereco: lead.endereco, ramo_interesse: lead.ramo_interesse, valor_estimado: lead.valor_estimado, veiculo: lead.veiculo, observacoes: lead.observacoes });
+  const [editForm, setEditForm] = useState({ nome: lead.nome, telefone: lead.telefone, email: lead.email, cpf: lead.cpf, endereco: lead.endereco, cep: lead.cep, ramo_interesse: lead.ramo_interesse, valor_estimado: lead.valor_estimado, premio: lead.premio, premio_liquido: lead.premio_liquido, numero_parcelas: lead.numero_parcelas, valor_parcelas: lead.valor_parcelas, numero_proposta: lead.numero_proposta, numero_apolice: lead.numero_apolice, codigo_ci: lead.codigo_ci, veiculo: lead.veiculo, observacoes: lead.observacoes });
   const [loading, setLoading] = useState(true);
 
   // Fetch lead data from API by phone number
@@ -101,9 +109,17 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
             telefone: apiLead.telefone || contact.telefone,
             cpf: apiLead.cpf || "",
             endereco: apiLead.endereco || "",
+            cep: apiLead.cep || "",
             origem: apiLead.origem || "WhatsApp",
             ramo_interesse: apiLead.ramo_interesse || apiLead.modelo || "",
             valor_estimado: Number(apiLead.valor_estimado) || 0,
+            premio: Number(apiLead.premio) || 0,
+            premio_liquido: Number(apiLead.premio_liquido) || 0,
+            numero_parcelas: Number(apiLead.numero_parcelas) || 0,
+            valor_parcelas: Number(apiLead.valor_parcelas) || 0,
+            numero_proposta: apiLead.numero_proposta || "",
+            numero_apolice: apiLead.numero_apolice || "",
+            codigo_ci: apiLead.codigo_ci || "",
             status: apiLead.status || "novo",
             corretor_responsavel: apiLead.corretor_responsavel || "",
             created_at: apiLead.created_at || new Date().toISOString(),
@@ -229,7 +245,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                   </div>
                 ) : (
                   <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => {
-                    setEditForm({ nome: lead.nome, telefone: lead.telefone, email: lead.email, endereco: lead.endereco, ramo_interesse: lead.ramo_interesse, valor_estimado: lead.valor_estimado, veiculo: lead.veiculo, observacoes: lead.observacoes });
+                    setEditForm({ nome: lead.nome, telefone: lead.telefone, email: lead.email, cpf: lead.cpf, endereco: lead.endereco, cep: lead.cep, ramo_interesse: lead.ramo_interesse, valor_estimado: lead.valor_estimado, premio: lead.premio, premio_liquido: lead.premio_liquido, numero_parcelas: lead.numero_parcelas, valor_parcelas: lead.valor_parcelas, numero_proposta: lead.numero_proposta, numero_apolice: lead.numero_apolice, codigo_ci: lead.codigo_ci, veiculo: lead.veiculo, observacoes: lead.observacoes });
                     setIsEditing(true);
                   }}>
                     <Pencil className="h-3 w-3" /> Editar
@@ -242,16 +258,18 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                 {isEditing ? (
                   <div className="space-y-2">
                     <EditField label="Nome" value={editForm.nome} onChange={v => setEditForm(p => ({ ...p, nome: v }))} />
-                    <EditField label="Email" value={editForm.email} onChange={v => setEditForm(p => ({ ...p, email: v }))} />
+                    <EditField label="CPF" value={editForm.cpf} onChange={v => setEditForm(p => ({ ...p, cpf: v }))} />
                     <EditField label="Telefone" value={editForm.telefone} onChange={v => setEditForm(p => ({ ...p, telefone: v }))} />
                     <EditField label="Endereço" value={editForm.endereco} onChange={v => setEditForm(p => ({ ...p, endereco: v }))} />
+                    <EditField label="CEP" value={editForm.cep} onChange={v => setEditForm(p => ({ ...p, cep: v }))} />
                   </div>
                 ) : (
                   <>
                     <InfoRow icon={User} label="Nome" value={lead.nome} />
-                    <InfoRow icon={Mail} label="Email" value={lead.email} />
+                    <InfoRow icon={FileText} label="CPF" value={lead.cpf} />
                     <InfoRow icon={Phone} label="Telefone" value={lead.telefone} />
                     <InfoRow icon={MapPin} label="Endereço" value={lead.endereco} />
+                    <InfoRow icon={MapPin} label="CEP" value={lead.cep} />
                   </>
                 )}
               </div>
@@ -260,16 +278,23 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dados do Seguro</h4>
                 {isEditing ? (
                   <div className="space-y-2">
-                    <EditField label="Ramo" value={editForm.ramo_interesse} onChange={v => setEditForm(p => ({ ...p, ramo_interesse: v }))} />
-                    <EditField label="Valor Estimado" value={String(editForm.valor_estimado)} onChange={v => setEditForm(p => ({ ...p, valor_estimado: Number(v) || 0 }))} type="number" />
-                    <EditField label="Veículo" value={editForm.veiculo} onChange={v => setEditForm(p => ({ ...p, veiculo: v }))} />
+                    <EditField label="Prêmio" value={String(editForm.premio)} onChange={v => setEditForm(p => ({ ...p, premio: Number(v) || 0 }))} type="number" />
+                    <EditField label="Prêmio Líquido" value={String(editForm.premio_liquido)} onChange={v => setEditForm(p => ({ ...p, premio_liquido: Number(v) || 0 }))} type="number" />
+                    <EditField label="Nº de Parcelas" value={String(editForm.numero_parcelas)} onChange={v => setEditForm(p => ({ ...p, numero_parcelas: Number(v) || 0 }))} type="number" />
+                    <EditField label="Valor das Parcelas" value={String(editForm.valor_parcelas)} onChange={v => setEditForm(p => ({ ...p, valor_parcelas: Number(v) || 0 }))} type="number" />
+                    <EditField label="Nº da Proposta" value={editForm.numero_proposta} onChange={v => setEditForm(p => ({ ...p, numero_proposta: v }))} />
+                    <EditField label="Nº da Apólice" value={editForm.numero_apolice} onChange={v => setEditForm(p => ({ ...p, numero_apolice: v }))} />
+                    <EditField label="Código C.I" value={editForm.codigo_ci} onChange={v => setEditForm(p => ({ ...p, codigo_ci: v }))} />
                   </div>
                 ) : (
                   <>
-                    <InfoRow icon={Target} label="Ramo" value={lead.ramo_interesse} />
-                    <InfoRow icon={DollarSign} label="Valor Estimado" value={`R$ ${lead.valor_estimado.toLocaleString()}`} />
-                    <InfoRow icon={Building} label="Seguradora Atual" value={lead.seguradora_atual} />
-                    {lead.veiculo && <InfoRow icon={Target} label="Veículo" value={lead.veiculo} />}
+                    <InfoRow icon={DollarSign} label="Prêmio" value={`R$ ${lead.premio.toLocaleString()}`} />
+                    <InfoRow icon={DollarSign} label="Prêmio Líquido" value={`R$ ${lead.premio_liquido.toLocaleString()}`} />
+                    <InfoRow icon={FileText} label="Nº de Parcelas" value={String(lead.numero_parcelas)} />
+                    <InfoRow icon={DollarSign} label="Valor das Parcelas" value={`R$ ${lead.valor_parcelas.toLocaleString()}`} />
+                    <InfoRow icon={FileText} label="Nº da Proposta" value={lead.numero_proposta} />
+                    <InfoRow icon={FileText} label="Nº da Apólice" value={lead.numero_apolice} />
+                    <InfoRow icon={Tag} label="Código C.I" value={lead.codigo_ci} />
                   </>
                 )}
               </div>
