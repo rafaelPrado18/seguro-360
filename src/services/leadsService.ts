@@ -98,12 +98,12 @@ export const leadsService = {
     return response.json();
   },
 
-  // PUT /api/leads/:id - Atualizar lead
-  async updateLead(id: string, data: Partial<Lead>): Promise<Lead> {
-    const response = await fetch(`${BASE_URL}/leads/${id}`, {
-      method: "PUT",
+  // PATCH /v1/update/lead - Atualizar lead
+  async updateLead(id: string, data: Partial<Lead>): Promise<unknown> {
+    const response = await fetch(`${BASE_URL}/v1/update/lead`, {
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ id, ...data }),
     });
     if (!response.ok) throw new Error("Erro ao atualizar lead");
     return response.json();
