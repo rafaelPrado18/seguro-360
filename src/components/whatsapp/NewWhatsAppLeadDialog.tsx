@@ -14,7 +14,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { toast } from "@/hooks/use-toast";
 import { whatsappService } from "@/services/whatsappService";
 import { leadsService } from "@/services/leadsService";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, User, Phone, Mail, Tag, Calendar, Clock, UserCheck } from "lucide-react";
+import type { Lead } from "@/services/leadsService";
 import { useState } from "react";
 
 const schema = z.object({
@@ -32,6 +33,17 @@ function applyPhoneMask(value: string): string {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 }
 
+function InfoRow({ icon: Icon, label, value, highlight }: { icon: React.ElementType; label: string; value?: string | null; highlight?: boolean }) {
+  if (!value) return null;
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+      <span className="text-muted-foreground">{label}:</span>
+      <span className={highlight ? "font-semibold text-foreground" : "text-foreground"}>{value}</span>
+    </div>
+  );
+}
+
 interface NewWhatsAppLeadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -42,7 +54,7 @@ interface NewWhatsAppLeadDialogProps {
 
 export function NewWhatsAppLeadDialog({ open, onOpenChange, onLeadCreated, defaultPhone, corretorResponsavel }: NewWhatsAppLeadDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [existingLeadInfo, setExistingLeadInfo] = useState<{ nome: string; corretor: string } | null>(null);
+  const [existingLead, setExistingLead] = useState<Lead | null>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -56,20 +68,17 @@ export function NewWhatsAppLeadDialog({ open, onOpenChange, onLeadCreated, defau
       const fullPhone = `55${telefoneDigits}`;
 
       // Verificar se o lead já existe
-      const existingLead = await leadsService.getLeadByPhone(fullPhone);
+      const foundLead = await leadsService.getLeadByPhone(fullPhone);
 
-      if (existingLead) {
+      if (foundLead) {
         // Lead existe — verificar se é do mesmo corretor
-        if (existingLead.corretor_responsavel && existingLead.corretor_responsavel !== corretorResponsavel) {
-          setExistingLeadInfo({
-            nome: existingLead.nome,
-            corretor: existingLead.corretor_responsavel,
-          });
+        if (foundLead.corretor_responsavel && foundLead.corretor_responsavel !== corretorResponsavel) {
+          setExistingLead(foundLead);
           setLoading(false);
           return;
         }
         // Lead existe e é do mesmo corretor — apenas criar o contato
-        toast({ title: "Lead já cadastrado", description: `${existingLead.nome} já está na sua carteira. Criando contato...` });
+        toast({ title: "Lead já cadastrado", description: `${foundLead.nome} já está na sua carteira. Criando contato...` });
       }
 
       await whatsappService.createContact({
@@ -134,23 +143,37 @@ export function NewWhatsAppLeadDialog({ open, onOpenChange, onLeadCreated, defau
       </Dialog>
 
       {/* Dialog informando que o lead já existe com outro consultor */}
-      <AlertDialog open={!!existingLeadInfo} onOpenChange={(o) => !o && setExistingLeadInfo(null)}>
-        <AlertDialogContent>
+      <AlertDialog open={!!existingLead} onOpenChange={(o) => !o && setExistingLead(null)}>
+        <AlertDialogContent className="sm:max-w-[440px]">
           <AlertDialogHeader>
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />
               <AlertDialogTitle>Lead já cadastrado</AlertDialogTitle>
             </div>
-            <AlertDialogDescription className="space-y-2 text-sm">
-              <p>
-                O lead <strong>{existingLeadInfo?.nome}</strong> já está cadastrado no sistema e pertence ao consultor:
-              </p>
-              <p className="font-semibold text-foreground text-base">
-                {existingLeadInfo?.corretor}
-              </p>
-              <p>
-                Não é possível criar um novo contato para este número enquanto ele estiver atribuído a outro consultor.
-              </p>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-sm">
+                <p>
+                  Este telefone já está vinculado a um lead no sistema. Veja os detalhes abaixo:
+                </p>
+                <div className="rounded-lg border border-border bg-muted/50 p-3 space-y-2">
+                  <InfoRow icon={User} label="Nome" value={existingLead?.nome} />
+                  <InfoRow icon={Mail} label="Email" value={existingLead?.email} />
+                  <InfoRow icon={Phone} label="Telefone" value={existingLead?.telefone} />
+                  <InfoRow icon={Tag} label="Status" value={existingLead?.status} />
+                  <InfoRow icon={UserCheck} label="Consultor" value={existingLead?.corretor_responsavel} highlight />
+                  <InfoRow icon={Calendar} label="Criado em" value={existingLead?.created_at} />
+                  <InfoRow icon={Clock} label="Atualizado em" value={existingLead?.updated_at} />
+                  {existingLead?.observacoes && (
+                    <div className="pt-1 border-t border-border">
+                      <span className="text-xs text-muted-foreground">Observações:</span>
+                      <p className="text-xs text-foreground mt-0.5">{existingLead.observacoes}</p>
+                    </div>
+                  )}
+                </div>
+                <p className="text-muted-foreground">
+                  Não é possível criar um novo contato para este número enquanto ele estiver atribuído a outro consultor.
+                </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
