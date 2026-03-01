@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Car, Search, User, Target, X } from "lucide-react";
 import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
 import type { ExtractedDocumentData } from "@/services/documentAnalysisService";
+import { useUpdateLead } from "@/hooks/useLeads";
 
 interface ClienteOption {
   id: number;
@@ -40,6 +41,7 @@ interface NovaApoliceDialogProps {
 
 export function NovaApoliceDialog({ open, onOpenChange }: NovaApoliceDialogProps) {
   const { toast } = useToast();
+  const updateLead = useUpdateLead();
   const [form, setForm] = useState({
     cliente: "", ramo: "", seguradora: "", inicio: "", fim: "", premio: "",
     placa: "", modelo: "", anoFab: "", anoModelo: "", chassi: "",
@@ -99,6 +101,18 @@ export function NovaApoliceDialog({ open, onOpenChange }: NovaApoliceDialogProps
     if (!arquivoProposta) {
       toast({ title: "Anexe o arquivo da proposta", variant: "destructive" });
       return;
+    }
+
+    // Atualizar dados do lead com informações da apólice
+    if (selectedCliente && selectedCliente.origem === "lead") {
+      updateLead.mutate({
+        id: String(selectedCliente.id),
+        data: {
+          modelo: form.modelo,
+          valor_estimado: parseFloat(form.premio.replace(",", ".")) || 0,
+          observacoes: `Apólice cadastrada - Seguradora: ${form.seguradora}, Placa: ${form.placa}, Vigência: ${form.inicio} a ${form.fim}`,
+        },
+      });
     }
 
     toast({ title: "Apólice cadastrada com sucesso", description: `Cliente: ${form.cliente}` });
