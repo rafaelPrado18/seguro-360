@@ -77,7 +77,7 @@ export function DocumentAnalysisDialog({ open, onOpenChange, data, onConfirm }: 
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 max-h-[60vh] pr-3">
+        <ScrollArea className="flex-1 max-h-[60vh] pr-3 [&>[data-radix-scroll-area-viewport]]:!overflow-y-auto [&_[data-radix-scroll-area-scrollbar]]:!opacity-100">
           <div className="space-y-4">
             {/* Dados do Seguro */}
             <div className="rounded-lg border border-border bg-muted/30 p-3">
