@@ -48,6 +48,52 @@ export interface ClientCreatePayload {
   };
 }
 
+export interface Client {
+  id: string;
+  nome: string;
+  cpf: string;
+  email: string;
+  telefone: string;
+  celular: string;
+  endereco: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
+  cep: string;
+  tipo: string;
+  status: string;
+  lead_id: string;
+  // Vehicle data
+  veiculo_fabricante: string;
+  veiculo_modelo: string;
+  veiculo_ano: string;
+  veiculo_placa: string;
+  veiculo_chassi: string;
+  veiculo_combustivel: string;
+  veiculo_codigo_fipe: string;
+  veiculo_zero_km: string;
+  veiculo_utilizacao: string;
+  // Financial data
+  premio_total: string;
+  premio_liquido: string;
+  parcelas: string;
+  valor_parcela: string;
+  numero_proposta: string;
+  numero_apolice: string;
+  ci: string;
+  vigencia_inicio: string;
+  vigencia_fim: string;
+  seguradora: string;
+  comissao: string;
+  classe_bonus: string;
+  iof: string;
+  forma_pagamento: string;
+  franquia: string;
+  coberturas: Array<{ descricao: string; limite: string; premio: string }>;
+  created_at: string;
+  updated_at: string;
+}
+
 export function buildClientPayload(
   leadId: string,
   leadStatus: string,
@@ -101,6 +147,13 @@ export function buildClientPayload(
 }
 
 export const clientService = {
+  async getClients(): Promise<Client[]> {
+    const response = await fetch(`${BASE_URL}/v1/read/clients`);
+    if (!response.ok) throw new Error("Erro ao buscar clientes");
+    const result = await response.json();
+    return result.data || result;
+  },
+
   async createClient(payload: ClientCreatePayload): Promise<{ cliente_id: string }> {
     const response = await fetch(`${BASE_URL}/v1/create/client`, {
       method: "POST",
@@ -119,5 +172,14 @@ export const clientService = {
     });
     if (!response.ok) throw new Error("Erro ao atualizar cliente");
     return response.json();
+  },
+
+  async deleteClient(clienteId: string): Promise<void> {
+    const response = await fetch(`${BASE_URL}/v1/delete/client`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: clienteId }),
+    });
+    if (!response.ok) throw new Error("Erro ao excluir cliente");
   },
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Trash2, Car } from "lucide-react";
+import { Plus, Trash2, Car, Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useCreateClient, useUpdateClient } from "@/hooks/useClients";
+import type { Client } from "@/services/clientService";
 
 const vehicleSchema = z.object({
   modelo: z.string().trim().min(1, "Modelo obrigatório").max(100),
@@ -23,16 +25,30 @@ const clientSchema = z.object({
   nome: z.string().trim().min(2, "Nome deve ter ao menos 2 caracteres").max(100),
   cpf: z.string().trim().min(11, "CPF/CNPJ inválido").max(18),
   telefone: z.string().trim().min(10, "Telefone inválido").max(20),
+  celular: z.string().trim().max(20).optional().default(""),
+  email: z.string().trim().email("Email inválido").optional().or(z.literal("")),
   endereco: z.string().trim().min(3, "Endereço obrigatório").max(200),
+  bairro: z.string().trim().max(100).optional().default(""),
+  cidade: z.string().trim().max(100).optional().default(""),
+  uf: z.string().trim().max(2).optional().default(""),
   cep: z.string().trim().min(8, "CEP inválido").max(10),
-  premio: z.string().trim().min(1, "Prêmio obrigatório"),
+  premio_total: z.string().trim().min(1, "Prêmio obrigatório"),
   premio_liquido: z.string().trim().min(1, "Prêmio líquido obrigatório"),
-  numero_parcelas: z.coerce.number().min(1, "Mínimo 1 parcela"),
+  parcelas: z.string().trim().min(1, "Parcelas obrigatório"),
   valor_parcela: z.string().trim().min(1, "Valor da parcela obrigatório"),
   numero_proposta: z.string().trim().max(50).optional().default(""),
   numero_apolice: z.string().trim().max(50).optional().default(""),
-  codigo_ci: z.string().trim().max(50).optional().default(""),
-  veiculos: z.array(vehicleSchema).min(1, "Adicione ao menos um veículo"),
+  ci: z.string().trim().max(50).optional().default(""),
+  seguradora: z.string().trim().max(100).optional().default(""),
+  veiculo_fabricante: z.string().trim().max(100).optional().default(""),
+  veiculo_modelo: z.string().trim().min(1, "Modelo obrigatório").max(100),
+  veiculo_ano: z.string().trim().min(4, "Ano inválido").max(4),
+  veiculo_placa: z.string().trim().min(7, "Placa inválida").max(10),
+  veiculo_chassi: z.string().trim().max(50).optional().default(""),
+  veiculo_combustivel: z.string().trim().max(30).optional().default(""),
+  veiculo_codigo_fipe: z.string().trim().max(30).optional().default(""),
+  veiculo_zero_km: z.string().trim().max(10).optional().default("Não"),
+  veiculo_utilizacao: z.string().trim().max(100).optional().default(""),
 });
 
 type ClientFormData = z.infer<typeof clientSchema>;
@@ -40,50 +56,134 @@ type ClientFormData = z.infer<typeof clientSchema>;
 interface NewClientDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onClientCreated?: (client: ClientFormData) => void;
-  editData?: Partial<ClientFormData> | null;
+  editClient?: Client | null;
 }
 
-export function NewClientDialog({ open, onOpenChange, onClientCreated, editData }: NewClientDialogProps) {
-  const isEditing = !!editData;
+export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDialogProps) {
+  const isEditing = !!editClient;
+  const createMutation = useCreateClient();
+  const updateMutation = useUpdateClient();
+  const isPending = createMutation.isPending || updateMutation.isPending;
+
+  const defaultValues: ClientFormData = {
+    nome: "", cpf: "", telefone: "", celular: "", email: "",
+    endereco: "", bairro: "", cidade: "", uf: "", cep: "",
+    premio_total: "", premio_liquido: "", parcelas: "1", valor_parcela: "",
+    numero_proposta: "", numero_apolice: "", ci: "", seguradora: "",
+    veiculo_fabricante: "", veiculo_modelo: "", veiculo_ano: "", veiculo_placa: "",
+    veiculo_chassi: "", veiculo_combustivel: "", veiculo_codigo_fipe: "",
+    veiculo_zero_km: "Não", veiculo_utilizacao: "",
+  };
 
   const form = useForm<ClientFormData>({
     resolver: zodResolver(clientSchema),
-    defaultValues: {
-      nome: "", cpf: "", telefone: "", endereco: "", cep: "",
-      premio: "", premio_liquido: "", numero_parcelas: 1, valor_parcela: "",
-      numero_proposta: "", numero_apolice: "", codigo_ci: "",
-      veiculos: [{ modelo: "", ano: "", placa: "" }],
-      ...editData,
-    },
+    defaultValues,
   });
 
-  // Reset form when editData changes
-  useState(() => {
-    if (editData) {
+  useEffect(() => {
+    if (editClient) {
       form.reset({
-        nome: "", cpf: "", telefone: "", endereco: "", cep: "",
-        premio: "", premio_liquido: "", numero_parcelas: 1, valor_parcela: "",
-        numero_proposta: "", numero_apolice: "", codigo_ci: "",
-        veiculos: [{ modelo: "", ano: "", placa: "" }],
-        ...editData,
+        nome: editClient.nome || "",
+        cpf: editClient.cpf || "",
+        telefone: editClient.telefone || "",
+        celular: editClient.celular || "",
+        email: editClient.email || "",
+        endereco: editClient.endereco || "",
+        bairro: editClient.bairro || "",
+        cidade: editClient.cidade || "",
+        uf: editClient.uf || "",
+        cep: editClient.cep || "",
+        premio_total: editClient.premio_total || "",
+        premio_liquido: editClient.premio_liquido || "",
+        parcelas: editClient.parcelas || "1",
+        valor_parcela: editClient.valor_parcela || "",
+        numero_proposta: editClient.numero_proposta || "",
+        numero_apolice: editClient.numero_apolice || "",
+        ci: editClient.ci || "",
+        seguradora: editClient.seguradora || "",
+        veiculo_fabricante: editClient.veiculo_fabricante || "",
+        veiculo_modelo: editClient.veiculo_modelo || "",
+        veiculo_ano: editClient.veiculo_ano || "",
+        veiculo_placa: editClient.veiculo_placa || "",
+        veiculo_chassi: editClient.veiculo_chassi || "",
+        veiculo_combustivel: editClient.veiculo_combustivel || "",
+        veiculo_codigo_fipe: editClient.veiculo_codigo_fipe || "",
+        veiculo_zero_km: editClient.veiculo_zero_km || "Não",
+        veiculo_utilizacao: editClient.veiculo_utilizacao || "",
       });
+    } else {
+      form.reset(defaultValues);
     }
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "veiculos",
-  });
+  }, [editClient, open]);
 
   const onSubmit = (data: ClientFormData) => {
-    try {
-      onClientCreated?.(data);
-      toast({ title: isEditing ? "Cliente atualizado!" : "Cliente cadastrado!", description: `${data.nome} ${isEditing ? "atualizado" : "adicionado"} com sucesso.` });
-      form.reset();
-      onOpenChange(false);
-    } catch {
-      toast({ title: "Erro ao salvar cliente", variant: "destructive" });
+    const payload = {
+      customer_data: {
+        lead_id: editClient?.lead_id || "",
+        lead_status: "negociacao",
+        nome: data.nome,
+        cpf: data.cpf,
+        endereco: data.endereco,
+        bairro: data.bairro || "",
+        cidade: data.cidade || "",
+        uf: data.uf || "",
+        cep: data.cep,
+        telefone: data.telefone,
+        celular: data.celular || "",
+        email: data.email || "",
+      },
+      vehicle_data: {
+        veiculo_fabricante: data.veiculo_fabricante || "",
+        veiculo_modelo: data.veiculo_modelo,
+        veiculo_ano: data.veiculo_ano,
+        veiculo_placa: data.veiculo_placa,
+        veiculo_chassi: data.veiculo_chassi || "",
+        veiculo_combustivel: data.veiculo_combustivel || "",
+        veiculo_codigo_fipe: data.veiculo_codigo_fipe || "",
+        veiculo_zero_km: data.veiculo_zero_km || "Não",
+        veiculo_utilizacao: data.veiculo_utilizacao || "",
+      },
+      financial_data: {
+        premio_total: data.premio_total,
+        premio_liquido: data.premio_liquido,
+        parcelas: data.parcelas,
+        valor_parcela: data.valor_parcela,
+        numero_proposta: data.numero_proposta || "",
+        numero_apolice: data.numero_apolice || "",
+        ci: data.ci || "",
+        vigencia_inicio: "",
+        vigencia_fim: "",
+        seguradora: data.seguradora || "",
+        comissao: "",
+        classe_bonus: "",
+        iof: "",
+        forma_pagamento: "",
+        franquia: "",
+        coberturas: [],
+      },
+    };
+
+    if (isEditing && editClient) {
+      updateMutation.mutate(
+        { id: editClient.id, payload },
+        {
+          onSuccess: () => {
+            toast({ title: "Cliente atualizado!", description: `${data.nome} atualizado com sucesso.` });
+            form.reset(defaultValues);
+            onOpenChange(false);
+          },
+          onError: () => toast({ title: "Erro ao atualizar", variant: "destructive" }),
+        }
+      );
+    } else {
+      createMutation.mutate(payload, {
+        onSuccess: () => {
+          toast({ title: "Cliente cadastrado!", description: `${data.nome} adicionado com sucesso.` });
+          form.reset(defaultValues);
+          onOpenChange(false);
+        },
+        onError: () => toast({ title: "Erro ao cadastrar", variant: "destructive" }),
+      });
     }
   };
 
@@ -92,7 +192,7 @@ export function NewClientDialog({ open, onOpenChange, onClientCreated, editData 
       <DialogContent className="sm:max-w-[640px] max-h-[90vh] p-0">
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle>{isEditing ? "Editar Cliente" : "Novo Cliente"}</DialogTitle>
-          <DialogDescription>{isEditing ? "Atualize os dados do cliente." : "Preencha os dados do cliente e seus veículos."}</DialogDescription>
+          <DialogDescription>{isEditing ? "Atualize os dados do cliente." : "Preencha os dados do cliente."}</DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[calc(90vh-140px)] px-6">
           <Form {...form}>
@@ -122,10 +222,45 @@ export function NewClientDialog({ open, onOpenChange, onClientCreated, editData 
                       <FormMessage />
                     </FormItem>
                   )} />
+                  <FormField control={form.control} name="celular" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Celular</FormLabel>
+                      <FormControl><Input placeholder="(11) 99999-9999" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="email" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl><Input placeholder="email@email.com" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
                   <FormField control={form.control} name="endereco" render={({ field }) => (
                     <FormItem className="col-span-2">
                       <FormLabel>Endereço</FormLabel>
-                      <FormControl><Input placeholder="Rua, número, bairro, cidade" {...field} /></FormControl>
+                      <FormControl><Input placeholder="Rua, número" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="bairro" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Bairro</FormLabel>
+                      <FormControl><Input placeholder="Bairro" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="cidade" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cidade</FormLabel>
+                      <FormControl><Input placeholder="Cidade" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="uf" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>UF</FormLabel>
+                      <FormControl><Input placeholder="SP" maxLength={2} {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
@@ -141,13 +276,87 @@ export function NewClientDialog({ open, onOpenChange, onClientCreated, editData 
 
               <Separator />
 
-              {/* Dados do seguro */}
+              {/* Veículo */}
+              <div>
+                <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <Car className="h-4 w-4" /> Veículo
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField control={form.control} name="veiculo_fabricante" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fabricante</FormLabel>
+                      <FormControl><Input placeholder="CHEVROLET" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="veiculo_modelo" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Modelo</FormLabel>
+                      <FormControl><Input placeholder="Tracker 1.0" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="veiculo_ano" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ano</FormLabel>
+                      <FormControl><Input placeholder="2024" maxLength={4} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="veiculo_placa" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Placa</FormLabel>
+                      <FormControl><Input placeholder="ABC1D23" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="veiculo_chassi" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chassi</FormLabel>
+                      <FormControl><Input placeholder="Chassi" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="veiculo_combustivel" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Combustível</FormLabel>
+                      <FormControl><Input placeholder="Flex" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="veiculo_codigo_fipe" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Código FIPE</FormLabel>
+                      <FormControl><Input placeholder="000000-0" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="veiculo_utilizacao" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Utilização</FormLabel>
+                      <FormControl><Input placeholder="Particular" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Dados financeiros */}
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-3">Dados do Seguro</h4>
                 <div className="grid grid-cols-2 gap-3">
-                  <FormField control={form.control} name="premio" render={({ field }) => (
+                  <FormField control={form.control} name="seguradora" render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>Seguradora</FormLabel>
+                      <FormControl><Input placeholder="Nome da seguradora" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="premio_total" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Prêmio</FormLabel>
+                      <FormLabel>Prêmio Total</FormLabel>
                       <FormControl><Input placeholder="R$ 0,00" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -159,35 +368,35 @@ export function NewClientDialog({ open, onOpenChange, onClientCreated, editData 
                       <FormMessage />
                     </FormItem>
                   )} />
-                  <FormField control={form.control} name="numero_parcelas" render={({ field }) => (
+                  <FormField control={form.control} name="parcelas" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nº de Parcelas</FormLabel>
-                      <FormControl><Input type="number" min={1} {...field} /></FormControl>
+                      <FormLabel>Nº Parcelas</FormLabel>
+                      <FormControl><Input placeholder="12" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="valor_parcela" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Valor da Parcela</FormLabel>
+                      <FormLabel>Valor Parcela</FormLabel>
                       <FormControl><Input placeholder="R$ 0,00" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="numero_proposta" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nº da Proposta</FormLabel>
+                      <FormLabel>Nº Proposta</FormLabel>
                       <FormControl><Input placeholder="Opcional" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="numero_apolice" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nº da Apólice</FormLabel>
+                      <FormLabel>Nº Apólice</FormLabel>
                       <FormControl><Input placeholder="Opcional" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
-                  <FormField control={form.control} name="codigo_ci" render={({ field }) => (
+                  <FormField control={form.control} name="ci" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Código C.I</FormLabel>
                       <FormControl><Input placeholder="Opcional" {...field} /></FormControl>
@@ -197,66 +406,12 @@ export function NewClientDialog({ open, onOpenChange, onClientCreated, editData 
                 </div>
               </div>
 
-              <Separator />
-
-              {/* Veículos */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Car className="h-4 w-4" /> Veículos
-                  </h4>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="gap-1 text-xs"
-                    onClick={() => append({ modelo: "", ano: "", placa: "" })}
-                  >
-                    <Plus className="h-3 w-3" /> Adicionar Veículo
-                  </Button>
-                </div>
-                <div className="space-y-3">
-                  {fields.map((item, index) => (
-                    <div key={item.id} className="rounded-lg border border-border bg-muted/30 p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-medium text-muted-foreground">Veículo {index + 1}</span>
-                        {fields.length > 1 && (
-                          <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => remove(index)}>
-                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                          </Button>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-3 gap-3">
-                        <FormField control={form.control} name={`veiculos.${index}.modelo`} render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs">Modelo</FormLabel>
-                            <FormControl><Input placeholder="Ex: Civic 2.0" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name={`veiculos.${index}.ano`} render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs">Ano</FormLabel>
-                            <FormControl><Input placeholder="2024" maxLength={4} {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name={`veiculos.${index}.placa`} render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs">Placa</FormLabel>
-                            <FormControl><Input placeholder="ABC1D23" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               <DialogFooter className="pt-2">
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/90">{isEditing ? "Salvar Alterações" : "Cadastrar Cliente"}</Button>
+                <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/90" disabled={isPending}>
+                  {isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                  {isEditing ? "Salvar Alterações" : "Cadastrar Cliente"}
+                </Button>
               </DialogFooter>
             </form>
           </Form>

@@ -8,61 +8,66 @@ import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, Plus, Filter, MoreHorizontal, Mail, Car, Eye, Pencil, Trash2, Phone, MessageSquare } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Search, Plus, Filter, MoreHorizontal, Mail, Car, Eye, Pencil, Trash2, Phone, MessageSquare, Loader2 } from "lucide-react";
 import { NewClientDialog } from "@/components/clientes/NewClientDialog";
 import { ClientDetailSheet } from "@/components/clientes/ClientDetailSheet";
 import { toast } from "@/hooks/use-toast";
-
-const clientesData = [
-  { id: 1, nome: "João Silva", cpf: "123.456.789-00", email: "joao@email.com", telefone: "(11) 99999-1234", tipo: "PF", apolices: 3, status: "Ativo", premio: "R$ 8.500", veiculos: [{ modelo: "Civic 2.0", ano: "2023", placa: "ABC1D23", apolice: "#4521", proposta: "#P-1001" }, { modelo: "HR-V", ano: "2024", placa: "DEF4G56", apolice: "#4522", proposta: "#P-1002" }] },
-  { id: 2, nome: "Empresa ABC Ltda", cpf: "12.345.678/0001-90", email: "contato@abc.com", telefone: "(11) 3333-4567", tipo: "PJ", apolices: 5, status: "Ativo", premio: "R$ 45.000", veiculos: [{ modelo: "Hilux 2.8", ano: "2024", placa: "GHI7J89", apolice: "#4520", proposta: "#P-1003" }] },
-  { id: 3, nome: "Maria Santos", cpf: "987.654.321-00", email: "maria@email.com", telefone: "(21) 98888-5678", tipo: "PF", apolices: 2, status: "Ativo", premio: "R$ 5.200", veiculos: [{ modelo: "Onix 1.0", ano: "2022", placa: "JKL0M12", apolice: "#4519", proposta: "#P-1004" }] },
-  { id: 4, nome: "Carlos Mendes", cpf: "456.789.123-00", email: "carlos@email.com", telefone: "(31) 97777-9012", tipo: "PF", apolices: 1, status: "Inativo", premio: "R$ 3.200", veiculos: [{ modelo: "Gol 1.6", ano: "2020", placa: "NOP3Q45", apolice: "#4518", proposta: "#P-1005" }] },
-  { id: 5, nome: "Fernanda Costa", cpf: "321.654.987-00", email: "fernanda@email.com", telefone: "(41) 96666-3456", tipo: "PF", apolices: 4, status: "Ativo", premio: "R$ 12.800", veiculos: [{ modelo: "Corolla 2.0", ano: "2024", placa: "RST6U78", apolice: "#4517", proposta: "#P-1006" }, { modelo: "SW4", ano: "2023", placa: "VWX9Y01", apolice: "#4523", proposta: "#P-1007" }] },
-  { id: 6, nome: "Indústria XYZ S/A", cpf: "98.765.432/0001-10", email: "rh@xyz.com", telefone: "(11) 4444-7890", tipo: "PJ", apolices: 8, status: "Ativo", premio: "R$ 120.000", veiculos: [{ modelo: "Sprinter 415", ano: "2024", placa: "ZAB2C34", apolice: "#4514", proposta: "#P-1008" }] },
-  { id: 7, nome: "Roberto Lima", cpf: "654.321.987-00", email: "roberto@email.com", telefone: "(51) 95555-1234", tipo: "PF", apolices: 2, status: "Ativo", premio: "R$ 6.300", veiculos: [{ modelo: "Tracker 1.2", ano: "2023", placa: "DEF5G67", apolice: "#4516", proposta: "#P-1009" }] },
-  { id: 8, nome: "Ana Souza", cpf: "789.123.456-00", email: "ana@email.com", telefone: "(61) 94444-5678", tipo: "PF", apolices: 1, status: "Prospecto", premio: "R$ 1.800", veiculos: [] },
-];
+import { useClients, useDeleteClient } from "@/hooks/useClients";
+import type { Client } from "@/services/clientService";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Clientes = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<typeof clientesData[0] | null>(null);
-  const [editData, setEditData] = useState<any>(null);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [editClient, setEditClient] = useState<Client | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Client | null>(null);
 
-  const filtered = clientesData.filter(c =>
-    c.nome.toLowerCase().includes(search.toLowerCase()) ||
-    c.cpf.includes(search) ||
-    c.email.toLowerCase().includes(search.toLowerCase())
+  const { data: clients = [], isLoading, isError } = useClients();
+  const deleteClientMutation = useDeleteClient();
+
+  const filtered = clients.filter(c =>
+    c.nome?.toLowerCase().includes(search.toLowerCase()) ||
+    c.cpf?.includes(search) ||
+    c.email?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleView = (c: typeof clientesData[0]) => {
+  const handleView = (c: Client) => {
     setSelectedClient(c);
     setDetailOpen(true);
   };
 
-  const handleEdit = (c: typeof clientesData[0]) => {
-    setEditData({
-      nome: c.nome,
-      cpf: c.cpf,
-      telefone: c.telefone,
-      endereco: "",
-      cep: "",
-      premio: c.premio,
-      premio_liquido: "",
-      numero_parcelas: 1,
-      valor_parcela: "",
-      veiculos: c.veiculos.length > 0 ? c.veiculos : [{ modelo: "", ano: "", placa: "" }],
-    });
+  const handleEdit = (c: Client) => {
+    setEditClient(c);
     setDialogOpen(true);
   };
 
   const handleNewClient = () => {
-    setEditData(null);
+    setEditClient(null);
     setDialogOpen(true);
   };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteClientMutation.mutate(deleteTarget.id, {
+      onSuccess: () => {
+        toast({ title: "Cliente excluído", description: `${deleteTarget.nome} foi removido com sucesso.` });
+        setDeleteTarget(null);
+      },
+      onError: () => {
+        toast({ title: "Erro ao excluir", description: "Não foi possível excluir o cliente.", variant: "destructive" });
+      },
+    });
+  };
+
+  const getInitials = (nome: string) =>
+    (nome || "").split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
 
   return (
     <AppLayout>
@@ -70,7 +75,9 @@ const Clientes = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-foreground">Clientes</h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">{clientesData.length} clientes cadastrados</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              {isLoading ? "Carregando..." : `${clients.length} clientes cadastrados`}
+            </p>
           </div>
           <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 self-start sm:self-auto" onClick={handleNewClient}>
             <Plus className="h-4 w-4" />
@@ -96,99 +103,140 @@ const Clientes = () => {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-muted/50">
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Cliente</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">CPF/CNPJ</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Contato</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">Tipo</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">Veículos</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">Apólices</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">Status</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Prêmio Total</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((c, i) => (
-                    <tr key={c.id} className="border-b border-border hover:bg-muted/30 transition-colors animate-fade-in" style={{ animationDelay: `${i * 40}ms` }}>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                            {c.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                          </div>
-                          <span className="font-medium text-foreground">{c.nome}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{c.cpf}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">{c.email}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <Badge variant={c.tipo === "PJ" ? "default" : "secondary"} className="text-[10px]">{c.tipo}</Badge>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Car className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="font-medium">{c.veiculos.length}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-center font-medium">{c.apolices}</td>
-                      <td className="px-4 py-3 text-center">
-                        <Badge variant="outline" className={`text-[10px] ${
-                          c.status === "Ativo" ? "border-success text-success" :
-                          c.status === "Inativo" ? "border-destructive text-destructive" :
-                          "border-info text-info"
-                        }`}>{c.status}</Badge>
-                      </td>
-                      <td className="px-4 py-3 text-right font-semibold">{c.premio}</td>
-                      <td className="px-4 py-3 text-center">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-7 w-7">
-                              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="min-w-[160px]">
-                            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleView(c)}>
-                              <Eye className="h-3.5 w-3.5" /> Ver detalhes
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleEdit(c)}>
-                              <Pencil className="h-3.5 w-3.5" /> Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`tel:${c.telefone}`)}>
-                              <Phone className="h-3.5 w-3.5" /> Ligar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-xs gap-2" onClick={() => navigate("/whatsapp")}>
-                              <MessageSquare className="h-3.5 w-3.5" /> WhatsApp
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`mailto:${c.email}`)}>
-                              <Mail className="h-3.5 w-3.5" /> Enviar email
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-xs gap-2 text-destructive" onClick={() => toast({ title: "Excluir", description: `${c.nome} seria excluído`, variant: "destructive" })}>
-                              <Trash2 className="h-3.5 w-3.5" /> Excluir
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
+            {isLoading ? (
+              <div className="p-6 space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
+              </div>
+            ) : isError ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                Erro ao carregar clientes. Tente novamente.
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                {search ? "Nenhum cliente encontrado para a busca." : "Nenhum cliente cadastrado."}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/50">
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Cliente</th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">CPF/CNPJ</th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Contato</th>
+                      <th className="px-4 py-3 text-center font-medium text-muted-foreground">Veículo</th>
+                      <th className="px-4 py-3 text-center font-medium text-muted-foreground">Apólice</th>
+                      <th className="px-4 py-3 text-center font-medium text-muted-foreground">Status</th>
+                      <th className="px-4 py-3 text-right font-medium text-muted-foreground">Prêmio Total</th>
+                      <th className="px-4 py-3 text-center font-medium text-muted-foreground"></th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {filtered.map((c, i) => (
+                      <tr key={c.id} className="border-b border-border hover:bg-muted/30 transition-colors animate-fade-in" style={{ animationDelay: `${i * 40}ms` }}>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                              {getInitials(c.nome)}
+                            </div>
+                            <span className="font-medium text-foreground">{c.nome}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{c.cpf}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">{c.email}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Car className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="font-medium text-xs">{c.veiculo_modelo || "—"}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center font-medium text-xs">{c.numero_apolice || "—"}</td>
+                        <td className="px-4 py-3 text-center">
+                          <Badge variant="outline" className={`text-[10px] ${
+                            c.status === "Ativo" ? "border-success text-success" :
+                            c.status === "Inativo" ? "border-destructive text-destructive" :
+                            "border-info text-info"
+                          }`}>{c.status || "—"}</Badge>
+                        </td>
+                        <td className="px-4 py-3 text-right font-semibold">{c.premio_total || "—"}</td>
+                        <td className="px-4 py-3 text-center">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-7 w-7">
+                                <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="min-w-[160px]">
+                              <DropdownMenuItem className="text-xs gap-2" onClick={() => handleView(c)}>
+                                <Eye className="h-3.5 w-3.5" /> Ver detalhes
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-xs gap-2" onClick={() => handleEdit(c)}>
+                                <Pencil className="h-3.5 w-3.5" /> Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`tel:${c.telefone || c.celular}`)}>
+                                <Phone className="h-3.5 w-3.5" /> Ligar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-xs gap-2" onClick={() => navigate("/whatsapp")}>
+                                <MessageSquare className="h-3.5 w-3.5" /> WhatsApp
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`mailto:${c.email}`)}>
+                                <Mail className="h-3.5 w-3.5" /> Enviar email
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-xs gap-2 text-destructive" onClick={() => setDeleteTarget(c)}>
+                                <Trash2 className="h-3.5 w-3.5" /> Excluir
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      <NewClientDialog open={dialogOpen} onOpenChange={setDialogOpen} editData={editData} />
+      <NewClientDialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) setEditClient(null);
+        }}
+        editClient={editClient}
+      />
       <ClientDetailSheet open={detailOpen} onOpenChange={setDetailOpen} client={selectedClient} />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir cliente</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir <strong>{deleteTarget?.nome}</strong>? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteClientMutation.isPending}
+            >
+              {deleteClientMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 };
