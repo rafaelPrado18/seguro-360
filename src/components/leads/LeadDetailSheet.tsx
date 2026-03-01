@@ -196,7 +196,7 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
     setSavingDocs(true);
 
     try {
-      const payload = buildClientPayload(lead.id, extractedData);
+      const payload = buildClientPayload(lead.id, lead.status || "negociacao", extractedData);
 
       if (lead.cliente_id) {
         // Cliente já existe — atualizar
