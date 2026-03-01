@@ -19,6 +19,7 @@ import {
   Pencil, Save, X, Send, StickyNote, Trash2
 } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
+import type { ExtractedDocumentData } from "@/services/documentAnalysisService";
 import { formatPhone } from "@/lib/utils";
 import { v4 as uuidv4 } from "uuid";
 
@@ -131,6 +132,8 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
   const [newNote, setNewNote] = useState("");
   const [arquivoApolice, setArquivoApolice] = useState<File | null>(null);
   const [arquivoProposta, setArquivoProposta] = useState<File | null>(null);
+  const [extractedData, setExtractedData] = useState<ExtractedDocumentData | null>(null);
+  const [savingDocs, setSavingDocs] = useState(false);
 
   if (!lead) return null;
 
@@ -181,6 +184,30 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
     setNotes(prev => [entry, ...prev]);
     setNewNote("");
     toast({ title: "Nota adicionada" });
+  };
+
+  const handleDocumentAnalyzed = (data: ExtractedDocumentData) => {
+    setExtractedData(data);
+  };
+
+  const handleSaveDocumentData = () => {
+    if (!extractedData) return;
+    setSavingDocs(true);
+    const updated: Lead = {
+      ...lead,
+      valor_estimado: parseFloat(extractedData.premio_total?.replace(/[^\d,]/g, "").replace(",", ".")) || lead.valor_estimado,
+      observacoes: [
+        lead.observacoes,
+        `Seguradora: ${extractedData.seguradora}`,
+        extractedData.veiculo_placa ? `Placa: ${extractedData.veiculo_placa}` : "",
+        extractedData.veiculo_modelo ? `Modelo: ${extractedData.veiculo_modelo}` : "",
+        extractedData.numero_proposta ? `Proposta: ${extractedData.numero_proposta}` : "",
+      ].filter(Boolean).join(" | "),
+      updated_at: new Date().toISOString(),
+    } as Lead;
+    onLeadUpdate?.(updated);
+    setSavingDocs(false);
+    toast({ title: "Dados salvos!", description: "Informações do documento vinculadas ao lead." });
   };
 
   const handleCall = () => {
@@ -365,7 +392,20 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
               setArquivoApolice={setArquivoApolice}
               arquivoProposta={arquivoProposta}
               setArquivoProposta={setArquivoProposta}
+              onDocumentAnalyzed={handleDocumentAnalyzed}
             />
+
+            {(arquivoApolice || arquivoProposta) && (
+              <Button
+                size="sm"
+                className="w-full gap-1.5 mt-2"
+                onClick={handleSaveDocumentData}
+                disabled={savingDocs || !extractedData}
+              >
+                <Save className="h-3.5 w-3.5" />
+                Salvar Dados do Documento no Lead
+              </Button>
+            )}
 
             <Separator />
             <div>
