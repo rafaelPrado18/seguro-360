@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Car, Search, User, Target, X } from "lucide-react";
 import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
+import type { ExtractedDocumentData } from "@/services/documentAnalysisService";
 
 interface ClienteOption {
   id: number;
@@ -250,6 +251,20 @@ export function NovaApoliceDialog({ open, onOpenChange }: NovaApoliceDialogProps
             arquivoProposta={arquivoProposta}
             setArquivoProposta={setArquivoProposta}
             required
+            onDocumentAnalyzed={(data: ExtractedDocumentData) => {
+              setForm(f => ({
+                ...f,
+                seguradora: data.seguradora || f.seguradora,
+                inicio: data.vigencia_inicio || f.inicio,
+                fim: data.vigencia_fim || f.fim,
+                premio: data.premio_total || f.premio,
+                placa: data.veiculo_placa || f.placa,
+                modelo: data.veiculo_modelo || f.modelo,
+                anoFab: data.veiculo_ano || f.anoFab,
+                anoModelo: data.veiculo_ano || f.anoModelo,
+                chassi: data.veiculo_chassi || f.chassi,
+              }));
+            }}
           />
         </div>
 
