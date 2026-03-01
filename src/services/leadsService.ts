@@ -15,6 +15,7 @@ export interface Lead {
   valor_estimado: number;
   modelo?: string;
   observacoes: string;
+  cliente_id: string | null;
   created_at: string;
   updated_at: string;
 }
