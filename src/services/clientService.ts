@@ -48,6 +48,15 @@ export interface ClientCreatePayload {
   };
 }
 
+export interface ClientApiResponse {
+  id: string;
+  customer_data: ClientCreatePayload["customer_data"];
+  vehicle_data: ClientCreatePayload["vehicle_data"];
+  financial_data: ClientCreatePayload["financial_data"];
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Client {
   id: string;
   nome: string;
@@ -60,10 +69,8 @@ export interface Client {
   cidade: string;
   uf: string;
   cep: string;
-  tipo: string;
-  status: string;
   lead_id: string;
-  // Vehicle data
+  lead_status: string;
   veiculo_fabricante: string;
   veiculo_modelo: string;
   veiculo_ano: string;
@@ -73,7 +80,6 @@ export interface Client {
   veiculo_codigo_fipe: string;
   veiculo_zero_km: string;
   veiculo_utilizacao: string;
-  // Financial data
   premio_total: string;
   premio_liquido: string;
   parcelas: string;
@@ -90,8 +96,19 @@ export interface Client {
   forma_pagamento: string;
   franquia: string;
   coberturas: Array<{ descricao: string; limite: string; premio: string }>;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+function mapApiToClient(raw: ClientApiResponse): Client {
+  return {
+    id: raw.id,
+    ...raw.customer_data,
+    ...raw.vehicle_data,
+    ...raw.financial_data,
+    created_at: raw.created_at,
+    updated_at: raw.updated_at,
+  };
 }
 
 export function buildClientPayload(
@@ -151,7 +168,8 @@ export const clientService = {
     const response = await fetch(`${BASE_URL}/v1/read/clients`);
     if (!response.ok) throw new Error("Erro ao buscar clientes");
     const result = await response.json();
-    return result.data || result;
+    const items: ClientApiResponse[] = result.data || result;
+    return items.map(mapApiToClient);
   },
 
   async createClient(payload: ClientCreatePayload): Promise<{ cliente_id: string }> {

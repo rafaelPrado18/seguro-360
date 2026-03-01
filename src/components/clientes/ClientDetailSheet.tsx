@@ -86,10 +86,10 @@ export function ClientDetailSheet({ open, onOpenChange, client }: ClientDetailSh
               <SheetTitle className="text-lg">{client.nome}</SheetTitle>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="outline" className={`text-[10px] ${
-                  client.status === "Ativo" ? "border-success text-success" :
-                  client.status === "Inativo" ? "border-destructive text-destructive" :
+                  client.lead_status === "Ativo" ? "border-success text-success" :
+                  client.lead_status === "Inativo" ? "border-destructive text-destructive" :
                   "border-info text-info"
-                }`}>{client.status || "—"}</Badge>
+                }`}>{client.lead_status || "—"}</Badge>
               </div>
             </div>
           </div>
