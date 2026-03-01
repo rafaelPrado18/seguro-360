@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
+import { clientService, buildClientPayload } from "@/services/clientService";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -190,24 +191,35 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
     setExtractedData(data);
   };
 
-  const handleSaveDocumentData = () => {
+  const handleSaveDocumentData = async () => {
     if (!extractedData) return;
     setSavingDocs(true);
-    const updated: Lead = {
-      ...lead,
-      valor_estimado: parseFloat(extractedData.premio_total?.replace(/[^\d,]/g, "").replace(",", ".")) || lead.valor_estimado,
-      observacoes: [
-        lead.observacoes,
-        `Seguradora: ${extractedData.seguradora}`,
-        extractedData.veiculo_placa ? `Placa: ${extractedData.veiculo_placa}` : "",
-        extractedData.veiculo_modelo ? `Modelo: ${extractedData.veiculo_modelo}` : "",
-        extractedData.numero_proposta ? `Proposta: ${extractedData.numero_proposta}` : "",
-      ].filter(Boolean).join(" | "),
-      updated_at: new Date().toISOString(),
-    } as Lead;
-    onLeadUpdate?.(updated);
-    setSavingDocs(false);
-    toast({ title: "Dados salvos!", description: "Informações do documento vinculadas ao lead." });
+
+    try {
+      const payload = buildClientPayload(lead.id, extractedData);
+
+      if (lead.cliente_id) {
+        // Cliente já existe — atualizar
+        await clientService.updateClient(lead.cliente_id, payload);
+        toast({ title: "Cliente atualizado!", description: "Dados do documento sincronizados com o cliente existente." });
+      } else {
+        // Cliente não existe — criar
+        const result = await clientService.createClient(payload);
+        // Atualizar o lead com o cliente_id retornado
+        const updated: Lead = {
+          ...lead,
+          cliente_id: result.cliente_id,
+          valor_estimado: parseFloat(extractedData.premio_total?.replace(/[^\d,]/g, "").replace(",", ".")) || lead.valor_estimado,
+          updated_at: new Date().toISOString(),
+        } as Lead;
+        onLeadUpdate?.(updated);
+        toast({ title: "Cliente criado!", description: "Novo cliente vinculado ao lead com os dados do documento." });
+      }
+    } catch (error) {
+      toast({ title: "Erro ao salvar", description: "Não foi possível salvar os dados do cliente.", variant: "destructive" });
+    } finally {
+      setSavingDocs(false);
+    }
   };
 
   const handleCall = () => {
