@@ -372,7 +372,7 @@ const Leads = () => {
     if (dateFilter !== "all" && l.created_at) {
       const leadDate = parseBrDate(l.created_at);
       if (!leadDate) {
-        matchesDate = true; // can't parse → don't filter out
+        matchesDate = false; // can't parse → filter out when date filter is active
       } else {
         const start = getDateFilterStart(dateFilter);
         const end = getDateFilterEnd(dateFilter);
@@ -635,7 +635,7 @@ const Leads = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {displayLeads.map((l, i) => (
+                    {sortedLeads.map((l, i) => (
                       <tr key={l.id} className="border-b border-border hover:bg-muted/30 transition-colors animate-fade-in cursor-pointer" style={{ animationDelay: `${i * 40}ms` }} onClick={() => setSelectedLead(l)}>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
