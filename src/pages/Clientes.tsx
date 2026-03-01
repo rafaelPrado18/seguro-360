@@ -153,10 +153,13 @@ const Clientes = () => {
                         <td className="px-4 py-3 text-center">
                           <div className="flex items-center justify-center gap-1">
                             <Car className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span className="font-medium text-xs">{c.veiculo_modelo || "—"}</span>
+                            <span className="font-medium text-xs">{c.vehicles[0]?.vehicle.veiculo_modelo || "—"}</span>
+                            {c.vehicles.length > 1 && (
+                              <Badge variant="secondary" className="text-[9px] ml-1">+{c.vehicles.length - 1}</Badge>
+                            )}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-center font-medium text-xs">{c.numero_apolice || "—"}</td>
+                        <td className="px-4 py-3 text-center font-medium text-xs">{c.vehicles[0]?.financial.numero_apolice || "—"}</td>
                         <td className="px-4 py-3 text-center">
                           <Badge variant="outline" className={`text-[10px] ${
                             c.lead_status === "Ativo" ? "border-success text-success" :
@@ -164,7 +167,7 @@ const Clientes = () => {
                             "border-info text-info"
                           }`}>{c.lead_status || "—"}</Badge>
                         </td>
-                        <td className="px-4 py-3 text-right font-semibold">{c.premio_total || "—"}</td>
+                        <td className="px-4 py-3 text-right font-semibold">{c.vehicles[0]?.financial.premio_total || "—"}</td>
                         <td className="px-4 py-3 text-center">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
