@@ -82,6 +82,7 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
 
   useEffect(() => {
     if (editClient) {
+      const v = editClient.vehicles[0];
       form.reset({
         nome: editClient.nome || "",
         cpf: editClient.cpf || "",
@@ -93,23 +94,23 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
         cidade: editClient.cidade || "",
         uf: editClient.uf || "",
         cep: editClient.cep || "",
-        premio_total: editClient.premio_total || "",
-        premio_liquido: editClient.premio_liquido || "",
-        parcelas: editClient.parcelas || "1",
-        valor_parcela: editClient.valor_parcela || "",
-        numero_proposta: editClient.numero_proposta || "",
-        numero_apolice: editClient.numero_apolice || "",
-        ci: editClient.ci || "",
-        seguradora: editClient.seguradora || "",
-        veiculo_fabricante: editClient.veiculo_fabricante || "",
-        veiculo_modelo: editClient.veiculo_modelo || "",
-        veiculo_ano: editClient.veiculo_ano || "",
-        veiculo_placa: editClient.veiculo_placa || "",
-        veiculo_chassi: editClient.veiculo_chassi || "",
-        veiculo_combustivel: editClient.veiculo_combustivel || "",
-        veiculo_codigo_fipe: editClient.veiculo_codigo_fipe || "",
-        veiculo_zero_km: editClient.veiculo_zero_km || "Não",
-        veiculo_utilizacao: editClient.veiculo_utilizacao || "",
+        premio_total: v?.financial.premio_total || "",
+        premio_liquido: v?.financial.premio_liquido || "",
+        parcelas: v?.financial.parcelas || "1",
+        valor_parcela: v?.financial.valor_parcela || "",
+        numero_proposta: v?.financial.numero_proposta || "",
+        numero_apolice: v?.financial.numero_apolice || "",
+        ci: v?.financial.ci || "",
+        seguradora: v?.financial.seguradora || "",
+        veiculo_fabricante: v?.vehicle.veiculo_fabricante || "",
+        veiculo_modelo: v?.vehicle.veiculo_modelo || "",
+        veiculo_ano: v?.vehicle.veiculo_ano || "",
+        veiculo_placa: v?.vehicle.veiculo_placa || "",
+        veiculo_chassi: v?.vehicle.veiculo_chassi || "",
+        veiculo_combustivel: v?.vehicle.veiculo_combustivel || "",
+        veiculo_codigo_fipe: v?.vehicle.veiculo_codigo_fipe || "",
+        veiculo_zero_km: v?.vehicle.veiculo_zero_km || "Não",
+        veiculo_utilizacao: v?.vehicle.veiculo_utilizacao || "",
       });
     } else {
       form.reset(defaultValues);

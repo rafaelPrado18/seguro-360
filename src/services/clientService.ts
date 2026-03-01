@@ -48,11 +48,19 @@ export interface ClientCreatePayload {
   };
 }
 
+export type VehicleData = ClientCreatePayload["vehicle_data"];
+export type FinancialData = ClientCreatePayload["financial_data"];
+
+export interface VehiclePolicy {
+  vehicle: VehicleData;
+  financial: FinancialData;
+}
+
 export interface ClientApiResponse {
   id: string;
   customer_data: ClientCreatePayload["customer_data"];
-  vehicle_data: ClientCreatePayload["vehicle_data"];
-  financial_data: ClientCreatePayload["financial_data"];
+  vehicle_data: VehicleData | VehicleData[];
+  financial_data: FinancialData | FinancialData[];
   created_at?: string;
   updated_at?: string;
 }
@@ -71,41 +79,27 @@ export interface Client {
   cep: string;
   lead_id: string;
   lead_status: string;
-  veiculo_fabricante: string;
-  veiculo_modelo: string;
-  veiculo_ano: string;
-  veiculo_placa: string;
-  veiculo_chassi: string;
-  veiculo_combustivel: string;
-  veiculo_codigo_fipe: string;
-  veiculo_zero_km: string;
-  veiculo_utilizacao: string;
-  premio_total: string;
-  premio_liquido: string;
-  parcelas: string;
-  valor_parcela: string;
-  numero_proposta: string;
-  numero_apolice: string;
-  ci: string;
-  vigencia_inicio: string;
-  vigencia_fim: string;
-  seguradora: string;
-  comissao: string;
-  classe_bonus: string;
-  iof: string;
-  forma_pagamento: string;
-  franquia: string;
-  coberturas: Array<{ descricao: string; limite: string; premio: string }>;
+  vehicles: VehiclePolicy[];
   created_at?: string;
   updated_at?: string;
 }
 
+function toArray<T>(val: T | T[]): T[] {
+  return Array.isArray(val) ? val : [val];
+}
+
 function mapApiToClient(raw: ClientApiResponse): Client {
+  const vehicleArr = toArray(raw.vehicle_data);
+  const financialArr = toArray(raw.financial_data);
+  const vehicles: VehiclePolicy[] = vehicleArr.map((v, i) => ({
+    vehicle: v,
+    financial: financialArr[i] || financialArr[0],
+  }));
+
   return {
     id: raw.id,
     ...raw.customer_data,
-    ...raw.vehicle_data,
-    ...raw.financial_data,
+    vehicles,
     created_at: raw.created_at,
     updated_at: raw.updated_at,
   };
