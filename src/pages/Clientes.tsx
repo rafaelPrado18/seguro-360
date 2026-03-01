@@ -159,10 +159,10 @@ const Clientes = () => {
                         <td className="px-4 py-3 text-center font-medium text-xs">{c.numero_apolice || "—"}</td>
                         <td className="px-4 py-3 text-center">
                           <Badge variant="outline" className={`text-[10px] ${
-                            c.status === "Ativo" ? "border-success text-success" :
-                            c.status === "Inativo" ? "border-destructive text-destructive" :
+                            c.lead_status === "Ativo" ? "border-success text-success" :
+                            c.lead_status === "Inativo" ? "border-destructive text-destructive" :
                             "border-info text-info"
-                          }`}>{c.status || "—"}</Badge>
+                          }`}>{c.lead_status || "—"}</Badge>
                         </td>
                         <td className="px-4 py-3 text-right font-semibold">{c.premio_total || "—"}</td>
                         <td className="px-4 py-3 text-center">
