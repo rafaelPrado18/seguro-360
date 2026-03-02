@@ -74,76 +74,62 @@ export const documentAnalysisService = {
     file: File,
     tipo: "apolice" | "proposta"
   ): Promise<ExtractedDocumentData> {
-    // ── MOCK: simula chamada ao backend ──
-    // Quando o endpoint estiver pronto, descomente o bloco abaixo:
-    /*
-    const userToken = getCookie("userToken");
     const formData = new FormData();
     formData.append("file", file, file.name);
-    formData.append("tipo", tipo);
 
-    const response = await fetch(`${BASE_URL}/v1/analyze/document`, {
+    const response = await fetch(`${BASE_URL}/v1/extract/document`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${userToken}`,
-      },
       body: formData,
+      redirect: "follow",
     });
 
     if (!response.ok) throw new Error("Erro ao analisar documento");
-    return response.json();
-    */
 
-    await delay(2500); // Simula processamento
+    const result = await response.json();
 
-    const mockData: ExtractedDocumentData = {
+    // Map API response to our interface, falling back to empty strings
+    const data: ExtractedDocumentData = {
       tipo,
-      seguradora: "Tokio Marine Seguradora",
-      numero_proposta: "134687851",
-      numero_apolice: tipo === "apolice" ? "34478995" : "",
-      ci: "61924703958598",
-      vigencia_inicio: "22/12/2024",
-      vigencia_fim: "22/12/2025",
-      classe_bonus: "2",
+      seguradora: result.seguradora ?? "",
+      numero_proposta: result.numero_proposta ?? "",
+      numero_apolice: result.numero_apolice ?? "",
+      ci: result.ci ?? "",
+      vigencia_inicio: result.vigencia_inicio ?? "",
+      vigencia_fim: result.vigencia_fim ?? "",
+      classe_bonus: result.classe_bonus ?? "",
 
-      segurado_nome: "SILENILDO DE JESUS FREITAS",
-      segurado_cpf: "029.131.838-08",
-      segurado_endereco: "RUA ARROIO CORDEIRO, 61 - CASA 1",
-      segurado_bairro: "CJ HABITACIONAL",
-      segurado_cidade: "SAO PAULO",
-      segurado_uf: "SP",
-      segurado_cep: "08472-340",
-      segurado_telefone: "(11) 7728-1404",
-      segurado_celular: "(11) 96123-9011",
-      segurado_email: "SILENILDOJFREITAS@GMAIL.COM",
+      segurado_nome: result.segurado_nome ?? "",
+      segurado_cpf: result.segurado_cpf ?? "",
+      segurado_endereco: result.segurado_endereco ?? "",
+      segurado_bairro: result.segurado_bairro ?? "",
+      segurado_cidade: result.segurado_cidade ?? "",
+      segurado_uf: result.segurado_uf ?? "",
+      segurado_cep: result.segurado_cep ?? "",
+      segurado_telefone: result.segurado_telefone ?? "",
+      segurado_celular: result.segurado_celular ?? "",
+      segurado_email: result.segurado_email ?? "",
 
-      veiculo_fabricante: "CHEVROLET",
-      veiculo_modelo: "TRACKER 1.0 TURBO 12V 4P FLEX AUT",
-      veiculo_ano: "2021",
-      veiculo_placa: "FYP-8B95",
-      veiculo_chassi: "9BGEX76H0MB187220",
-      veiculo_combustivel: "Flex",
-      veiculo_codigo_fipe: "004526-8",
-      veiculo_zero_km: "Não",
-      veiculo_utilizacao: "Particular - Lazer / ida e volta ao trabalho",
+      veiculo_fabricante: result.veiculo_fabricante ?? "",
+      veiculo_modelo: result.veiculo_modelo ?? "",
+      veiculo_ano: result.veiculo_ano ?? "",
+      veiculo_placa: result.veiculo_placa ?? "",
+      veiculo_chassi: result.veiculo_chassi ?? "",
+      veiculo_combustivel: result.veiculo_combustivel ?? "",
+      veiculo_codigo_fipe: result.veiculo_codigo_fipe ?? "",
+      veiculo_zero_km: result.veiculo_zero_km ?? "",
+      veiculo_utilizacao: result.veiculo_utilizacao ?? "",
 
-      premio_liquido: "R$ 3.828,37",
-      iof: "R$ 282,53",
-      premio_total: "R$ 4.110,90",
-      parcelas: "12",
-      valor_parcela: "R$ 342,51",
-      forma_pagamento: "Cartão Visa",
-      franquia: "R$ 5.860,00",
+      premio_liquido: result.premio_liquido ?? "",
+      iof: result.iof ?? "",
+      premio_total: result.premio_total ?? "",
+      parcelas: result.parcelas ?? "",
+      valor_parcela: result.valor_parcela ?? "",
+      forma_pagamento: result.forma_pagamento ?? "",
+      franquia: result.franquia ?? "",
 
-      coberturas: [
-        { descricao: "Colisão, Incêndio e Roubo/Furto", limite: "100% VMR", premio: "R$ 2.866,35" },
-        { descricao: "RCF-V - Danos Materiais", limite: "R$ 100.000,00", premio: "R$ 705,78" },
-        { descricao: "RCF-V - Danos Corporais", limite: "R$ 100.000,00", premio: "R$ 141,16" },
-        { descricao: "Assistência 24 horas", limite: "Completa", premio: "R$ 59,35" },
-        { descricao: "Km adicional de reboque", limite: "Ilimitado", premio: "R$ 55,73" },
-      ],
+      coberturas: Array.isArray(result.coberturas) ? result.coberturas : [],
     };
 
-    return mockData;
+    return data;
   },
 };
