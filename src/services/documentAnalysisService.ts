@@ -87,47 +87,52 @@ export const documentAnalysisService = {
 
     const result = await response.json();
 
-    // Map API response to our interface, falling back to empty strings
+    // The API returns nested structure: { status, data: { customer_data, vehicle_data, financial_data } }
+    const apiData = result.data || result;
+    const customer = apiData.customer_data || {};
+    const vehicle = apiData.vehicle_data || {};
+    const financial = apiData.financial_data || {};
+
     const data: ExtractedDocumentData = {
       tipo,
-      seguradora: result.seguradora ?? "",
-      numero_proposta: result.numero_proposta ?? "",
-      numero_apolice: result.numero_apolice ?? "",
-      ci: result.ci ?? "",
-      vigencia_inicio: result.vigencia_inicio ?? "",
-      vigencia_fim: result.vigencia_fim ?? "",
-      classe_bonus: result.classe_bonus ?? "",
+      seguradora: financial.seguradora ?? "",
+      numero_proposta: financial.numero_proposta ?? "",
+      numero_apolice: financial.numero_apolice ?? "",
+      ci: financial.ci ?? "",
+      vigencia_inicio: financial.vigencia_inicio ?? "",
+      vigencia_fim: financial.vigencia_fim ?? "",
+      classe_bonus: financial.classe_bonus ?? "",
 
-      segurado_nome: result.segurado_nome ?? "",
-      segurado_cpf: result.segurado_cpf ?? "",
-      segurado_endereco: result.segurado_endereco ?? "",
-      segurado_bairro: result.segurado_bairro ?? "",
-      segurado_cidade: result.segurado_cidade ?? "",
-      segurado_uf: result.segurado_uf ?? "",
-      segurado_cep: result.segurado_cep ?? "",
-      segurado_telefone: result.segurado_telefone ?? "",
-      segurado_celular: result.segurado_celular ?? "",
-      segurado_email: result.segurado_email ?? "",
+      segurado_nome: customer.nome ?? "",
+      segurado_cpf: customer.cpf ?? "",
+      segurado_endereco: customer.endereco ?? "",
+      segurado_bairro: customer.bairro ?? "",
+      segurado_cidade: customer.cidade ?? "",
+      segurado_uf: customer.uf ?? "",
+      segurado_cep: customer.cep ?? "",
+      segurado_telefone: customer.telefone ?? "",
+      segurado_celular: customer.celular ?? "",
+      segurado_email: customer.email ?? "",
 
-      veiculo_fabricante: result.veiculo_fabricante ?? "",
-      veiculo_modelo: result.veiculo_modelo ?? "",
-      veiculo_ano: result.veiculo_ano ?? "",
-      veiculo_placa: result.veiculo_placa ?? "",
-      veiculo_chassi: result.veiculo_chassi ?? "",
-      veiculo_combustivel: result.veiculo_combustivel ?? "",
-      veiculo_codigo_fipe: result.veiculo_codigo_fipe ?? "",
-      veiculo_zero_km: result.veiculo_zero_km ?? "",
-      veiculo_utilizacao: result.veiculo_utilizacao ?? "",
+      veiculo_fabricante: vehicle.veiculo_fabricante ?? "",
+      veiculo_modelo: vehicle.veiculo_modelo ?? "",
+      veiculo_ano: vehicle.veiculo_ano ?? "",
+      veiculo_placa: vehicle.veiculo_placa ?? "",
+      veiculo_chassi: vehicle.veiculo_chassi ?? "",
+      veiculo_combustivel: vehicle.veiculo_combustivel ?? "",
+      veiculo_codigo_fipe: vehicle.veiculo_codigo_fipe ?? "",
+      veiculo_zero_km: vehicle.veiculo_zero_km ?? "",
+      veiculo_utilizacao: vehicle.veiculo_utilizacao ?? "",
 
-      premio_liquido: result.premio_liquido ?? "",
-      iof: result.iof ?? "",
-      premio_total: result.premio_total ?? "",
-      parcelas: result.parcelas ?? "",
-      valor_parcela: result.valor_parcela ?? "",
-      forma_pagamento: result.forma_pagamento ?? "",
-      franquia: result.franquia ?? "",
+      premio_liquido: financial.premio_liquido ?? "",
+      iof: financial.iof ?? "",
+      premio_total: financial.premio_total ?? "",
+      parcelas: financial.parcelas ?? "",
+      valor_parcela: financial.valor_parcela ?? "",
+      forma_pagamento: financial.forma_pagamento ?? "",
+      franquia: financial.franquia ?? "",
 
-      coberturas: Array.isArray(result.coberturas) ? result.coberturas : [],
+      coberturas: Array.isArray(financial.coberturas) ? financial.coberturas : [],
     };
 
     return data;
