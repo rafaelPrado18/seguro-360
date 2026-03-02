@@ -87,11 +87,27 @@ export const documentAnalysisService = {
 
     const result = await response.json();
 
-    // The API returns nested structure: { status, data: { customer_data, vehicle_data, financial_data } }
     const apiData = result.data || result;
     const customer = apiData.customer_data || {};
     const vehicle = apiData.vehicle_data || {};
     const financial = apiData.financial_data || {};
+
+    // Fetch existing lead data to fill in missing fields
+    let leadData: Record<string, any> = {};
+    if (customer.lead_id) {
+      try {
+        const leadRes = await fetch(`${BASE_URL}/v1/read/leads?leadTag=id&leadValue=${customer.lead_id}`);
+        if (leadRes.ok) {
+          const leadResult = await leadRes.json();
+          const leads = leadResult.data || leadResult;
+          if (Array.isArray(leads) && leads.length > 0) {
+            leadData = leads[0];
+          }
+        }
+      } catch {
+        // Continue without lead data
+      }
+    }
 
     const data: ExtractedDocumentData = {
       tipo,
@@ -103,19 +119,19 @@ export const documentAnalysisService = {
       vigencia_fim: financial.vigencia_fim ?? "",
       classe_bonus: financial.classe_bonus ?? "",
 
-      segurado_nome: customer.nome ?? "",
-      segurado_cpf: customer.cpf ?? "",
-      segurado_endereco: customer.endereco ?? "",
-      segurado_bairro: customer.bairro ?? "",
-      segurado_cidade: customer.cidade ?? "",
-      segurado_uf: customer.uf ?? "",
-      segurado_cep: customer.cep ?? "",
-      segurado_telefone: customer.telefone ?? "",
-      segurado_celular: customer.celular ?? "",
-      segurado_email: customer.email ?? "",
+      segurado_nome: customer.nome || leadData.nome || "",
+      segurado_cpf: customer.cpf || leadData.cpf || "",
+      segurado_endereco: customer.endereco || leadData.endereco || "",
+      segurado_bairro: customer.bairro || leadData.bairro || "",
+      segurado_cidade: customer.cidade || leadData.cidade || "",
+      segurado_uf: customer.uf || leadData.uf || "",
+      segurado_cep: customer.cep || leadData.cep || "",
+      segurado_telefone: customer.telefone || leadData.telefone || "",
+      segurado_celular: customer.celular || leadData.celular || "",
+      segurado_email: customer.email || leadData.email || "",
 
       veiculo_fabricante: vehicle.veiculo_fabricante ?? "",
-      veiculo_modelo: vehicle.veiculo_modelo ?? "",
+      veiculo_modelo: vehicle.veiculo_modelo || leadData.modelo || "",
       veiculo_ano: vehicle.veiculo_ano ?? "",
       veiculo_placa: vehicle.veiculo_placa ?? "",
       veiculo_chassi: vehicle.veiculo_chassi ?? "",
