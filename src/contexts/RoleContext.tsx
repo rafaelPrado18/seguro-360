@@ -98,7 +98,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   const cookieUser = getUserFromCookies();
   const [currentUser, setCurrentUser] = useState<UserProfile>(cookieUser || DEFAULT_USER);
   const [role, setRole] = useState<UserRole>(FUNCTION_TO_ROLE[currentUser.role] || "corretor");
-  const [brokerStatus, setBrokerStatus] = useState<BrokerStatus>(
+  const [brokerStatus, _setBrokerStatus] = useState<BrokerStatus>(
     (getCookie("userStatus") as BrokerStatus) || "online"
   );
 
@@ -110,6 +110,62 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       setRole(FUNCTION_TO_ROLE[u.role] || "corretor");
     }
   }, []);
+
+  // Poll profile status every 10 seconds
+  useEffect(() => {
+    const email = getCookie("userEmail");
+    if (!email) return;
+
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch(
+          `http://173.249.50.11:80/v1/read/profile?searchTag=email&searchValue=${encodeURIComponent(email)}`
+        );
+        if (res.ok) {
+          const result = await res.json();
+          const profiles = Array.isArray(result) ? result : result.data ? (Array.isArray(result.data) ? result.data : [result.data]) : [];
+          if (profiles.length > 0) {
+            const serverStatus = profiles[0].status as BrokerStatus;
+            if (serverStatus === "online" || serverStatus === "offline") {
+              _setBrokerStatus(serverStatus);
+              document.cookie = `userStatus=${serverStatus}; path=/`;
+            }
+          }
+        }
+      } catch {
+        // Silently ignore polling errors
+      }
+    };
+
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Update status via API + local state
+  const setBrokerStatus = async (status: BrokerStatus) => {
+    _setBrokerStatus(status);
+    document.cookie = `userStatus=${status}; path=/`;
+
+    const token = getCookie("userToken");
+    const userId = getCookie("userId");
+    const agentId = currentUser.id;
+
+    if (!token || !agentId) return;
+
+    try {
+      await fetch("https://crm-hataseg.com.br/v1/update/agent/status", {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status, agentId, userId }),
+      });
+    } catch (err) {
+      console.error("Erro ao atualizar status:", err);
+    }
+  };
 
   const scopes = ROLE_SCOPES[role];
 
