@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useLeadHistory } from "@/hooks/useLeads";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -88,7 +89,7 @@ const typeColors: Record<HistoryEntry["type"], string> = {
 export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   const [activeTab, setActiveTab] = useState("detalhes");
   const [newNote, setNewNote] = useState("");
-  const [history, setHistory] = useState<HistoryEntry[]>(INITIAL_HISTORY);
+  const [localHistory, setLocalHistory] = useState<HistoryEntry[]>(INITIAL_HISTORY);
   const [lead, setLead] = useState(() => buildEmptyLead(contact));
   const [veiculos, setVeiculos] = useState<VeiculoProposta[]>([]);
   const [isEditing, setIsEditing] = useState(false);
@@ -97,7 +98,28 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   const [expandedVeiculo, setExpandedVeiculo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch lead data from API by phone number
+  const { data: apiHistory = [] } = useLeadHistory(lead.email || undefined);
+
+  // Merge local + API history
+  const history = useMemo(() => {
+    const apiEntries: HistoryEntry[] = apiHistory.map((entry) => ({
+      id: entry._id,
+      type: "message" as const,
+      title: "Mensagem",
+      description: entry.textContent,
+      created_at: entry.timestamp,
+      author: entry.consultantEmail,
+    }));
+    return [...localHistory, ...apiEntries].sort((a, b) => {
+      const parseDate = (d: string) => {
+        const match = d.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/);
+        if (match) return new Date(+match[3], +match[2] - 1, +match[1], +match[4], +match[5], +match[6]).getTime();
+        return new Date(d).getTime();
+      };
+      return parseDate(b.created_at) - parseDate(a.created_at);
+    });
+  }, [localHistory, apiHistory]);
+
   useEffect(() => {
     const phone = contact.telefone.replace(/\D/g, "");
     setLoading(true);
@@ -185,7 +207,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   const handleAddNote = () => {
     if (!newNote.trim()) return;
     const entry: HistoryEntry = { id: uuidv4(), type: "note", title: "Nota adicionada", description: newNote, created_at: new Date().toISOString(), author: "Corretor" };
-    setHistory(prev => [entry, ...prev]);
+    setLocalHistory(prev => [entry, ...prev]);
     setNewNote("");
   };
 
@@ -195,7 +217,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
     Array.from(files).forEach(file => {
       const isImage = file.type.startsWith("image/");
       const entry: HistoryEntry = { id: uuidv4(), type: isImage ? "image" : "document", title: isImage ? "Imagem enviada" : "Documento enviado", description: file.name, file_name: file.name, file_url: URL.createObjectURL(file), created_at: new Date().toISOString(), author: "Corretor" };
-      setHistory(prev => [entry, ...prev]);
+      setLocalHistory(prev => [entry, ...prev]);
     });
     e.target.value = "";
   };
