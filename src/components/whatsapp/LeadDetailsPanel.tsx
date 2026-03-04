@@ -227,12 +227,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   };
 
   const [uploading, setUploading] = useState(false);
-
-  const getFileType = (file: File): "image" | "proposta" | "apolice" | "pdf" => {
-    if (file.type.startsWith("image/")) return "image";
-    if (file.type === "application/pdf") return "pdf";
-    return "pdf";
-  };
+  const [uploadFileType, setUploadFileType] = useState<"image" | "proposta" | "apolice" | "pdf">("pdf");
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -245,7 +240,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
     setUploading(true);
     try {
       for (const file of Array.from(files)) {
-        await leadsService.uploadLeadFile(file, getFileType(file), profile);
+        await leadsService.uploadLeadFile(file, uploadFileType, profile, lead.id);
       }
       toast({ title: "Arquivo(s) enviado(s)!", description: `${files.length} arquivo(s) enviado(s) com sucesso.` });
     } catch {
