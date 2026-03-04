@@ -55,6 +55,8 @@ interface TimelineEvent {
   description: string;
   icon: string;
   type: string;
+  fileUrl?: string;
+  historyType?: string;
 }
 
 function generateTimeline(lead: Lead, notes: NoteEntry[]): TimelineEvent[] {
