@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
 import type { ExtractedDocumentData } from "@/services/documentAnalysisService";
+import { useLeadHistory } from "@/hooks/useLeads";
 import { formatPhone } from "@/lib/utils";
 import { v4 as uuidv4 } from "uuid";
 
