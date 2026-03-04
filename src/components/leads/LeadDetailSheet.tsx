@@ -512,13 +512,24 @@ function EditField({ label, value, onChange, type = "text" }: { label: string; v
 function FileUploadButton({ leadEmail }: { leadEmail: string }) {
   const [uploading, setUploading] = useState(false);
 
+  const getFileType = (file: File): "image" | "proposta" | "apolice" | "pdf" => {
+    if (file.type.startsWith("image/")) return "image";
+    if (file.type === "application/pdf") return "pdf";
+    return "pdf";
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+    const getCookie = (name: string) => {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? decodeURIComponent(match[2]) : "";
+    };
+    const profile = getCookie("userEmail") || "sistema";
     setUploading(true);
     try {
       for (const file of Array.from(files)) {
-        await leadsService.uploadLeadFile(file);
+        await leadsService.uploadLeadFile(file, getFileType(file), profile);
       }
       toast({ title: "Arquivo(s) enviado(s)!", description: `${files.length} arquivo(s) enviado(s) com sucesso.` });
     } catch {
