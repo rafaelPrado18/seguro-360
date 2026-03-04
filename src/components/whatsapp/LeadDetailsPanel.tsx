@@ -226,15 +226,23 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
-    Array.from(files).forEach(file => {
-      const isImage = file.type.startsWith("image/");
-      const entry: HistoryEntry = { id: uuidv4(), type: isImage ? "image" : "document", title: isImage ? "Imagem enviada" : "Documento enviado", description: file.name, file_name: file.name, file_url: URL.createObjectURL(file), created_at: new Date().toISOString(), author: "Corretor" };
-      setLocalHistory(prev => [entry, ...prev]);
-    });
-    e.target.value = "";
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        await leadsService.uploadLeadFile(file);
+      }
+      toast({ title: "Arquivo(s) enviado(s)!", description: `${files.length} arquivo(s) enviado(s) com sucesso.` });
+    } catch {
+      toast({ title: "Erro ao enviar arquivo", variant: "destructive" });
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   const formatDate = (d: string) =>
