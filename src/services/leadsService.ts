@@ -40,6 +40,15 @@ export interface LeadDistribution {
   valor_total_convertido: number;
 }
 
+export interface LeadHistoryEntry {
+  _id: string;
+  leadEmail: string;
+  historyType: string;
+  textContent: string;
+  timestamp: string;
+  consultantEmail: string;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;
@@ -201,5 +210,21 @@ export const leadsService = {
     });
     console.log(response.status)
     if (!response.ok) throw new Error("Erro ao redistribuir leads");
+  },
+
+  // GET /v1/get/lead/history - Buscar histórico do lead
+  async getLeadHistory(leadEmail: string): Promise<LeadHistoryEntry[]> {
+    const params = new URLSearchParams();
+    params.append("searchTag", "all");
+
+    const response = await fetch(`${BASE_URL}/v1/get/lead/history?${params.toString()}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+    if (!response.ok) throw new Error("Erro ao buscar histórico do lead");
+    const result = await response.json();
+    const entries: LeadHistoryEntry[] = Array.isArray(result) ? result : result.data || [];
+    // Filter by lead email
+    return entries.filter((e) => e.leadEmail === leadEmail);
   },
 };

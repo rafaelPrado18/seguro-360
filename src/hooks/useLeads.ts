@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { leadsService, type LeadFilters, type Lead } from "@/services/leadsService";
+import { leadsService, type LeadFilters, type Lead, type LeadHistoryEntry } from "@/services/leadsService";
 
 export function useLeads(filters?: LeadFilters, currentUser?: string, currentFunction?: string) {
   return useQuery({
@@ -89,5 +89,14 @@ export function useRedistributeLeads() {
     mutationFn: (params: { startDate: string; startHour: string; corretorOrigem: string[]; corretoresDestino: string[] }) =>
       leadsService.redistributeLeads(params),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["leads"] }),
+  });
+}
+
+export function useLeadHistory(leadEmail: string | undefined) {
+  return useQuery({
+    queryKey: ["lead-history", leadEmail],
+    queryFn: () => leadsService.getLeadHistory(leadEmail!),
+    enabled: !!leadEmail,
+    refetchInterval: 10000,
   });
 }
