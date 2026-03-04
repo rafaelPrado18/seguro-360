@@ -89,6 +89,7 @@ const timelineIconMap: Record<string, React.ReactNode> = {
   lost: <ArrowRight className="h-3.5 w-3.5 text-destructive" />,
   note: <StickyNote className="h-3.5 w-3.5 text-muted-foreground" />,
   message: <MessageSquare className="h-3.5 w-3.5 text-primary" />,
+  document: <FileText className="h-3.5 w-3.5 text-accent" />,
 };
 
 interface NoteEntry {
