@@ -17,7 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import {
   Phone, Mail, MessageSquare, Calendar, Clock, User,
   Target, DollarSign, FileText, ArrowRight, CheckCircle2,
-  Pencil, Save, X, Send, StickyNote, Trash2, Upload, Loader2
+  Pencil, Save, X, Send, StickyNote, Trash2, Upload, Loader2, Download
 } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
 import { leadsService } from "@/services/leadsService";
