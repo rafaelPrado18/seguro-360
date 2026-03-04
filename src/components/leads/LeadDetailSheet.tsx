@@ -241,7 +241,24 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
     window.open(`mailto:${lead.email}?subject=Seguro - ${lead.ramo_interesse}`, "_blank");
   };
 
-  const timeline = generateTimeline(lead, notes);
+  const baseTimeline = generateTimeline(lead, notes);
+
+  // Merge API history entries into timeline
+  const apiHistoryEvents: TimelineEvent[] = historyEntries.map((entry) => ({
+    date: entry.timestamp,
+    type: "message",
+    description: `${entry.textContent} — ${entry.consultantEmail}`,
+    icon: "message",
+  }));
+
+  const timeline = [...baseTimeline, ...apiHistoryEvents].sort((a, b) => {
+    const parseDate = (d: string) => {
+      const match = d.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/);
+      if (match) return new Date(+match[3], +match[2] - 1, +match[1], +match[4], +match[5], +match[6]).getTime();
+      return new Date(d).getTime();
+    };
+    return parseDate(b.date) - parseDate(a.date);
+  });
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
