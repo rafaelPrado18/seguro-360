@@ -99,17 +99,17 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   const [expandedVeiculo, setExpandedVeiculo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const { data: apiHistory = [] } = useLeadHistory(lead.email || undefined);
+  const { data: apiHistory = [] } = useLeadHistory(lead.id || undefined);
 
   // Merge local + API history
   const history = useMemo(() => {
     const apiEntries: HistoryEntry[] = apiHistory.map((entry) => ({
-      id: entry._id,
+      id: entry.leadId,
       type: "message" as const,
       title: "Mensagem",
       description: entry.textContent,
       created_at: entry.timestamp,
-      author: entry.consultantEmail,
+      author: entry.profile,
     }));
     return [...localHistory, ...apiEntries].sort((a, b) => {
       const parseDate = (d: string) => {
