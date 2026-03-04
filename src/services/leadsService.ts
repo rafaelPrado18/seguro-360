@@ -41,12 +41,11 @@ export interface LeadDistribution {
 }
 
 export interface LeadHistoryEntry {
-  _id: string;
-  leadEmail: string;
+  leadId: string;
   historyType: string;
   textContent: string;
   timestamp: string;
-  consultantEmail: string;
+  profile: string;
 }
 
 export interface PaginatedResponse<T> {
