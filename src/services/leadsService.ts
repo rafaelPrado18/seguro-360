@@ -248,9 +248,11 @@ export const leadsService = {
   },
 
   // POST /v1/create/lead/history/file - Upload de arquivo no histórico do lead
-  async uploadLeadFile(file: File): Promise<void> {
+  async uploadLeadFile(file: File, fileType: "image" | "proposta" | "apolice" | "pdf", profile: string): Promise<void> {
     const formData = new FormData();
     formData.append("file", file, file.name);
+    formData.append("fileType", fileType);
+    formData.append("profile", profile);
 
     const response = await fetch(`${BASE_URL}/v1/create/lead/history/file`, {
       method: "POST",
