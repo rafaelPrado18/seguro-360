@@ -534,11 +534,17 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                           {entry.description && (
                             <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">{entry.description}</p>
                           )}
-                          {entry.file_name && (
-                            <button className="mt-1 flex items-center gap-1.5 text-[10px] text-info hover:underline">
+                          {entry.file_url && (
+                            <a
+                              href={entry.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              download
+                              className="mt-1 inline-flex items-center gap-1.5 text-[10px] text-primary hover:underline"
+                            >
                               <Download className="h-3 w-3" />
-                              {entry.file_name}
-                            </button>
+                              Baixar {entry.file_name || "arquivo"}
+                            </a>
                           )}
                           <p className="text-[9px] text-muted-foreground mt-1">{entry.author}</p>
                         </div>
