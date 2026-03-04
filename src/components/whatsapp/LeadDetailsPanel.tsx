@@ -21,6 +21,7 @@ import { useAgents } from "@/hooks/useAgents";
 import { toast } from "@/hooks/use-toast";
 import type { WhatsAppContact } from "@/services/whatsappService";
 import { v4 as uuidv4 } from "uuid";
+import { leadsService } from "@/services/leadsService";
 
 // --- Types ---
 
