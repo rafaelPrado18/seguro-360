@@ -211,20 +211,15 @@ export const leadsService = {
     if (!response.ok) throw new Error("Erro ao redistribuir leads");
   },
 
-  // GET /v1/get/lead/history - Buscar histórico do lead
-  async getLeadHistory(leadEmail: string): Promise<LeadHistoryEntry[]> {
-    const params = new URLSearchParams();
-    params.append("searchTag", "all");
-
-    const response = await fetch(`${BASE_URL}/v1/get/lead/history?${params.toString()}`, {
+  // GET /v1/get/lead/history - Buscar histórico do lead por leadId
+  async getLeadHistory(leadId: string): Promise<LeadHistoryEntry[]> {
+    const response = await fetch(`${BASE_URL}/v1/get/lead/history?searchTag=leadId&searchValue=${encodeURIComponent(leadId)}`, {
       method: "GET",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
     if (!response.ok) throw new Error("Erro ao buscar histórico do lead");
     const result = await response.json();
-    const entries: LeadHistoryEntry[] = Array.isArray(result) ? result : result.data || [];
-    // Filter by lead email
-    return entries.filter((e) => e.leadEmail === leadEmail);
+    return Array.isArray(result) ? result : result.data || [];
   },
 
   // POST /v1/create/lead/history - Criar entrada no histórico do lead

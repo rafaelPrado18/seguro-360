@@ -92,11 +92,11 @@ export function useRedistributeLeads() {
   });
 }
 
-export function useLeadHistory(leadEmail: string | undefined) {
+export function useLeadHistory(leadId: string | undefined) {
   return useQuery({
-    queryKey: ["lead-history", leadEmail],
-    queryFn: () => leadsService.getLeadHistory(leadEmail!),
-    enabled: !!leadEmail,
+    queryKey: ["lead-history", leadId],
+    queryFn: () => leadsService.getLeadHistory(leadId!),
+    enabled: !!leadId,
     refetchInterval: 10000,
   });
 }
