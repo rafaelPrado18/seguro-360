@@ -426,7 +426,7 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
 
             <Separator />
             <div>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Adicionar Nota</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Adicionar Nota / Arquivo</h4>
               <div className="flex gap-2">
                 <Textarea
                   placeholder="Escreva uma nota ou comentário..."
@@ -442,14 +442,17 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
                   }}
                 />
               </div>
-              <Button
-                size="sm"
-                className="mt-2 gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90"
-                onClick={addNote}
-                disabled={!newNote.trim()}
-              >
-                <Send className="h-3 w-3" /> Enviar Nota
-              </Button>
+              <div className="flex gap-2 mt-2">
+                <Button
+                  size="sm"
+                  className="gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90 flex-1"
+                  onClick={addNote}
+                  disabled={!newNote.trim()}
+                >
+                  <Send className="h-3 w-3" /> Enviar Nota
+                </Button>
+                <FileUploadButton leadEmail={lead.email} />
+              </div>
             </div>
 
             <Separator />
