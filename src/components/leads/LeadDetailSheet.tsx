@@ -230,11 +230,14 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
   const baseTimeline = generateTimeline(lead, notes);
 
   // Merge API history entries into timeline
+  const isDocType = (t: string) => ["image", "proposta", "apolice", "pdf"].includes(t);
   const apiHistoryEvents: TimelineEvent[] = historyEntries.map((entry) => ({
     date: entry.timestamp,
-    type: "message",
-    description: `${entry.textContent} — ${entry.profile}`,
-    icon: "message",
+    type: isDocType(entry.historyType) ? "document" : "message",
+    description: isDocType(entry.historyType) ? `${entry.historyType.toUpperCase()} — ${entry.profile}` : `${entry.textContent} — ${entry.profile}`,
+    icon: isDocType(entry.historyType) ? "document" : "message",
+    fileUrl: isDocType(entry.historyType) ? entry.textContent : undefined,
+    historyType: entry.historyType,
   }));
 
   const timeline = [...baseTimeline, ...apiHistoryEvents].sort((a, b) => {
