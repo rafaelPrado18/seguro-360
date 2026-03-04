@@ -91,3 +91,12 @@ export function useRedistributeLeads() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["leads"] }),
   });
 }
+
+export function useLeadHistory(leadEmail: string | undefined) {
+  return useQuery({
+    queryKey: ["lead-history", leadEmail],
+    queryFn: () => leadsService.getLeadHistory(leadEmail!),
+    enabled: !!leadEmail,
+    refetchInterval: 10000,
+  });
+}
