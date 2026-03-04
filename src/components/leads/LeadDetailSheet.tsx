@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
 import { clientService, buildClientPayload } from "@/services/clientService";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
