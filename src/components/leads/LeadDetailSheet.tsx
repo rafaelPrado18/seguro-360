@@ -110,6 +110,7 @@ const timelineIconMap: Record<string, React.ReactNode> = {
   converted: <CheckCircle2 className="h-3.5 w-3.5 text-success" />,
   lost: <ArrowRight className="h-3.5 w-3.5 text-destructive" />,
   note: <StickyNote className="h-3.5 w-3.5 text-muted-foreground" />,
+  message: <MessageSquare className="h-3.5 w-3.5 text-primary" />,
 };
 
 interface NoteEntry {
