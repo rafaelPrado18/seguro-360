@@ -61,31 +61,6 @@ function generateTimeline(lead: Lead, notes: NoteEntry[]): TimelineEvent[] {
     { date: lead.created_at, type: "criado", description: "Lead cadastrado no sistema", icon: "create" },
   ];
 
-  if (lead.status !== "novo") {
-    events.push({
-      date: new Date(new Date(lead.created_at).getTime() + 86400000).toISOString(),
-      type: "contato", description: "Primeiro contato realizado via WhatsApp", icon: "contact",
-    });
-  }
-  if (["qualificado", "proposta_enviada", "convertido"].includes(lead.status)) {
-    events.push({
-      date: new Date(new Date(lead.created_at).getTime() + 172800000).toISOString(),
-      type: "qualificado", description: "Lead qualificado após reunião", icon: "qualified",
-    });
-  }
-  if (["proposta_enviada", "convertido"].includes(lead.status)) {
-    events.push({
-      date: new Date(new Date(lead.created_at).getTime() + 259200000).toISOString(),
-      type: "proposta", description: `Proposta enviada — R$ ${lead.valor_estimado.toLocaleString()}`, icon: "proposal",
-    });
-  }
-  if (lead.status === "convertido") {
-    events.push({ date: lead.updated_at, type: "convertido", description: "Lead convertido em cliente", icon: "converted" });
-  }
-  if (lead.status === "perdido") {
-    events.push({ date: lead.updated_at, type: "perdido", description: "Lead perdido — sem retorno", icon: "lost" });
-  }
-
   // Add notes as timeline events
   notes.forEach(n => {
     events.push({ date: n.date, type: "nota", description: n.text, icon: "note" });
