@@ -479,6 +479,18 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
                         <p className={`text-sm ${event.type === "nota" ? "text-foreground bg-accent/5 rounded-md p-2 -mt-0.5" : "text-foreground"}`}>
                           {event.description}
                         </p>
+                        {event.fileUrl && (
+                          <a
+                            href={event.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download
+                            className="mt-1 inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            Baixar {event.historyType || "arquivo"}
+                          </a>
+                        )}
                         <p className="text-[11px] text-muted-foreground mt-0.5">{event.date}</p>
                       </div>
                     </div>

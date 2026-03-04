@@ -103,11 +103,14 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
 
   // Merge local + API history
   const history = useMemo(() => {
+    const isDocType = (t: string) => ["image", "proposta", "apolice", "pdf"].includes(t);
     const apiEntries: HistoryEntry[] = apiHistory.map((entry) => ({
       id: entry.leadId,
-      type: "message" as const,
-      title: "Mensagem",
-      description: entry.textContent,
+      type: isDocType(entry.historyType) ? ("document" as const) : ("message" as const),
+      title: isDocType(entry.historyType) ? `Arquivo: ${entry.historyType}` : "Mensagem",
+      description: isDocType(entry.historyType) ? undefined : entry.textContent,
+      file_url: isDocType(entry.historyType) ? entry.textContent : undefined,
+      file_name: isDocType(entry.historyType) ? entry.historyType.toUpperCase() : undefined,
       created_at: entry.timestamp,
       author: entry.profile,
     }));
