@@ -238,7 +238,7 @@ export const leadsService = {
     fileName?: string;
     fileContent?: string;
   }): Promise<unknown> {
-    const response = await fetch("http://173.249.50.11:8000/v1/create/lead/history", {
+    const response = await fetch(`${BASE_URL}/v1/create/lead/history`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

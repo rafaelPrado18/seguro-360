@@ -119,7 +119,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     const fetchStatus = async () => {
       try {
         const res = await fetch(
-          `http://173.249.50.11:80/v1/read/profile?searchTag=email&searchValue=${encodeURIComponent(email)}`
+          `/v1/read/profile?searchTag=email&searchValue=${encodeURIComponent(email)}`
         );
         if (res.ok) {
           const result = await res.json();
