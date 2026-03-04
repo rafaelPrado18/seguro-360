@@ -89,7 +89,7 @@ const typeColors: Record<HistoryEntry["type"], string> = {
 export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   const [activeTab, setActiveTab] = useState("detalhes");
   const [newNote, setNewNote] = useState("");
-  const [history, setHistory] = useState<HistoryEntry[]>(INITIAL_HISTORY);
+  const [localHistory, setLocalHistory] = useState<HistoryEntry[]>(INITIAL_HISTORY);
   const [lead, setLead] = useState(() => buildEmptyLead(contact));
   const [veiculos, setVeiculos] = useState<VeiculoProposta[]>([]);
   const [isEditing, setIsEditing] = useState(false);
