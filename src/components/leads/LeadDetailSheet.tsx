@@ -509,14 +509,9 @@ function EditField({ label, value, onChange, type = "text" }: { label: string; v
   );
 }
 
-function FileUploadButton({ leadEmail }: { leadEmail: string }) {
+function FileUploadButton({ leadId }: { leadId: string }) {
   const [uploading, setUploading] = useState(false);
-
-  const getFileType = (file: File): "image" | "proposta" | "apolice" | "pdf" => {
-    if (file.type.startsWith("image/")) return "image";
-    if (file.type === "application/pdf") return "pdf";
-    return "pdf";
-  };
+  const [fileType, setFileType] = useState<"image" | "proposta" | "apolice" | "pdf">("pdf");
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -529,7 +524,7 @@ function FileUploadButton({ leadEmail }: { leadEmail: string }) {
     setUploading(true);
     try {
       for (const file of Array.from(files)) {
-        await leadsService.uploadLeadFile(file, getFileType(file), profile);
+        await leadsService.uploadLeadFile(file, fileType, profile, leadId);
       }
       toast({ title: "Arquivo(s) enviado(s)!", description: `${files.length} arquivo(s) enviado(s) com sucesso.` });
     } catch {
@@ -541,11 +536,24 @@ function FileUploadButton({ leadEmail }: { leadEmail: string }) {
   };
 
   return (
-    <label>
-      <input type="file" className="hidden" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileUpload} disabled={uploading} />
-      <Button size="sm" variant="outline" className="gap-1.5 text-xs" asChild disabled={uploading}>
-        <span>{uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />} {uploading ? "Enviando..." : "Arquivo"}</span>
-      </Button>
-    </label>
+    <div className="flex gap-1.5 items-center">
+      <Select value={fileType} onValueChange={(v) => setFileType(v as typeof fileType)}>
+        <SelectTrigger className="h-8 text-xs w-[110px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="image">Imagem</SelectItem>
+          <SelectItem value="proposta">Proposta</SelectItem>
+          <SelectItem value="apolice">Apólice</SelectItem>
+          <SelectItem value="pdf">PDF</SelectItem>
+        </SelectContent>
+      </Select>
+      <label>
+        <input type="file" className="hidden" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileUpload} disabled={uploading} />
+        <Button size="sm" variant="outline" className="gap-1.5 text-xs" asChild disabled={uploading}>
+          <span>{uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />} {uploading ? "Enviando..." : "Arquivo"}</span>
+        </Button>
+      </label>
+    </div>
   );
 }
