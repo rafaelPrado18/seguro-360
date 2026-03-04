@@ -17,7 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import {
   Phone, Mail, MessageSquare, Calendar, Clock, User,
   Target, DollarSign, FileText, ArrowRight, CheckCircle2,
-  Pencil, Save, X, Send, StickyNote, Trash2, Upload, Loader2
+  Pencil, Save, X, Send, StickyNote, Trash2, Upload, Loader2, Download
 } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
 import { leadsService } from "@/services/leadsService";
@@ -55,6 +55,8 @@ interface TimelineEvent {
   description: string;
   icon: string;
   type: string;
+  fileUrl?: string;
+  historyType?: string;
 }
 
 function generateTimeline(lead: Lead, notes: NoteEntry[]): TimelineEvent[] {
@@ -87,6 +89,7 @@ const timelineIconMap: Record<string, React.ReactNode> = {
   lost: <ArrowRight className="h-3.5 w-3.5 text-destructive" />,
   note: <StickyNote className="h-3.5 w-3.5 text-muted-foreground" />,
   message: <MessageSquare className="h-3.5 w-3.5 text-primary" />,
+  document: <FileText className="h-3.5 w-3.5 text-accent" />,
 };
 
 interface NoteEntry {
@@ -228,11 +231,14 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
   const baseTimeline = generateTimeline(lead, notes);
 
   // Merge API history entries into timeline
+  const isDocType = (t: string) => ["image", "proposta", "apolice", "pdf"].includes(t);
   const apiHistoryEvents: TimelineEvent[] = historyEntries.map((entry) => ({
     date: entry.timestamp,
-    type: "message",
-    description: `${entry.textContent} — ${entry.profile}`,
-    icon: "message",
+    type: isDocType(entry.historyType) ? "document" : "message",
+    description: isDocType(entry.historyType) ? `${entry.historyType.toUpperCase()} — ${entry.profile}` : `${entry.textContent} — ${entry.profile}`,
+    icon: isDocType(entry.historyType) ? "document" : "message",
+    fileUrl: isDocType(entry.historyType) ? entry.textContent : undefined,
+    historyType: entry.historyType,
   }));
 
   const timeline = [...baseTimeline, ...apiHistoryEvents].sort((a, b) => {
@@ -474,6 +480,18 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
                         <p className={`text-sm ${event.type === "nota" ? "text-foreground bg-accent/5 rounded-md p-2 -mt-0.5" : "text-foreground"}`}>
                           {event.description}
                         </p>
+                        {event.fileUrl && (
+                          <a
+                            href={event.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download
+                            className="mt-1 inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            Baixar {event.historyType || "arquivo"}
+                          </a>
+                        )}
                         <p className="text-[11px] text-muted-foreground mt-0.5">{event.date}</p>
                       </div>
                     </div>
