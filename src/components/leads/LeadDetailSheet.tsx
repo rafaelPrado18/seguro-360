@@ -138,6 +138,8 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
   const [extractedData, setExtractedData] = useState<ExtractedDocumentData | null>(null);
   const [savingDocs, setSavingDocs] = useState(false);
 
+  const { data: historyEntries = [] } = useLeadHistory(lead?.email);
+
   if (!lead) return null;
 
   const startEdit = () => {
