@@ -451,7 +451,7 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
                 >
                   <Send className="h-3 w-3" /> Enviar Nota
                 </Button>
-                <FileUploadButton leadEmail={lead.email} />
+                <FileUploadButton leadId={lead.id} />
               </div>
             </div>
 

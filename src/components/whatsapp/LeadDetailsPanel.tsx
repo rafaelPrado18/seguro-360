@@ -491,6 +491,17 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
               <Button size="sm" className="text-xs gap-1 bg-accent text-accent-foreground hover:bg-accent/90 flex-1" onClick={handleAddNote} disabled={!newNote.trim()}>
                 <Plus className="h-3 w-3" /> Nota
               </Button>
+              <Select value={uploadFileType} onValueChange={(v) => setUploadFileType(v as typeof uploadFileType)}>
+                <SelectTrigger className="h-8 text-xs w-[100px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="image">Imagem</SelectItem>
+                  <SelectItem value="proposta">Proposta</SelectItem>
+                  <SelectItem value="apolice">Apólice</SelectItem>
+                  <SelectItem value="pdf">PDF</SelectItem>
+                </SelectContent>
+              </Select>
               <label className="flex-1">
                 <input type="file" className="hidden" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileUpload} disabled={uploading} />
                 <Button size="sm" variant="outline" className="text-xs gap-1 w-full" asChild disabled={uploading}>
