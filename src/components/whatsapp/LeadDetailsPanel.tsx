@@ -186,7 +186,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   const handleAddNote = () => {
     if (!newNote.trim()) return;
     const entry: HistoryEntry = { id: uuidv4(), type: "note", title: "Nota adicionada", description: newNote, created_at: new Date().toISOString(), author: "Corretor" };
-    setHistory(prev => [entry, ...prev]);
+    setLocalHistory(prev => [entry, ...prev]);
     setNewNote("");
   };
 
