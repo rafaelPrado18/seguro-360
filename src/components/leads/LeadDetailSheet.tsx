@@ -153,17 +153,25 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
     toast({ title: "Lead atualizado!", description: `${updated.nome} salvo com sucesso.` });
   };
 
-  const addNote = () => {
+  const addNote = async () => {
     if (!newNote.trim()) return;
-    const entry: NoteEntry = {
-      id: uuidv4(),
-      text: newNote.trim(),
-      date: new Date().toISOString(),
-      author: "Você",
+    const getCookie = (name: string) => {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? decodeURIComponent(match[2]) : "";
     };
-    setNotes(prev => [entry, ...prev]);
-    setNewNote("");
-    toast({ title: "Nota adicionada" });
+    const consultantEmail = getCookie("userEmail") || "sistema";
+    try {
+      await leadsService.createLeadHistory({
+        leadEmail: lead.email,
+        historyType: "note",
+        textContent: newNote.trim(),
+        consultantEmail,
+      });
+      setNewNote("");
+      toast({ title: "Nota adicionada" });
+    } catch {
+      toast({ title: "Erro ao adicionar nota", variant: "destructive" });
+    }
   };
 
   const handleDocumentAnalyzed = (data: ExtractedDocumentData) => {

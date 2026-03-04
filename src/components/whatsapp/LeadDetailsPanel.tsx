@@ -204,11 +204,25 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
     }
   };
 
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     if (!newNote.trim()) return;
-    const entry: HistoryEntry = { id: uuidv4(), type: "note", title: "Nota adicionada", description: newNote, created_at: new Date().toISOString(), author: "Corretor" };
-    setLocalHistory(prev => [entry, ...prev]);
-    setNewNote("");
+    const getCookie = (name: string) => {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? decodeURIComponent(match[2]) : "";
+    };
+    const consultantEmail = getCookie("userEmail") || "sistema";
+    try {
+      await leadsService.createLeadHistory({
+        leadEmail: lead.email,
+        historyType: "note",
+        textContent: newNote.trim(),
+        consultantEmail,
+      });
+      setNewNote("");
+      toast({ title: "Nota adicionada" });
+    } catch {
+      toast({ title: "Erro ao adicionar nota", variant: "destructive" });
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
