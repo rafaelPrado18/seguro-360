@@ -98,7 +98,28 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   const [expandedVeiculo, setExpandedVeiculo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch lead data from API by phone number
+  const { data: apiHistory = [] } = useLeadHistory(lead.email || undefined);
+
+  // Merge local + API history
+  const history = useMemo(() => {
+    const apiEntries: HistoryEntry[] = apiHistory.map((entry) => ({
+      id: entry._id,
+      type: "message" as const,
+      title: "Mensagem",
+      description: entry.textContent,
+      created_at: entry.timestamp,
+      author: entry.consultantEmail,
+    }));
+    return [...localHistory, ...apiEntries].sort((a, b) => {
+      const parseDate = (d: string) => {
+        const match = d.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/);
+        if (match) return new Date(+match[3], +match[2] - 1, +match[1], +match[4], +match[5], +match[6]).getTime();
+        return new Date(d).getTime();
+      };
+      return parseDate(b.created_at) - parseDate(a.created_at);
+    });
+  }, [localHistory, apiHistory]);
+
   useEffect(() => {
     const phone = contact.telefone.replace(/\D/g, "");
     setLoading(true);
