@@ -226,15 +226,23 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
-    Array.from(files).forEach(file => {
-      const isImage = file.type.startsWith("image/");
-      const entry: HistoryEntry = { id: uuidv4(), type: isImage ? "image" : "document", title: isImage ? "Imagem enviada" : "Documento enviado", description: file.name, file_name: file.name, file_url: URL.createObjectURL(file), created_at: new Date().toISOString(), author: "Corretor" };
-      setLocalHistory(prev => [entry, ...prev]);
-    });
-    e.target.value = "";
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        await leadsService.uploadLeadFile(file);
+      }
+      toast({ title: "Arquivo(s) enviado(s)!", description: `${files.length} arquivo(s) enviado(s) com sucesso.` });
+    } catch {
+      toast({ title: "Erro ao enviar arquivo", variant: "destructive" });
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   const formatDate = (d: string) =>
@@ -478,9 +486,9 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                 <Plus className="h-3 w-3" /> Nota
               </Button>
               <label className="flex-1">
-                <input type="file" className="hidden" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileUpload} />
-                <Button size="sm" variant="outline" className="text-xs gap-1 w-full" asChild>
-                  <span><Upload className="h-3 w-3" /> Arquivo</span>
+                <input type="file" className="hidden" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileUpload} disabled={uploading} />
+                <Button size="sm" variant="outline" className="text-xs gap-1 w-full" asChild disabled={uploading}>
+                  <span>{uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />} {uploading ? "Enviando..." : "Arquivo"}</span>
                 </Button>
               </label>
             </div>

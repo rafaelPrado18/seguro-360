@@ -246,4 +246,16 @@ export const leadsService = {
     if (!response.ok) throw new Error("Erro ao criar histórico do lead");
     return response.json();
   },
+
+  // POST /v1/create/lead/history/file - Upload de arquivo no histórico do lead
+  async uploadLeadFile(file: File): Promise<void> {
+    const formData = new FormData();
+    formData.append("file", file, file.name);
+
+    const response = await fetch(`${BASE_URL}/v1/create/lead/history/file`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!response.ok) throw new Error("Erro ao enviar arquivo");
+  },
 };

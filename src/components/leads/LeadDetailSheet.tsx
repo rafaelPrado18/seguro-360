@@ -17,7 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import {
   Phone, Mail, MessageSquare, Calendar, Clock, User,
   Target, DollarSign, FileText, ArrowRight, CheckCircle2,
-  Pencil, Save, X, Send, StickyNote, Trash2
+  Pencil, Save, X, Send, StickyNote, Trash2, Upload, Loader2
 } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
 import { leadsService } from "@/services/leadsService";
@@ -426,7 +426,7 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
 
             <Separator />
             <div>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Adicionar Nota</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Adicionar Nota / Arquivo</h4>
               <div className="flex gap-2">
                 <Textarea
                   placeholder="Escreva uma nota ou comentário..."
@@ -442,14 +442,17 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
                   }}
                 />
               </div>
-              <Button
-                size="sm"
-                className="mt-2 gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90"
-                onClick={addNote}
-                disabled={!newNote.trim()}
-              >
-                <Send className="h-3 w-3" /> Enviar Nota
-              </Button>
+              <div className="flex gap-2 mt-2">
+                <Button
+                  size="sm"
+                  className="gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90 flex-1"
+                  onClick={addNote}
+                  disabled={!newNote.trim()}
+                >
+                  <Send className="h-3 w-3" /> Enviar Nota
+                </Button>
+                <FileUploadButton leadEmail={lead.email} />
+              </div>
             </div>
 
             <Separator />
@@ -503,5 +506,35 @@ function EditField({ label, value, onChange, type = "text" }: { label: string; v
       <label className="text-[11px] text-muted-foreground">{label}</label>
       <Input className="h-8 text-sm mt-1" type={type} value={value} onChange={(e) => onChange(e.target.value)} />
     </div>
+  );
+}
+
+function FileUploadButton({ leadEmail }: { leadEmail: string }) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        await leadsService.uploadLeadFile(file);
+      }
+      toast({ title: "Arquivo(s) enviado(s)!", description: `${files.length} arquivo(s) enviado(s) com sucesso.` });
+    } catch {
+      toast({ title: "Erro ao enviar arquivo", variant: "destructive" });
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  return (
+    <label>
+      <input type="file" className="hidden" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileUpload} disabled={uploading} />
+      <Button size="sm" variant="outline" className="gap-1.5 text-xs" asChild disabled={uploading}>
+        <span>{uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />} {uploading ? "Enviando..." : "Arquivo"}</span>
+      </Button>
+    </label>
   );
 }
