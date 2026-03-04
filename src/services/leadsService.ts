@@ -40,6 +40,15 @@ export interface LeadDistribution {
   valor_total_convertido: number;
 }
 
+export interface LeadHistoryEntry {
+  _id: string;
+  leadEmail: string;
+  historyType: string;
+  textContent: string;
+  timestamp: string;
+  consultantEmail: string;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;
