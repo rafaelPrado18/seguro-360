@@ -486,9 +486,9 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                 <Plus className="h-3 w-3" /> Nota
               </Button>
               <label className="flex-1">
-                <input type="file" className="hidden" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileUpload} />
-                <Button size="sm" variant="outline" className="text-xs gap-1 w-full" asChild>
-                  <span><Upload className="h-3 w-3" /> Arquivo</span>
+                <input type="file" className="hidden" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileUpload} disabled={uploading} />
+                <Button size="sm" variant="outline" className="text-xs gap-1 w-full" asChild disabled={uploading}>
+                  <span>{uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />} {uploading ? "Enviando..." : "Arquivo"}</span>
                 </Button>
               </label>
             </div>
