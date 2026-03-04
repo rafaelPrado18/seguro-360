@@ -196,7 +196,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
     Array.from(files).forEach(file => {
       const isImage = file.type.startsWith("image/");
       const entry: HistoryEntry = { id: uuidv4(), type: isImage ? "image" : "document", title: isImage ? "Imagem enviada" : "Documento enviado", description: file.name, file_name: file.name, file_url: URL.createObjectURL(file), created_at: new Date().toISOString(), author: "Corretor" };
-      setHistory(prev => [entry, ...prev]);
+      setLocalHistory(prev => [entry, ...prev]);
     });
     e.target.value = "";
   };
