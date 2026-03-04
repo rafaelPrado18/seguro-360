@@ -20,6 +20,7 @@ import {
   Pencil, Save, X, Send, StickyNote, Trash2
 } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
+import { leadsService } from "@/services/leadsService";
 import type { ExtractedDocumentData } from "@/services/documentAnalysisService";
 import { useLeadHistory } from "@/hooks/useLeads";
 import { formatPhone } from "@/lib/utils";
