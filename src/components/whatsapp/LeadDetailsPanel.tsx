@@ -227,12 +227,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
   };
 
   const [uploading, setUploading] = useState(false);
-
-  const getFileType = (file: File): "image" | "proposta" | "apolice" | "pdf" => {
-    if (file.type.startsWith("image/")) return "image";
-    if (file.type === "application/pdf") return "pdf";
-    return "pdf";
-  };
+  const [uploadFileType, setUploadFileType] = useState<"image" | "proposta" | "apolice" | "pdf">("pdf");
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -245,7 +240,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
     setUploading(true);
     try {
       for (const file of Array.from(files)) {
-        await leadsService.uploadLeadFile(file, getFileType(file), profile);
+        await leadsService.uploadLeadFile(file, uploadFileType, profile, lead.id);
       }
       toast({ title: "Arquivo(s) enviado(s)!", description: `${files.length} arquivo(s) enviado(s) com sucesso.` });
     } catch {
@@ -496,6 +491,17 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
               <Button size="sm" className="text-xs gap-1 bg-accent text-accent-foreground hover:bg-accent/90 flex-1" onClick={handleAddNote} disabled={!newNote.trim()}>
                 <Plus className="h-3 w-3" /> Nota
               </Button>
+              <Select value={uploadFileType} onValueChange={(v) => setUploadFileType(v as typeof uploadFileType)}>
+                <SelectTrigger className="h-8 text-xs w-[100px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="image">Imagem</SelectItem>
+                  <SelectItem value="proposta">Proposta</SelectItem>
+                  <SelectItem value="apolice">Apólice</SelectItem>
+                  <SelectItem value="pdf">PDF</SelectItem>
+                </SelectContent>
+              </Select>
               <label className="flex-1">
                 <input type="file" className="hidden" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileUpload} disabled={uploading} />
                 <Button size="sm" variant="outline" className="text-xs gap-1 w-full" asChild disabled={uploading}>
