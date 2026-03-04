@@ -227,4 +227,23 @@ export const leadsService = {
     // Filter by lead email
     return entries.filter((e) => e.leadEmail === leadEmail);
   },
+
+  // POST /v1/create/lead/history - Criar entrada no histórico do lead
+  async createLeadHistory(data: {
+    leadEmail: string;
+    historyType: string;
+    textContent: string;
+    consultantEmail: string;
+    fileType?: string;
+    fileName?: string;
+    fileContent?: string;
+  }): Promise<unknown> {
+    const response = await fetch("http://173.249.50.11:8000/v1/create/lead/history", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error("Erro ao criar histórico do lead");
+    return response.json();
+  },
 };
