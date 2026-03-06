@@ -22,7 +22,7 @@ export interface RenovacaoItem {
   premio: string;
   dias: number;
   status: string;
-  observacoes: string;
+  observacoes?: string;
   veiculos: { id: string; marca: string; modelo: string; ano: string; placa: string; chassi: string }[];
 }
 
