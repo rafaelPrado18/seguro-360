@@ -213,6 +213,15 @@ export function RenovacaoDetailDialog({ open, onOpenChange, renovacao, onSave }:
               </div>
             ))}
           </div>
+
+          <Separator />
+
+          <DocumentUploadSection
+            arquivoApolice={arquivoApolice}
+            setArquivoApolice={setArquivoApolice}
+            arquivoProposta={arquivoProposta}
+            setArquivoProposta={setArquivoProposta}
+          />
         </div>
 
         <DialogFooter>
