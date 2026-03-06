@@ -129,7 +129,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                       <p className="text-[11px] text-muted-foreground mt-0.5">{lead.ramo_interesse ?? "—"}</p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">{lead.created_at ?? "—"}</p>
                       <div className="flex items-center justify-between mt-2">
-                        <span className="text-xs font-medium text-foreground">{lead.placa || "Sem placa"}</span>
+                        <span className="text-xs font-medium text-foreground">{lead.modelo || "Sem placa"}</span>
                         <span className="text-[11px] text-muted-foreground">{lead.telefone || "Sem telefone"}</span>
                       </div>
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
@@ -137,11 +137,6 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                           {lead.corretor_responsavel || "Sem corretor"}
                         </span>
                         <div className="flex gap-0.5">
-                          {lead.telefone && (
-                            <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); window.open(`tel:${lead.telefone}`); }}>
-                              <Phone className="h-3 w-3 text-muted-foreground" />
-                            </Button>
-                          )}
                           <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); navigate("/whatsapp"); }}>
                             <MessageSquare className="h-3 w-3 text-muted-foreground" />
                           </Button>
