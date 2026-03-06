@@ -199,8 +199,8 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-bold text-foreground">R$ {(lead.valor_estimado ?? 0).toLocaleString()}</p>
-                    <p className="text-[10px] text-muted-foreground">{lead.corretor_responsavel || "Sem corretor"}</p>
+                    <p className="text-sm font-medium text-foreground">{lead.placa || "Sem placa"}</p>
+                    <p className="text-[10px] text-muted-foreground">{lead.telefone || "Sem telefone"}</p>
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
                     {lead.telefone && (

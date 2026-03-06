@@ -14,6 +14,7 @@ export interface Lead {
   corretor_responsavel: string | null;
   valor_estimado: number;
   modelo?: string;
+  placa?: string;
   observacoes: string;
   cliente_id: string | null;
   created_at: string;
