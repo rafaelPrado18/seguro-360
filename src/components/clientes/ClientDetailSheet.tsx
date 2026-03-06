@@ -9,12 +9,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Car, DollarSign, User, Shield, ChevronDown, Clock, FileText,
-  MessageSquare, Target, CheckCircle2, ArrowRight, StickyNote, Upload,
-  Send, Loader2, Download,
+  MessageSquare, StickyNote, Upload, Send, Loader2, Download,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import type { Client, VehiclePolicy } from "@/services/clientService";
-import type { Lead } from "@/services/leadsService";
 import { leadsService } from "@/services/leadsService";
 import { useLeadHistory } from "@/hooks/useLeads";
 
@@ -33,51 +31,13 @@ function FieldRow({ label, value }: { label: string; value?: string }) {
   );
 }
 
-// ── Timeline helpers ──
-
 interface TimelineEvent {
   date: string;
   description: string;
   icon: string;
   type: string;
-}
-
-const statusLabels: Record<string, string> = {
-  novo: "Novo", em_contato: "Em Contato", qualificado: "Qualificado",
-  proposta_enviada: "Proposta Enviada", convertido: "Convertido", perdido: "Perdido",
-};
-
-function generateTimeline(lead: Lead): TimelineEvent[] {
-  const events: TimelineEvent[] = [
-    { date: lead.created_at, type: "criado", description: "Lead cadastrado no sistema", icon: "create" },
-  ];
-
-  if (lead.status !== "novo") {
-    events.push({
-      date: new Date(new Date(lead.created_at).getTime() + 86400000).toISOString(),
-      type: "contato", description: "Primeiro contato realizado", icon: "contact",
-    });
-  }
-  if (["qualificado", "proposta_enviada", "convertido"].includes(lead.status)) {
-    events.push({
-      date: new Date(new Date(lead.created_at).getTime() + 172800000).toISOString(),
-      type: "qualificado", description: "Lead qualificado após reunião", icon: "qualified",
-    });
-  }
-  if (["proposta_enviada", "convertido"].includes(lead.status)) {
-    events.push({
-      date: new Date(new Date(lead.created_at).getTime() + 259200000).toISOString(),
-      type: "proposta", description: `Proposta enviada — R$ ${lead.valor_estimado?.toLocaleString?.() ?? lead.valor_estimado}`, icon: "proposal",
-    });
-  }
-  if (lead.status === "convertido") {
-    events.push({ date: lead.updated_at, type: "convertido", description: "Lead convertido em cliente", icon: "converted" });
-  }
-  if (lead.status === "perdido") {
-    events.push({ date: lead.updated_at, type: "perdido", description: "Lead perdido", icon: "lost" });
-  }
-
-  return events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  fileUrl?: string;
+  historyType?: string;
 }
 
 function formatDateTime(iso: string) {
@@ -86,12 +46,9 @@ function formatDateTime(iso: string) {
 
 const timelineIconMap: Record<string, React.ReactNode> = {
   create: <FileText className="h-3.5 w-3.5 text-info" />,
-  contact: <MessageSquare className="h-3.5 w-3.5 text-warning" />,
-  qualified: <Target className="h-3.5 w-3.5 text-primary" />,
-  proposal: <DollarSign className="h-3.5 w-3.5 text-accent" />,
-  converted: <CheckCircle2 className="h-3.5 w-3.5 text-success" />,
-  lost: <ArrowRight className="h-3.5 w-3.5 text-destructive" />,
+  message: <MessageSquare className="h-3.5 w-3.5 text-primary" />,
   note: <StickyNote className="h-3.5 w-3.5 text-muted-foreground" />,
+  document: <FileText className="h-3.5 w-3.5 text-accent" />,
 };
 
 // ── Vehicle / Policy Card ──
@@ -117,7 +74,6 @@ function VehiclePolicyCard({ vp, index }: { vp: VehiclePolicy; index: number; to
         <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </CollapsibleTrigger>
       <CollapsibleContent className="mt-2 space-y-3 pl-1">
-        {/* Vehicle details */}
         <div className="rounded-lg border border-border/50 p-3">
           <div className="flex items-center gap-2 mb-2">
             <Car className="h-3.5 w-3.5 text-primary" />
@@ -136,7 +92,6 @@ function VehiclePolicyCard({ vp, index }: { vp: VehiclePolicy; index: number; to
           </div>
         </div>
 
-        {/* Financial / policy details */}
         <div className="rounded-lg border border-border/50 p-3">
           <div className="flex items-center gap-2 mb-2">
             <DollarSign className="h-3.5 w-3.5 text-primary" />
@@ -161,7 +116,6 @@ function VehiclePolicyCard({ vp, index }: { vp: VehiclePolicy; index: number; to
           </div>
         </div>
 
-        {/* Coverages */}
         {f.coberturas && f.coberturas.length > 0 && (
           <div className="rounded-lg border border-border/50 p-3">
             <div className="flex items-center gap-2 mb-2">
@@ -189,26 +143,12 @@ function VehiclePolicyCard({ vp, index }: { vp: VehiclePolicy; index: number; to
 // ── Main Component ──
 
 export function ClientDetailSheet({ open, onOpenChange, client }: ClientDetailSheetProps) {
-  const [lead, setLead] = useState<Lead | null>(null);
-  const [loadingLead, setLoadingLead] = useState(false);
+  const [newNote, setNewNote] = useState("");
+  const [sendingNote, setSendingNote] = useState(false);
 
-  useEffect(() => {
-    if (!open || !client?.lead_id) {
-      setLead(null);
-      return;
-    }
-
-    let cancelled = false;
-    setLoadingLead(true);
-    leadsService.getLeadByPhone(client.telefone || client.celular)
-      .then((found) => {
-        if (!cancelled) setLead(found);
-      })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setLoadingLead(false); });
-
-    return () => { cancelled = true; };
-  }, [open, client?.lead_id, client?.telefone, client?.celular]);
+  const { data: historyEntries = [], refetch: refetchHistory } = useLeadHistory(
+    open && client?.lead_id ? client.lead_id : undefined
+  );
 
   if (!client) return null;
 
@@ -227,29 +167,81 @@ export function ClientDetailSheet({ open, onOpenChange, client }: ClientDetailSh
     { label: "CEP", value: client.cep },
   ];
 
-  const timeline = lead ? generateTimeline(lead) : [];
+  // Build timeline from API history
+  const isDocType = (t: string) => ["image", "proposta", "apolice", "pdf"].includes(t);
+  const timeline: TimelineEvent[] = historyEntries.map((entry) => ({
+    date: entry.timestamp,
+    type: isDocType(entry.historyType) ? "document" : "message",
+    description: isDocType(entry.historyType)
+      ? `${entry.historyType.toUpperCase()} — ${entry.profile}`
+      : `${entry.textContent} — ${entry.profile}`,
+    icon: isDocType(entry.historyType) ? "document" : entry.historyType === "note" ? "note" : "message",
+    fileUrl: isDocType(entry.historyType) ? entry.textContent : undefined,
+    historyType: entry.historyType,
+  }));
 
-  // Build documents list from vehicle policies
-  const documents = client.vehicles
-    .flatMap((vp, idx) => {
-      const docs: { label: string; detail: string; vehicle: string }[] = [];
-      const vName = `${vp.vehicle.veiculo_fabricante} ${vp.vehicle.veiculo_modelo}`.trim() || `Veículo ${idx + 1}`;
-      if (vp.financial.numero_apolice) {
-        docs.push({
-          label: `Apólice ${vp.financial.numero_apolice}`,
-          detail: `${vp.financial.seguradora || "—"} · Vigência: ${vp.financial.vigencia_inicio || "—"} a ${vp.financial.vigencia_fim || "—"}`,
-          vehicle: vName,
-        });
-      }
-      if (vp.financial.numero_proposta) {
-        docs.push({
-          label: `Proposta ${vp.financial.numero_proposta}`,
-          detail: `${vp.financial.seguradora || "—"} · Prêmio: ${vp.financial.premio_total || "—"}`,
-          vehicle: vName,
-        });
-      }
-      return docs;
+  if (client.created_at) {
+    timeline.push({
+      date: client.created_at,
+      type: "criado",
+      description: "Cliente cadastrado no sistema",
+      icon: "create",
     });
+  }
+
+  timeline.sort((a, b) => {
+    const parseDate = (d: string) => {
+      const match = d.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/);
+      if (match) return new Date(+match[3], +match[2] - 1, +match[1], +match[4], +match[5], +match[6]).getTime();
+      return new Date(d).getTime();
+    };
+    return parseDate(b.date) - parseDate(a.date);
+  });
+
+  const documents = client.vehicles.flatMap((vp, idx) => {
+    const docs: { label: string; detail: string; vehicle: string }[] = [];
+    const vName = `${vp.vehicle.veiculo_fabricante} ${vp.vehicle.veiculo_modelo}`.trim() || `Veículo ${idx + 1}`;
+    if (vp.financial.numero_apolice) {
+      docs.push({
+        label: `Apólice ${vp.financial.numero_apolice}`,
+        detail: `${vp.financial.seguradora || "—"} · Vigência: ${vp.financial.vigencia_inicio || "—"} a ${vp.financial.vigencia_fim || "—"}`,
+        vehicle: vName,
+      });
+    }
+    if (vp.financial.numero_proposta) {
+      docs.push({
+        label: `Proposta ${vp.financial.numero_proposta}`,
+        detail: `${vp.financial.seguradora || "—"} · Prêmio: ${vp.financial.premio_total || "—"}`,
+        vehicle: vName,
+      });
+    }
+    return docs;
+  });
+
+  const addNote = async () => {
+    if (!newNote.trim() || !client.lead_id) return;
+    const getCookie = (name: string) => {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? decodeURIComponent(match[2]) : "";
+    };
+    const profile = getCookie("userName") || "sistema";
+    setSendingNote(true);
+    try {
+      await leadsService.createLeadHistory({
+        leadId: client.lead_id,
+        historyType: "note",
+        textContent: newNote.trim(),
+        profile,
+      });
+      setNewNote("");
+      refetchHistory();
+      toast({ title: "Nota adicionada" });
+    } catch {
+      toast({ title: "Erro ao adicionar nota", variant: "destructive" });
+    } finally {
+      setSendingNote(false);
+    }
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -296,7 +288,6 @@ export function ClientDetailSheet({ open, onOpenChange, client }: ClientDetailSh
           </div>
 
           <ScrollArea className="h-[calc(100vh-200px)]">
-            {/* Dados Pessoais */}
             <TabsContent value="dados" className="px-6 pb-6 mt-4">
               <div className="space-y-0.5">
                 {personalFields.map((f) => (
@@ -305,7 +296,6 @@ export function ClientDetailSheet({ open, onOpenChange, client }: ClientDetailSh
               </div>
             </TabsContent>
 
-            {/* Veículos & Apólices */}
             <TabsContent value="veiculos" className="px-6 pb-6 mt-4">
               {client.vehicles.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">Nenhum veículo cadastrado.</p>
@@ -318,36 +308,82 @@ export function ClientDetailSheet({ open, onOpenChange, client }: ClientDetailSh
               )}
             </TabsContent>
 
-            {/* Histórico */}
-            <TabsContent value="historico" className="px-6 pb-6 mt-4">
-              {loadingLead ? (
-                <p className="text-sm text-muted-foreground text-center py-8">Carregando histórico...</p>
-              ) : timeline.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">Nenhum histórico disponível.</p>
-              ) : (
-                <div className="relative">
-                  <div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
-                  <div className="space-y-4">
-                    {timeline.map((event, i) => (
-                      <div key={i} className="flex gap-3 relative">
-                        <div className={`h-6 w-6 rounded-full bg-background border flex items-center justify-center flex-shrink-0 z-10 ${
-                          event.type === "nota" ? "border-accent/50" : "border-border"
-                        }`}>
-                          {timelineIconMap[event.icon]}
-                        </div>
-                        <div className="flex-1 min-w-0 pt-0.5">
-                          <p className="text-sm text-foreground">{event.description}</p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">{formatDateTime(event.date)}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+            {/* Histórico com notas e arquivos */}
+            <TabsContent value="historico" className="px-6 pb-6 mt-4 space-y-4">
+              <div>
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Adicionar Nota / Arquivo</h4>
+                <Textarea
+                  placeholder="Escreva uma nota ou comentário..."
+                  className="text-sm min-h-[60px]"
+                  rows={2}
+                  value={newNote}
+                  onChange={(e) => setNewNote(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      addNote();
+                    }
+                  }}
+                />
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    size="sm"
+                    className="gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90 flex-1"
+                    onClick={addNote}
+                    disabled={!newNote.trim() || sendingNote || !client.lead_id}
+                  >
+                    {sendingNote ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                    Enviar Nota
+                  </Button>
+                  <ClientFileUploadButton leadId={client.lead_id} onUploaded={refetchHistory} />
                 </div>
-              )}
+                {!client.lead_id && (
+                  <p className="text-[11px] text-muted-foreground mt-1">Cliente sem lead vinculado. Notas e arquivos não podem ser adicionados.</p>
+                )}
+              </div>
 
-              {/* Datas do cliente */}
+              <div>
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Linha do Tempo</h4>
+                {timeline.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">Nenhum histórico disponível.</p>
+                ) : (
+                  <div className="relative">
+                    <div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
+                    <div className="space-y-4">
+                      {timeline.map((event, i) => (
+                        <div key={i} className="flex gap-3 relative">
+                          <div className={`h-6 w-6 rounded-full bg-background border flex items-center justify-center flex-shrink-0 z-10 ${
+                            event.icon === "note" ? "border-accent/50" : "border-border"
+                          }`}>
+                            {timelineIconMap[event.icon] || <FileText className="h-3.5 w-3.5 text-muted-foreground" />}
+                          </div>
+                          <div className="flex-1 min-w-0 pt-0.5">
+                            <p className={`text-sm ${event.icon === "note" ? "text-foreground bg-accent/5 rounded-md p-2 -mt-0.5" : "text-foreground"}`}>
+                              {event.description}
+                            </p>
+                            {event.fileUrl && (
+                              <a
+                                href={event.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                download
+                                className="mt-1 inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+                              >
+                                <Download className="h-3.5 w-3.5" />
+                                Baixar {event.historyType || "arquivo"}
+                              </a>
+                            )}
+                            <p className="text-[11px] text-muted-foreground mt-0.5">{event.date}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {(client.created_at || client.updated_at) && (
-                <div className="mt-6 rounded-lg border border-border/50 p-3 space-y-0.5">
+                <div className="rounded-lg border border-border/50 p-3 space-y-0.5">
                   <h5 className="text-xs font-semibold text-muted-foreground mb-2">Registro do Cliente</h5>
                   {client.created_at && <FieldRow label="Criado em" value={formatDateTime(client.created_at)} />}
                   {client.updated_at && <FieldRow label="Atualizado em" value={formatDateTime(client.updated_at)} />}
@@ -355,7 +391,6 @@ export function ClientDetailSheet({ open, onOpenChange, client }: ClientDetailSh
               )}
             </TabsContent>
 
-            {/* Documentos */}
             <TabsContent value="documentos" className="px-6 pb-6 mt-4">
               {documents.length === 0 ? (
                 <div className="text-center py-8">
@@ -386,5 +421,57 @@ export function ClientDetailSheet({ open, onOpenChange, client }: ClientDetailSh
         </Tabs>
       </SheetContent>
     </Sheet>
+  );
+}
+
+// ── File Upload for Client History ──
+
+function ClientFileUploadButton({ leadId, onUploaded }: { leadId: string; onUploaded: () => void }) {
+  const [uploading, setUploading] = useState(false);
+  const [fileType, setFileType] = useState<"image" | "proposta" | "apolice" | "pdf">("pdf");
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !leadId) return;
+    const getCookie = (name: string) => {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? decodeURIComponent(match[2]) : "";
+    };
+    const profile = getCookie("userEmail") || "sistema";
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        await leadsService.uploadLeadFile(file, fileType, profile, leadId);
+      }
+      onUploaded();
+      toast({ title: "Arquivo(s) enviado(s)!", description: `${files.length} arquivo(s) enviado(s) com sucesso.` });
+    } catch {
+      toast({ title: "Erro ao enviar arquivo", variant: "destructive" });
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  return (
+    <div className="flex gap-1.5 items-center">
+      <Select value={fileType} onValueChange={(v) => setFileType(v as typeof fileType)}>
+        <SelectTrigger className="h-8 text-xs w-[110px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="image">Imagem</SelectItem>
+          <SelectItem value="proposta">Proposta</SelectItem>
+          <SelectItem value="apolice">Apólice</SelectItem>
+          <SelectItem value="pdf">PDF</SelectItem>
+        </SelectContent>
+      </Select>
+      <label>
+        <input type="file" className="hidden" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileUpload} disabled={uploading || !leadId} />
+        <Button size="sm" variant="outline" className="gap-1.5 text-xs" asChild disabled={uploading || !leadId}>
+          <span>{uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />} {uploading ? "Enviando..." : "Arquivo"}</span>
+        </Button>
+      </label>
+    </div>
   );
 }
