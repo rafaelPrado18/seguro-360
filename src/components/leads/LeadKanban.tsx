@@ -4,7 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GripVertical, Phone, MessageSquare, MoreHorizontal, Maximize2 } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
 
@@ -18,7 +19,7 @@ export interface KanbanColumn {
 interface LeadKanbanProps {
   leads: Lead[];
   columns: KanbanColumn[];
-  onStatusChange: (leadId: string, newStatus: string) => void;
+  onStatusChange: (leadId: string, newStatus: string, motivo?: string) => void;
   corretorFilter?: string | null;
   onLeadClick?: (lead: Lead) => void;
 }
@@ -33,6 +34,9 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const [expandedColumn, setExpandedColumn] = useState<KanbanColumn | null>(null);
+  const [perdidoDialogOpen, setPerdidoDialogOpen] = useState(false);
+  const [pendingPerdidoLead, setPendingPerdidoLead] = useState<Lead | null>(null);
+  const [motivoPerdido, setMotivoPerdido] = useState<string>("");
 
   const filteredLeads = corretorFilter
     ? leads.filter(l => l.corretor_responsavel.toLowerCase() === corretorFilter.toLowerCase())
@@ -61,9 +65,30 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
     e.preventDefault();
     setDragOverColumn(null);
     if (draggedLead && draggedLead.status !== columnId) {
-      onStatusChange(draggedLead.id, columnId);
+      if (columnId === "perdido") {
+        setPendingPerdidoLead(draggedLead);
+        setMotivoPerdido("");
+        setPerdidoDialogOpen(true);
+      } else {
+        onStatusChange(draggedLead.id, columnId);
+      }
     }
     setDraggedLead(null);
+  };
+
+  const handleConfirmPerdido = () => {
+    if (pendingPerdidoLead && motivoPerdido) {
+      onStatusChange(pendingPerdidoLead.id, "perdido", motivoPerdido);
+      setPerdidoDialogOpen(false);
+      setPendingPerdidoLead(null);
+      setMotivoPerdido("");
+    }
+  };
+
+  const handleCancelPerdido = () => {
+    setPerdidoDialogOpen(false);
+    setPendingPerdidoLead(null);
+    setMotivoPerdido("");
   };
 
   const expandedLeads = expandedColumn ? getColumnLeads(expandedColumn.id) : [];
@@ -129,7 +154,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                       <p className="text-[11px] text-muted-foreground mt-0.5">{lead.ramo_interesse ?? "—"}</p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">{lead.created_at ?? "—"}</p>
                       <div className="flex items-center justify-between mt-2">
-                        <span className="text-xs font-medium text-foreground">{lead.modelo || "Sem placa"}</span>
+                        <span className="text-xs font-medium text-foreground">{lead.placa || "Sem placa"}</span>
                         <span className="text-[11px] text-muted-foreground">{lead.telefone || "Sem telefone"}</span>
                       </div>
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
@@ -137,6 +162,11 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                           {lead.corretor_responsavel || "Sem corretor"}
                         </span>
                         <div className="flex gap-0.5">
+                          {lead.telefone && (
+                            <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); window.open(`tel:${lead.telefone}`); }}>
+                              <Phone className="h-3 w-3 text-muted-foreground" />
+                            </Button>
+                          )}
                           <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); navigate("/whatsapp"); }}>
                             <MessageSquare className="h-3 w-3 text-muted-foreground" />
                           </Button>
@@ -211,6 +241,32 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
               ))}
             </div>
           </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Perdido reason dialog */}
+      <Dialog open={perdidoDialogOpen} onOpenChange={(open) => { if (!open) handleCancelPerdido(); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Motivo da perda</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Por que o lead <span className="font-medium text-foreground">{pendingPerdidoLead?.nome}</span> foi perdido?
+          </p>
+          <Select value={motivoPerdido} onValueChange={setMotivoPerdido}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o motivo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="renovou_com_outro">Renovou com outro</SelectItem>
+              <SelectItem value="fechou_cooperativa">Fechou cooperativa</SelectItem>
+              <SelectItem value="sem_resposta">Sem resposta</SelectItem>
+            </SelectContent>
+          </Select>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={handleCancelPerdido}>Cancelar</Button>
+            <Button onClick={handleConfirmPerdido} disabled={!motivoPerdido}>Confirmar</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
