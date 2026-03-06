@@ -19,7 +19,7 @@ export interface KanbanColumn {
 interface LeadKanbanProps {
   leads: Lead[];
   columns: KanbanColumn[];
-  onStatusChange: (leadId: string, newStatus: string) => void;
+  onStatusChange: (leadId: string, newStatus: string, motivo?: string) => void;
   corretorFilter?: string | null;
   onLeadClick?: (lead: Lead) => void;
 }
