@@ -1,16 +1,22 @@
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Car, DollarSign, User, Shield, ChevronDown, Clock, FileText,
   MessageSquare, Target, CheckCircle2, ArrowRight, StickyNote, Upload,
+  Send, Loader2, Download,
 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import type { Client, VehiclePolicy } from "@/services/clientService";
 import type { Lead } from "@/services/leadsService";
 import { leadsService } from "@/services/leadsService";
+import { useLeadHistory } from "@/hooks/useLeads";
 
 interface ClientDetailSheetProps {
   open: boolean;
