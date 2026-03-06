@@ -1,8 +1,6 @@
 import { ReactNode, useState } from "react";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader } from "./AppHeader";
-import { Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -10,6 +8,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -24,11 +23,15 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Sidebar */}
       <div className={`
         fixed inset-y-0 left-0 z-50 lg:relative lg:z-auto
-        transform transition-transform duration-200 ease-in-out
+        transform transition-all duration-200 ease-in-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0
       `}>
-        <AppSidebar onClose={() => setSidebarOpen(false)} />
+        <AppSidebar
+          onClose={() => setSidebarOpen(false)}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
+        />
       </div>
 
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
