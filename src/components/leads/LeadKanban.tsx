@@ -34,6 +34,9 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const [expandedColumn, setExpandedColumn] = useState<KanbanColumn | null>(null);
+  const [perdidoDialogOpen, setPerdidoDialogOpen] = useState(false);
+  const [pendingPerdidoLead, setPendingPerdidoLead] = useState<Lead | null>(null);
+  const [motivoPerdido, setMotivoPerdido] = useState<string>("");
 
   const filteredLeads = corretorFilter
     ? leads.filter(l => l.corretor_responsavel.toLowerCase() === corretorFilter.toLowerCase())
