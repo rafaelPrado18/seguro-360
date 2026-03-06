@@ -46,7 +46,8 @@ interface RenovacaoDetailDialogProps {
 
 export function RenovacaoDetailDialog({ open, onOpenChange, renovacao, onSave }: RenovacaoDetailDialogProps) {
   const [form, setForm] = useState<RenovacaoData | null>(null);
-
+  const [arquivoApolice, setArquivoApolice] = useState<File | null>(null);
+  const [arquivoProposta, setArquivoProposta] = useState<File | null>(null);
   useEffect(() => {
     if (renovacao) setForm({ ...renovacao, veiculos: renovacao.veiculos.map(v => ({ ...v })) });
   }, [renovacao]);
