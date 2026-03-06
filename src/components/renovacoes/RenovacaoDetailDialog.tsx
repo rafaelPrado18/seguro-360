@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Car, Save, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
+import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
 
 export interface Veiculo {
   id: string;
