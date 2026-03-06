@@ -65,9 +65,30 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
     e.preventDefault();
     setDragOverColumn(null);
     if (draggedLead && draggedLead.status !== columnId) {
-      onStatusChange(draggedLead.id, columnId);
+      if (columnId === "perdido") {
+        setPendingPerdidoLead(draggedLead);
+        setMotivoPerdido("");
+        setPerdidoDialogOpen(true);
+      } else {
+        onStatusChange(draggedLead.id, columnId);
+      }
     }
     setDraggedLead(null);
+  };
+
+  const handleConfirmPerdido = () => {
+    if (pendingPerdidoLead && motivoPerdido) {
+      onStatusChange(pendingPerdidoLead.id, "perdido", motivoPerdido);
+      setPerdidoDialogOpen(false);
+      setPendingPerdidoLead(null);
+      setMotivoPerdido("");
+    }
+  };
+
+  const handleCancelPerdido = () => {
+    setPerdidoDialogOpen(false);
+    setPendingPerdidoLead(null);
+    setMotivoPerdido("");
   };
 
   const expandedLeads = expandedColumn ? getColumnLeads(expandedColumn.id) : [];
