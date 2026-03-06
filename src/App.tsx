@@ -18,6 +18,7 @@ import Leads from "./pages/Leads";
 import WhatsApp from "./pages/WhatsApp";
 import WhatsAppTemplates from "./pages/WhatsAppTemplates";
 import GerenciarStatus from "./pages/GerenciarStatus";
+import GerenciarStatusRenovacao from "./pages/GerenciarStatusRenovacao";
 import Usuarios from "./pages/Usuarios";
 import WhatsAppInstancias from "./pages/WhatsAppInstancias";
 import Empresas from "./pages/Empresas";
