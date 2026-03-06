@@ -36,6 +36,7 @@ const App = () => (
         <Route path="/whatsapp" element={<AuthGuard><ScopeGuard scope="whatsapp"><WhatsApp /></ScopeGuard></AuthGuard>} />
         <Route path="/whatsapp/templates" element={<AuthGuard><ScopeGuard scope="whatsapp"><WhatsAppTemplates /></ScopeGuard></AuthGuard>} />
         <Route path="/gerenciar-status" element={<AuthGuard><AdminGuard><GerenciarStatus /></AdminGuard></AuthGuard>} />
+        <Route path="/gerenciar-status-renovacao" element={<AuthGuard><AdminGuard><GerenciarStatusRenovacao /></AdminGuard></AuthGuard>} />
         <Route path="/whatsapp/instancias" element={<AuthGuard><AdminGuard><WhatsAppInstancias /></AdminGuard></AuthGuard>} />
         <Route path="/clientes" element={<AuthGuard><ScopeGuard scope="clientes"><Clientes /></ScopeGuard></AuthGuard>} />
         <Route path="/apolices" element={<AuthGuard><ScopeGuard scope="apolices"><Apolices /></ScopeGuard></AuthGuard>} />
