@@ -243,6 +243,32 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      {/* Perdido reason dialog */}
+      <Dialog open={perdidoDialogOpen} onOpenChange={(open) => { if (!open) handleCancelPerdido(); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Motivo da perda</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Por que o lead <span className="font-medium text-foreground">{pendingPerdidoLead?.nome}</span> foi perdido?
+          </p>
+          <Select value={motivoPerdido} onValueChange={setMotivoPerdido}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o motivo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="renovou_com_outro">Renovou com outro</SelectItem>
+              <SelectItem value="fechou_cooperativa">Fechou cooperativa</SelectItem>
+              <SelectItem value="sem_resposta">Sem resposta</SelectItem>
+            </SelectContent>
+          </Select>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={handleCancelPerdido}>Cancelar</Button>
+            <Button onClick={handleConfirmPerdido} disabled={!motivoPerdido}>Confirmar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
