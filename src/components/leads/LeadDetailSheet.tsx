@@ -163,13 +163,13 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
       const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
       return match ? decodeURIComponent(match[2]) : "";
     };
-    const consultantEmail = getCookie("userEmail") || "sistema";
+    const profile = getCookie("userName") || "sistema";
     try {
       await leadsService.createLeadHistory({
-        leadEmail: lead.email,
+        leadId: lead.id,
         historyType: "note",
         textContent: newNote.trim(),
-        consultantEmail,
+        profile,
       });
       setNewNote("");
       toast({ title: "Nota adicionada" });

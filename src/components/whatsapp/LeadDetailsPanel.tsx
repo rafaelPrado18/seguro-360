@@ -214,13 +214,13 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
       const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
       return match ? decodeURIComponent(match[2]) : "";
     };
-    const consultantEmail = getCookie("userEmail") || "sistema";
+    const profile = getCookie("userName") || "sistema";
     try {
       await leadsService.createLeadHistory({
-        leadEmail: lead.email,
+        leadId: lead.id,
         historyType: "note",
         textContent: newNote.trim(),
-        consultantEmail,
+        profile,
       });
       setNewNote("");
       toast({ title: "Nota adicionada" });
@@ -355,26 +355,11 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                   </div>
                 ) : (
                   <>
-                    {contact.cliente_id ? (
-                      <>
-                        <InfoRow icon={User} label="Nome" value={lead.nome} />
-                        <InfoRow icon={FileText} label="CPF" value={lead.cpf} />
-                        <InfoRow icon={Phone} label="Telefone" value={lead.telefone} />
-                        <InfoRow icon={MapPin} label="Endereço" value={lead.endereco} />
-                        <InfoRow icon={MapPin} label="CEP" value={lead.cep} />
-                      </>
-                    ) : (
-                      <>
-                        <InfoRow icon={User} label="Nome" value={lead.nome} />
-                        <InfoRow icon={Mail} label="Email" value={lead.email || "Não informado"} />
-                        <InfoRow icon={Phone} label="Telefone" value={lead.telefone} />
-                        <InfoRow icon={Tag} label="Status" value={lead.status === "novo" ? "Novo" : lead.status} />
-                        <InfoRow icon={User} label="Corretor" value={lead.corretor_responsavel || "Não atribuído"} />
-                        <InfoRow icon={Calendar} label="Criado em" value={lead.created_at} />
-                        <InfoRow icon={Clock} label="Atualizado em" value={lead.updated_at || lead.created_at} />
-                        {lead.observacoes && <InfoRow icon={FileText} label="Observações" value={lead.observacoes} />}
-                      </>
-                    )}
+                    <InfoRow icon={User} label="Nome" value={lead.nome} />
+                    <InfoRow icon={FileText} label="CPF" value={lead.cpf} />
+                    <InfoRow icon={Phone} label="Telefone" value={lead.telefone} />
+                    <InfoRow icon={MapPin} label="Endereço" value={lead.endereco} />
+                    <InfoRow icon={MapPin} label="CEP" value={lead.cep} />
                   </>
                 )}
               </div>
@@ -463,6 +448,7 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
                 <InfoRow icon={Tag} label="Origem" value={lead.origem} />
                 <InfoRow icon={User} label="Corretor" value={lead.corretor_responsavel} />
                 <InfoRow icon={Calendar} label="Criado em" value={lead.created_at} />
+                <InfoRow icon={Calendar} label="Atualizado em" value={lead.updated_at} />
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs border-info text-info">{lead.status === "novo" ? "Novo" : lead.status}</Badge>
                 </div>

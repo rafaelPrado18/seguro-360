@@ -288,7 +288,7 @@ const Leads = () => {
       .replace(/\{\{corretor\}\}/g, lead.corretor_responsavel || "Corretor")
       .replace(/\{\{telefone\}\}/g, lead.telefone)
       .replace(/\{\{email\}\}/g, lead.email)
-      .replace(/\{\{valor_premio\}\}/g, `R$ ${lead.valor_estimado.toLocaleString()}`)
+      .replace(/\{\{valor_premio\}\}/g, `R$ ${lead.valor_estimado}`)
       .replace(/\{\{seguradora\}\}/g, "Seguradora")
       .replace(/\{\{link_proposta\}\}/g, "https://...")
       .replace(/\{\{numero_apolice\}\}/g, "#...")
@@ -655,7 +655,7 @@ const Leads = () => {
                             {l.corretor_responsavel || <span className="text-muted-foreground italic text-xs">Não atribuído</span>}
                           </td>
                         )}
-                        <td className="px-4 py-3 text-right font-semibold">R$ {l.valor_estimado.toLocaleString()}</td>
+                        <td className="px-4 py-3 text-right font-semibold">R$ {l.valor_estimado}</td>
                         <td className="px-4 py-3 text-center">
                           <Badge variant={l.status === "novo" ? "default" : "outline"} className={`text-[10px] ${statusColors[l.status]}`}>
                             {statusLabels[l.status]}

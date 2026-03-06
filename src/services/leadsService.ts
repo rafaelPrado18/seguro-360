@@ -224,15 +224,12 @@ export const leadsService = {
 
   // POST /v1/create/lead/history - Criar entrada no histórico do lead
   async createLeadHistory(data: {
-    leadEmail: string;
+    leadId: string;
     historyType: string;
     textContent: string;
-    consultantEmail: string;
-    fileType?: string;
-    fileName?: string;
-    fileContent?: string;
+    profile: string;
   }): Promise<unknown> {
-    const response = await fetch(`${BASE_URL}/v1/create/lead/history`, {
+    const response = await fetch(`${BASE_URL}/v1/create/lead/history/note`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
