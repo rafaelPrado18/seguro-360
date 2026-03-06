@@ -129,10 +129,8 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                       <p className="text-[11px] text-muted-foreground mt-0.5">{lead.ramo_interesse ?? "—"}</p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">{lead.created_at ?? "—"}</p>
                       <div className="flex items-center justify-between mt-2">
-                        <span className="text-xs font-bold text-foreground">R$ {(lead.valor_estimado ?? 0).toLocaleString()}</span>
-                        {lead.origem ? (
-                          <Badge variant="secondary" className="text-[9px]">{origemLabels[lead.origem] || lead.origem}</Badge>
-                        ) : null}
+                        <span className="text-xs font-medium text-foreground">{lead.placa || "Sem placa"}</span>
+                        <span className="text-[11px] text-muted-foreground">{lead.telefone || "Sem telefone"}</span>
                       </div>
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
                         <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">
@@ -201,8 +199,8 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-bold text-foreground">R$ {(lead.valor_estimado ?? 0).toLocaleString()}</p>
-                    <p className="text-[10px] text-muted-foreground">{lead.corretor_responsavel || "Sem corretor"}</p>
+                    <p className="text-sm font-medium text-foreground">{lead.placa || "Sem placa"}</p>
+                    <p className="text-[10px] text-muted-foreground">{lead.telefone || "Sem telefone"}</p>
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
                     {lead.telefone && (
