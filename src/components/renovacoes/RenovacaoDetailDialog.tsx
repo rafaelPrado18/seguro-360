@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Car, Save, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
+import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
 
 export interface Veiculo {
   id: string;
@@ -45,7 +46,8 @@ interface RenovacaoDetailDialogProps {
 
 export function RenovacaoDetailDialog({ open, onOpenChange, renovacao, onSave }: RenovacaoDetailDialogProps) {
   const [form, setForm] = useState<RenovacaoData | null>(null);
-
+  const [arquivoApolice, setArquivoApolice] = useState<File | null>(null);
+  const [arquivoProposta, setArquivoProposta] = useState<File | null>(null);
   useEffect(() => {
     if (renovacao) setForm({ ...renovacao, veiculos: renovacao.veiculos.map(v => ({ ...v })) });
   }, [renovacao]);
@@ -211,6 +213,15 @@ export function RenovacaoDetailDialog({ open, onOpenChange, renovacao, onSave }:
               </div>
             ))}
           </div>
+
+          <Separator />
+
+          <DocumentUploadSection
+            arquivoApolice={arquivoApolice}
+            setArquivoApolice={setArquivoApolice}
+            arquivoProposta={arquivoProposta}
+            setArquivoProposta={setArquivoProposta}
+          />
         </div>
 
         <DialogFooter>
