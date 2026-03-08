@@ -184,6 +184,7 @@ const WhatsAppInstancias = () => {
   const handleReconnect = (id: string) => {
     setShowQr(id);
     setInstances(prev => prev.map(i => i.id === id ? { ...i, status: "aguardando_qr" as const } : i));
+    fetchQrCode(id);
   };
 
   const handleSimulateConnect = (id: string) => {
