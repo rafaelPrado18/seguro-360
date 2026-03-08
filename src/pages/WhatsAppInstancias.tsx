@@ -188,13 +188,45 @@ const WhatsAppInstancias = () => {
     fetchQrCode(id);
   };
 
-  const handleSimulateConnect = (id: string) => {
-    setInstances(prev => prev.map(i => i.id === id ? {
-      ...i, status: "conectado" as const, ultimaConexao: new Date().toISOString(),
-    } : i));
-    setShowQr(null);
-    toast.success("WhatsApp conectado com sucesso!");
+  const fetchInstanceStatus = async (instanceId: string) => {
+    try {
+      const res = await fetch("http://173.249.50.11:80/v1/get/whatsapp/instance/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ instanceId }),
+      });
+      if (!res.ok) throw new Error("Erro ao consultar status");
+      const result = await res.json();
+      const isConnected = result?.status === "connected" || result?.connected === true;
+      setInstances(prev => prev.map(i => i.id === instanceId ? {
+        ...i,
+        status: isConnected ? "conectado" as const : "desconectado" as const,
+        ...(isConnected ? { ultimaConexao: new Date().toISOString() } : {}),
+      } : i));
+      if (isConnected && showQr === instanceId) {
+        setShowQr(null);
+        toast.success("WhatsApp conectado com sucesso!");
+      }
+      return isConnected;
+    } catch (err) {
+      console.error("Erro ao verificar status:", err);
+      return false;
+    }
   };
+
+  // Poll status while QR dialog is open
+  React.useEffect(() => {
+    if (!showQr) return;
+    const interval = setInterval(() => {
+      fetchInstanceStatus(showQr);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [showQr]);
+
+  // Check status of all instances on mount
+  React.useEffect(() => {
+    instances.forEach(inst => fetchInstanceStatus(inst.id));
+  }, []);
 
   const handleToggleAutoReply = (id: string, checked: boolean) => {
     setInstances(prev => prev.map(i => i.id === id ? { ...i, autoReply: checked } : i));
