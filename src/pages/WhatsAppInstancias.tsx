@@ -126,6 +126,32 @@ const WhatsAppInstancias = () => {
   const [showQr, setShowQr] = useState<string | null>(null);
   const [newDialogOpen, setNewDialogOpen] = useState(false);
   const [newForm, setNewForm] = useState({ nome: "", telefone: "", corretores: [] as string[] });
+  const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
+
+  const fetchQrCode = async (instanceId: string) => {
+    setQrLoading(true);
+    setQrImageUrl(null);
+    try {
+      const res = await fetch("http://173.249.50.11:80/v1/generate/qrcode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "messageid": "B54138D599A320CB2102D10C",
+        },
+        body: JSON.stringify({ instanceId }),
+      });
+      if (!res.ok) throw new Error("Falha ao gerar QR Code");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      setQrImageUrl(url);
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao gerar QR Code");
+    } finally {
+      setQrLoading(false);
+    }
+  };
 
   const handleCreate = () => {
     if (!newForm.nome.trim() || newForm.corretores.length === 0) {
