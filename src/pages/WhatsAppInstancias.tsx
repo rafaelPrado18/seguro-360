@@ -197,7 +197,7 @@ const WhatsAppInstancias = () => {
       });
       if (!res.ok) throw new Error("Erro ao consultar status");
       const result = await res.json();
-      const isConnected = result?.status === "connected" || result?.connected === true;
+      const isConnected = result?.success?.connected === true;
       setInstances(prev => prev.map(i => i.id === instanceId ? {
         ...i,
         status: isConnected ? "conectado" as const : "desconectado" as const,
