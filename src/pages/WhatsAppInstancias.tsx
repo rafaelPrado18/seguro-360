@@ -126,6 +126,32 @@ const WhatsAppInstancias = () => {
   const [showQr, setShowQr] = useState<string | null>(null);
   const [newDialogOpen, setNewDialogOpen] = useState(false);
   const [newForm, setNewForm] = useState({ nome: "", telefone: "", corretores: [] as string[] });
+  const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
+
+  const fetchQrCode = async (instanceId: string) => {
+    setQrLoading(true);
+    setQrImageUrl(null);
+    try {
+      const res = await fetch("http://173.249.50.11:80/v1/generate/qrcode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "messageid": "B54138D599A320CB2102D10C",
+        },
+        body: JSON.stringify({ instanceId }),
+      });
+      if (!res.ok) throw new Error("Falha ao gerar QR Code");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      setQrImageUrl(url);
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao gerar QR Code");
+    } finally {
+      setQrLoading(false);
+    }
+  };
 
   const handleCreate = () => {
     if (!newForm.nome.trim() || newForm.corretores.length === 0) {
@@ -146,6 +172,7 @@ const WhatsAppInstancias = () => {
     setNewDialogOpen(false);
     setNewForm({ nome: "", telefone: "", corretores: [] });
     setShowQr(inst.id);
+    fetchQrCode(inst.id);
     toast.success("Instância criada! Escaneie o QR Code para conectar.");
   };
 
@@ -158,6 +185,7 @@ const WhatsAppInstancias = () => {
   const handleReconnect = (id: string) => {
     setShowQr(id);
     setInstances(prev => prev.map(i => i.id === id ? { ...i, status: "aguardando_qr" as const } : i));
+    fetchQrCode(id);
   };
 
   const handleSimulateConnect = (id: string) => {
@@ -318,7 +346,7 @@ const WhatsAppInstancias = () => {
                         <RefreshCw className="h-3 w-3" /> Reconectar
                       </Button>
                     ) : (
-                      <Button size="sm" className="flex-1 h-8 text-xs gap-1.5 bg-success text-success-foreground hover:bg-success/90" onClick={() => setShowQr(inst.id)}>
+                      <Button size="sm" className="flex-1 h-8 text-xs gap-1.5 bg-success text-success-foreground hover:bg-success/90" onClick={() => { setShowQr(inst.id); fetchQrCode(inst.id); }}>
                         <QrCode className="h-3 w-3" /> Conectar
                       </Button>
                     )}
@@ -336,7 +364,7 @@ const WhatsAppInstancias = () => {
         </div>
 
         {/* QR Code Dialog */}
-        <Dialog open={!!showQr} onOpenChange={o => { if (!o) setShowQr(null); }}>
+        <Dialog open={!!showQr} onOpenChange={o => { if (!o) { setShowQr(null); if (qrImageUrl) { URL.revokeObjectURL(qrImageUrl); setQrImageUrl(null); } } }}>
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-base">
@@ -344,15 +372,14 @@ const WhatsAppInstancias = () => {
               </DialogTitle>
             </DialogHeader>
             <div className="flex flex-col items-center gap-4 py-4">
-              <div className="w-56 h-56 bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center">
-                <div className="grid grid-cols-8 gap-0.5 p-4">
-                  {Array.from({ length: 64 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`h-4 w-4 rounded-sm ${Math.random() > 0.4 ? "bg-foreground" : "bg-background"}`}
-                    />
-                  ))}
-                </div>
+              <div className="w-56 h-56 bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center overflow-hidden">
+                {qrLoading ? (
+                  <RefreshCw className="h-8 w-8 text-muted-foreground animate-spin" />
+                ) : qrImageUrl ? (
+                  <img src={qrImageUrl} alt="QR Code WhatsApp" className="w-full h-full object-contain" />
+                ) : (
+                  <p className="text-xs text-muted-foreground">Erro ao carregar QR</p>
+                )}
               </div>
               <div className="text-center space-y-1">
                 <p className="text-sm font-medium text-foreground">Escaneie o QR Code</p>
@@ -361,10 +388,12 @@ const WhatsAppInstancias = () => {
                 </p>
               </div>
               <Button
-                className="w-full bg-success text-success-foreground hover:bg-success/90 gap-2"
-                onClick={() => showQr && handleSimulateConnect(showQr)}
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => showQr && fetchQrCode(showQr)}
+                disabled={qrLoading}
               >
-                <CheckCircle2 className="h-4 w-4" /> Simular Conexão
+                <RefreshCw className={`h-4 w-4 ${qrLoading ? "animate-spin" : ""}`} /> Gerar Novo QR
               </Button>
             </div>
           </DialogContent>
