@@ -363,7 +363,7 @@ const WhatsAppInstancias = () => {
         </div>
 
         {/* QR Code Dialog */}
-        <Dialog open={!!showQr} onOpenChange={o => { if (!o) setShowQr(null); }}>
+        <Dialog open={!!showQr} onOpenChange={o => { if (!o) { setShowQr(null); if (qrImageUrl) { URL.revokeObjectURL(qrImageUrl); setQrImageUrl(null); } } }}>
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-base">
@@ -371,15 +371,14 @@ const WhatsAppInstancias = () => {
               </DialogTitle>
             </DialogHeader>
             <div className="flex flex-col items-center gap-4 py-4">
-              <div className="w-56 h-56 bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center">
-                <div className="grid grid-cols-8 gap-0.5 p-4">
-                  {Array.from({ length: 64 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`h-4 w-4 rounded-sm ${Math.random() > 0.4 ? "bg-foreground" : "bg-background"}`}
-                    />
-                  ))}
-                </div>
+              <div className="w-56 h-56 bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center overflow-hidden">
+                {qrLoading ? (
+                  <RefreshCw className="h-8 w-8 text-muted-foreground animate-spin" />
+                ) : qrImageUrl ? (
+                  <img src={qrImageUrl} alt="QR Code WhatsApp" className="w-full h-full object-contain" />
+                ) : (
+                  <p className="text-xs text-muted-foreground">Erro ao carregar QR</p>
+                )}
               </div>
               <div className="text-center space-y-1">
                 <p className="text-sm font-medium text-foreground">Escaneie o QR Code</p>
@@ -388,10 +387,12 @@ const WhatsAppInstancias = () => {
                 </p>
               </div>
               <Button
-                className="w-full bg-success text-success-foreground hover:bg-success/90 gap-2"
-                onClick={() => showQr && handleSimulateConnect(showQr)}
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => showQr && fetchQrCode(showQr)}
+                disabled={qrLoading}
               >
-                <CheckCircle2 className="h-4 w-4" /> Simular Conexão
+                <RefreshCw className={`h-4 w-4 ${qrLoading ? "animate-spin" : ""}`} /> Gerar Novo QR
               </Button>
             </div>
           </DialogContent>
