@@ -35,24 +35,6 @@ interface WhatsAppInstance {
 
 // corretores will be loaded from API inside the component
 
-const initialInstances: WhatsAppInstance[] = [
-  {
-    id: "4T2BZ0-K9KHOZ-2DC2TQ", nome: "Linha Principal", telefone: "(11) 99900-0001",
-    corretores: ["corretor-novo-1", "corretor-renov-1"],
-    status: "conectado", ultimaConexao: "2026-02-12T14:30:00Z", mensagensHoje: 47, autoReply: true,
-  },
-  {
-    id: "4T2BZ0-K9KHOZ-2DC2TQ", nome: "Renovações", telefone: "(11) 99900-0002",
-    corretores: ["corretor-renov-1"],
-    status: "desconectado", ultimaConexao: "2026-02-11T18:00:00Z", mensagensHoje: 0, autoReply: false,
-  },
-  {
-    id: "4T2BZ0-K9KHOZ-2DC2TQ", nome: "Sinistros", telefone: "(11) 99900-0003",
-    corretores: ["corretor-sin-1"],
-    status: "aguardando_qr", ultimaConexao: "", mensagensHoje: 0, autoReply: false,
-  },
-];
-
 const statusConfig = {
   conectado: { label: "Conectado", color: "border-success text-success", icon: CheckCircle2, iconColor: "text-success" },
   desconectado: { label: "Desconectado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
@@ -121,7 +103,8 @@ const WhatsAppInstancias = () => {
     if (!agents) return [];
     return agents.filter(a => a.isActive).map(a => ({ id: a.agentId, nome: a.name }));
   }, [agents]);
-  const [instances, setInstances] = useState<WhatsAppInstance[]>(initialInstances);
+  const [instances, setInstances] = useState<WhatsAppInstance[]>([]);
+  const [loadingInstances, setLoadingInstances] = useState(true);
   const [selectedInstance, setSelectedInstance] = useState<WhatsAppInstance | null>(null);
   const [showQr, setShowQr] = useState<string | null>(null);
   const [newDialogOpen, setNewDialogOpen] = useState(false);
@@ -223,9 +206,37 @@ const WhatsAppInstancias = () => {
     return () => clearInterval(interval);
   }, [showQr]);
 
-  // Check status of all instances on mount
+  // Fetch instances from API on mount
   React.useEffect(() => {
-    instances.forEach(inst => fetchInstanceStatus(inst.id));
+    const fetchInstances = async () => {
+      try {
+        setLoadingInstances(true);
+        const res = await fetch("http://173.249.50.11/v1/whatsapp/instances", {
+          method: "GET",
+          headers: { "orchestrator": "minha-orquestradora" },
+        });
+        if (!res.ok) throw new Error("Erro ao buscar instâncias");
+        const result = await res.json();
+        if (result?.status === "success" && Array.isArray(result.data)) {
+          setInstances(result.data.map((item: any) => ({
+            id: item.id,
+            nome: item.nome,
+            telefone: item.telefone,
+            corretores: item.corretores || [],
+            status: item.status === "conectado" ? "conectado" as const : "desconectado" as const,
+            ultimaConexao: item.ultimaConexao || "",
+            mensagensHoje: item.mensagensHoje || 0,
+            autoReply: item.autoReply ?? false,
+          })));
+        }
+      } catch (err) {
+        console.error("Erro ao buscar instâncias:", err);
+        toast.error("Erro ao carregar instâncias");
+      } finally {
+        setLoadingInstances(false);
+      }
+    };
+    fetchInstances();
   }, []);
 
   const handleToggleAutoReply = (id: string, checked: boolean) => {
