@@ -172,6 +172,7 @@ const WhatsAppInstancias = () => {
     setNewDialogOpen(false);
     setNewForm({ nome: "", telefone: "", corretores: [] });
     setShowQr(inst.id);
+    fetchQrCode(inst.id);
     toast.success("Instância criada! Escaneie o QR Code para conectar.");
   };
 
