@@ -345,7 +345,7 @@ const WhatsAppInstancias = () => {
                         <RefreshCw className="h-3 w-3" /> Reconectar
                       </Button>
                     ) : (
-                      <Button size="sm" className="flex-1 h-8 text-xs gap-1.5 bg-success text-success-foreground hover:bg-success/90" onClick={() => setShowQr(inst.id)}>
+                      <Button size="sm" className="flex-1 h-8 text-xs gap-1.5 bg-success text-success-foreground hover:bg-success/90" onClick={() => { setShowQr(inst.id); fetchQrCode(inst.id); }}>
                         <QrCode className="h-3 w-3" /> Conectar
                       </Button>
                     )}
