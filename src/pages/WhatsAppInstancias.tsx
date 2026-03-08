@@ -103,7 +103,8 @@ const WhatsAppInstancias = () => {
     if (!agents) return [];
     return agents.filter(a => a.isActive).map(a => ({ id: a.agentId, nome: a.name }));
   }, [agents]);
-  const [instances, setInstances] = useState<WhatsAppInstance[]>(initialInstances);
+  const [instances, setInstances] = useState<WhatsAppInstance[]>([]);
+  const [loadingInstances, setLoadingInstances] = useState(true);
   const [selectedInstance, setSelectedInstance] = useState<WhatsAppInstance | null>(null);
   const [showQr, setShowQr] = useState<string | null>(null);
   const [newDialogOpen, setNewDialogOpen] = useState(false);
