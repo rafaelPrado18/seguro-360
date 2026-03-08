@@ -236,7 +236,7 @@ export const leadsService = {
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error("Erro ao criar histórico do lead");
-    return response.json();
+    return ;
   },
 
   // POST /v1/create/lead/history/file - Upload de arquivo no histórico do lead

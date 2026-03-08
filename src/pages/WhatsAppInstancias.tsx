@@ -37,17 +37,17 @@ interface WhatsAppInstance {
 
 const initialInstances: WhatsAppInstance[] = [
   {
-    id: "inst-1", nome: "Linha Principal", telefone: "(11) 99900-0001",
+    id: "4T2BZ0-K9KHOZ-2DC2TQ", nome: "Linha Principal", telefone: "(11) 99900-0001",
     corretores: ["corretor-novo-1", "corretor-renov-1"],
     status: "conectado", ultimaConexao: "2026-02-12T14:30:00Z", mensagensHoje: 47, autoReply: true,
   },
   {
-    id: "inst-2", nome: "Renovações", telefone: "(11) 99900-0002",
+    id: "4T2BZ0-K9KHOZ-2DC2TQ", nome: "Renovações", telefone: "(11) 99900-0002",
     corretores: ["corretor-renov-1"],
     status: "desconectado", ultimaConexao: "2026-02-11T18:00:00Z", mensagensHoje: 0, autoReply: false,
   },
   {
-    id: "inst-3", nome: "Sinistros", telefone: "(11) 99900-0003",
+    id: "4T2BZ0-K9KHOZ-2DC2TQ", nome: "Sinistros", telefone: "(11) 99900-0003",
     corretores: ["corretor-sin-1"],
     status: "aguardando_qr", ultimaConexao: "", mensagensHoje: 0, autoReply: false,
   },
