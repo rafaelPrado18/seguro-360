@@ -206,9 +206,37 @@ const WhatsAppInstancias = () => {
     return () => clearInterval(interval);
   }, [showQr]);
 
-  // Check status of all instances on mount
+  // Fetch instances from API on mount
   React.useEffect(() => {
-    instances.forEach(inst => fetchInstanceStatus(inst.id));
+    const fetchInstances = async () => {
+      try {
+        setLoadingInstances(true);
+        const res = await fetch("http://173.249.50.11/v1/whatsapp/instances", {
+          method: "GET",
+          headers: { "orchestrator": "minha-orquestradora" },
+        });
+        if (!res.ok) throw new Error("Erro ao buscar instâncias");
+        const result = await res.json();
+        if (result?.status === "success" && Array.isArray(result.data)) {
+          setInstances(result.data.map((item: any) => ({
+            id: item.id,
+            nome: item.nome,
+            telefone: item.telefone,
+            corretores: item.corretores || [],
+            status: item.status === "conectado" ? "conectado" as const : "desconectado" as const,
+            ultimaConexao: item.ultimaConexao || "",
+            mensagensHoje: item.mensagensHoje || 0,
+            autoReply: item.autoReply ?? false,
+          })));
+        }
+      } catch (err) {
+        console.error("Erro ao buscar instâncias:", err);
+        toast.error("Erro ao carregar instâncias");
+      } finally {
+        setLoadingInstances(false);
+      }
+    };
+    fetchInstances();
   }, []);
 
   const handleToggleAutoReply = (id: string, checked: boolean) => {
