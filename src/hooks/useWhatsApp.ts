@@ -53,7 +53,7 @@ export function useSendWhatsAppMessage() {
 export function useSendWhatsAppMedia() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: { userId: string; chatId: string; tipo: "image" | "document" | "audio"; file: File; caption?: string }) =>
+    mutationFn: (payload: { userId: string; chatId: string; tipo: "image" | "document" | "audio"; file: File; caption?: string; instanceId?: string }) =>
       whatsappService.sendMedia(payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["whatsapp", "messages"] });

@@ -45,6 +45,7 @@ export interface SendMessagePayload {
   tipo: WhatsAppMessage["tipo"];
   userId: string;
   message: string;
+  instanceId?: string;
   media_url?: string;
   template_id?: string;
   template_vars?: Record<string, string>;
@@ -102,6 +103,7 @@ export const whatsappService = {
       userId: payload.userId,
       chatId: payload.chatId,
       message: payload.message,
+      ...(payload.instanceId ? { instanceId: payload.instanceId } : {}),
     });
 
     const response = await fetch(`${BASE_URL}/v1/send/message`, {
@@ -125,6 +127,7 @@ export const whatsappService = {
     tipo: "image" | "document" | "audio";
     file: File;
     caption?: string;
+    instanceId?: string;
   }): Promise<void> {
     const fileTypeMap: Record<string, string> = {
       image: "image",
@@ -140,6 +143,7 @@ export const whatsappService = {
     formdata.append("fileType", fileTypeMap[payload.tipo]);
     formdata.append("userId", payload.userId);
     formdata.append("chatId", payload.chatId);
+    if (payload.instanceId) formdata.append("instanceId", payload.instanceId);
 
     const response = await fetch(`${BASE_URL}/v1/send/media`, {
       method: "POST",
