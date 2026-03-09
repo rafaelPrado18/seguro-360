@@ -103,6 +103,7 @@ export const whatsappService = {
       userId: payload.userId,
       chatId: payload.chatId,
       message: payload.message,
+      ...(payload.instanceId ? { instanceId: payload.instanceId } : {}),
     });
 
     const response = await fetch(`${BASE_URL}/v1/send/message`, {
