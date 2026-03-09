@@ -271,7 +271,7 @@ const WhatsApp = () => {
     setMessageInput("");
 
     sendMessageMutation.mutate(
-      { chatId, tipo: "text", userId, message: text },
+      { chatId, tipo: "text", userId, message: text, ...(instanceId ? { instanceId } : {}) },
       {
         onError: () => {
           toast({ title: "Erro", description: "Falha ao enviar mensagem", variant: "destructive" });
