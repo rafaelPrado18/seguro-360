@@ -45,6 +45,7 @@ export interface SendMessagePayload {
   tipo: WhatsAppMessage["tipo"];
   userId: string;
   message: string;
+  instanceId?: string;
   media_url?: string;
   template_id?: string;
   template_vars?: Record<string, string>;
