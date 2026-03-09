@@ -364,7 +364,7 @@ const WhatsApp = () => {
       const tipo = isImage ? "image" : isAudio ? "audio" : "document";
 
       sendMediaMutation.mutate(
-        { userId, chatId, tipo, file, caption: file.name },
+        { userId, chatId, tipo, file, caption: file.name, ...(instanceId ? { instanceId } : {}) },
         {
           onSuccess: () => {
             toast({ title: `${isImage ? "Foto" : isAudio ? "Áudio" : "Documento"} enviado`, description: file.name });
