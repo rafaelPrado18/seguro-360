@@ -164,6 +164,37 @@ const WhatsApp = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isAdmin, currentUser } = useRole();
 
+  // --- Fetch instanceId from API based on current user ---
+  const [instanceId, setInstanceId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchInstances = async () => {
+      try {
+        const res = await fetch("http://173.249.50.11/v1/whatsapp/instances", {
+          method: "GET",
+          headers: { "orchestrator": "minha-orquestradora" },
+        });
+        const result = await res.json();
+        if (result?.status === "success" && Array.isArray(result.data)) {
+          const match = result.data.find((inst: any) =>
+            Array.isArray(inst.corretores) && inst.corretores.some((c: string) =>
+              c.toLowerCase() === currentUser.nome.toLowerCase()
+            )
+          );
+          if (match) {
+            setInstanceId(match.id);
+          } else if (result.data.length > 0) {
+            // Fallback: use first instance
+            setInstanceId(result.data[0].id);
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao buscar instâncias WhatsApp:", err);
+      }
+    };
+    fetchInstances();
+  }, [currentUser.nome]);
+
   // API hooks
   const { data: conversationsData, isLoading: loadingConversations } = useWhatsAppConversations(currentUser.nome);
   const { data: messagesData, isLoading: loadingMessages } = useWhatsAppMessages(`${selectedContact?.telefone}@c.us` || null, currentUser.nome);
