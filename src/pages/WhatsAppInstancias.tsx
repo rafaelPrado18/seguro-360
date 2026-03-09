@@ -247,8 +247,12 @@ const WhatsAppInstancias = () => {
     setInstances(prev => prev.map(i => i.id === id ? { ...i, corretores: corretorIds } : i));
   };
 
-  const getCorretorNomes = (ids: string[]) =>
-    ids.map(id => corretores.find(c => c.id === id)?.nome).filter(Boolean);
+  const getCorretorNomes = (values: string[]) =>
+    values.map(v => {
+      const byId = corretores.find(c => c.id === v);
+      if (byId) return byId.nome;
+      return v; // API already returns names
+    }).filter(Boolean);
 
   return (
     <AppLayout>
