@@ -127,6 +127,7 @@ export const whatsappService = {
     tipo: "image" | "document" | "audio";
     file: File;
     caption?: string;
+    instanceId?: string;
   }): Promise<void> {
     const fileTypeMap: Record<string, string> = {
       image: "image",
