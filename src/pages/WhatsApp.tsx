@@ -288,7 +288,7 @@ const WhatsApp = () => {
     // Reset status to sending
     setOptimisticMsgs(prev => prev.map(m => m.id === msg.id ? { ...m, status: "enviada" } : m));
     sendMessageMutation.mutate(
-      { chatId, tipo: "text", userId, message: msg.conteudo },
+      { chatId, tipo: "text", userId, message: msg.conteudo, ...(instanceId ? { instanceId } : {}) },
       {
         onSuccess: () => {
           setOptimisticMsgs(prev => prev.filter(m => m.id !== msg.id));
