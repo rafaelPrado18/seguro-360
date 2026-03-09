@@ -143,6 +143,7 @@ export const whatsappService = {
     formdata.append("fileType", fileTypeMap[payload.tipo]);
     formdata.append("userId", payload.userId);
     formdata.append("chatId", payload.chatId);
+    if (payload.instanceId) formdata.append("instanceId", payload.instanceId);
 
     const response = await fetch(`${BASE_URL}/v1/send/media`, {
       method: "POST",
