@@ -388,11 +388,7 @@ const WhatsAppInstancias = () => {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2">
-                    {inst.status === "conectado" ? (
-                      <Button variant="outline" size="sm" className="flex-1 h-8 text-xs gap-1.5" onClick={() => handleReconnect(inst.id)}>
-                        <RefreshCw className="h-3 w-3" /> Reconectar
-                      </Button>
-                    ) : (
+                    {inst.status !== "conectado" && (
                       <Button size="sm" className="flex-1 h-8 text-xs gap-1.5 bg-success text-success-foreground hover:bg-success/90" onClick={() => { setShowQr(inst.id); fetchQrCode(inst.id); }}>
                         <QrCode className="h-3 w-3" /> Conectar
                       </Button>
