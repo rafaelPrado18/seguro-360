@@ -427,7 +427,7 @@ const WhatsApp = () => {
           const chatId = rawPhone.includes("@") ? rawPhone : `${rawPhone}@c.us`;
 
           sendMediaMutation.mutate(
-            { userId, chatId, tipo: "audio", file },
+            { userId, chatId, tipo: "audio", file, ...(instanceId ? { instanceId } : {}) },
             {
               onSuccess: () => toast({ title: "Áudio enviado", description: `Duração: ${recordingTime}s` }),
               onError: () => toast({ title: "Erro", description: "Falha ao enviar áudio", variant: "destructive" }),
