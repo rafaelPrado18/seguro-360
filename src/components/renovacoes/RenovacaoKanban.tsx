@@ -177,7 +177,7 @@ export function RenovacaoKanban({ renovacoes, columns, onStatusChange, onItemCli
               <Badge variant="secondary" className="ml-1">{expandedItems.length} renovações</Badge>
             </DialogTitle>
           </DialogHeader>
-          <ScrollArea className="flex-1 -mx-6 px-6">
+          <ScrollArea className="h-[calc(80vh-120px)] -mx-6 px-6">
             <div className="space-y-2">
               {expandedItems.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-8">Nenhuma renovação neste status</p>

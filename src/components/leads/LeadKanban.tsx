@@ -170,7 +170,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
               <Badge variant="secondary" className="ml-1">{expandedLeads.length} leads</Badge>
             </DialogTitle>
           </DialogHeader>
-          <ScrollArea className="flex-1 -mx-6 px-6">
+          <ScrollArea className="h-[calc(80vh-120px)] -mx-6 px-6">
             <div className="space-y-2">
               {expandedLeads.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-8">Nenhum lead neste status</p>
