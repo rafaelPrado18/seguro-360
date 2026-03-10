@@ -226,6 +226,7 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
             veiculo_codigo_fipe: v.veiculo_codigo_fipe || "",
             veiculo_zero_km: v.veiculo_zero_km || "Não",
             veiculo_utilizacao: v.veiculo_utilizacao || "",
+            numero_apolice: v.numero_apolice || "",
           })),
       financial_data: data.vehicles.map(v => ({
             premio_total: v.premio_total || "",
