@@ -391,6 +391,19 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
 
                   {/* ── Tab: Veículos e Apólices ── */}
                   <TabsContent value="veiculos" className="space-y-4 pb-4 mt-0">
+                    {/* Document Upload */}
+                    <div className="rounded-lg border border-dashed border-border bg-muted/20 p-3">
+                      <DocumentUploadSection
+                        arquivoApolice={arquivoApolice}
+                        setArquivoApolice={setArquivoApolice}
+                        arquivoProposta={arquivoProposta}
+                        setArquivoProposta={setArquivoProposta}
+                        onDocumentAnalyzed={handleDocumentAnalyzed}
+                        leadId={editClient?.lead_id}
+                      />
+                    </div>
+
+                    <Separator />
                     {/* Vehicle selector tabs */}
                     <div className="flex items-center gap-2 flex-wrap">
                       {fields.map((field, index) => (
