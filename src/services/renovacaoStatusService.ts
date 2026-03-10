@@ -19,24 +19,22 @@ export const renovacaoStatusService = {
     return response.json();
   },
 
-  async createStatus(data: Omit<RenovacaoStatus, "id">): Promise<RenovacaoStatus> {
+  async createStatus(data: Omit<RenovacaoStatus, "id">): Promise<void> {
     const response = await fetch(`${BASE_URL}/v1/create/renovacao/status`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error("Erro ao criar status de renovação");
-    return response.json();
   },
 
-  async updateStatus(id: string, data: Partial<RenovacaoStatus>): Promise<RenovacaoStatus> {
+  async updateStatus(id: string, data: Partial<RenovacaoStatus>): Promise<void> {
     const response = await fetch(`${BASE_URL}/v1/update/renovacao/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ statusId: id, ...data }),
     });
     if (!response.ok) throw new Error("Erro ao atualizar status de renovação");
-    return response.json();
   },
 
   async deleteStatus(id: string): Promise<void> {
