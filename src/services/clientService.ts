@@ -215,6 +215,27 @@ export function buildClientPayload(
   };
 }
 
+export interface ClientUpdatePayload {
+  name?: string;
+  phone?: string;
+  email?: string;
+  birthDate?: string;
+  identificationId?: string;
+  branch?: string;
+  netPremium?: string;
+  cia?: string;
+  assignedConsultor?: string;
+  document?: string;
+  documentType?: string;
+  vehicle_data?: VehicleDataSingle[];
+  financial_data?: FinancialDataSingle[];
+}
+
+const HEADERS = {
+  "Content-Type": "application/json",
+  "orchestrator": "crm-hatanaka",
+};
+
 export const clientService = {
   async getClients(): Promise<Client[]> {
     const response = await fetch(`${BASE_URL}/v1/read/client`);
@@ -224,30 +245,39 @@ export const clientService = {
     return items.map(mapApiToClient);
   },
 
-  async createClient(payload: ClientCreatePayload): Promise<{ cliente_id: string }> {
+  async createClient(payload: ClientCreatePayload): Promise<void> {
+    const body = {
+      ...payload,
+      vehicle_data: Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data],
+      financial_data: Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data],
+    };
     const response = await fetch(`${BASE_URL}/v1/create/client`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      headers: HEADERS,
+      body: JSON.stringify(body),
     });
     if (!response.ok) throw new Error("Erro ao criar cliente");
-    return response.json();
   },
 
-  async updateClient(clienteId: string, payload: Partial<ClientCreatePayload>): Promise<unknown> {
+  async updateClient(clienteId: string, payload: ClientUpdatePayload): Promise<void> {
+    const body = {
+      id: clienteId,
+      ...payload,
+      vehicle_data: payload.vehicle_data ? (Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data]) : undefined,
+      financial_data: payload.financial_data ? (Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data]) : undefined,
+    };
     const response = await fetch(`${BASE_URL}/v1/update/client`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: clienteId, ...payload }),
+      headers: HEADERS,
+      body: JSON.stringify(body),
     });
     if (!response.ok) throw new Error("Erro ao atualizar cliente");
-    return response.json();
   },
 
   async deleteClient(clienteId: string): Promise<void> {
     const response = await fetch(`${BASE_URL}/v1/delete/client`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: HEADERS,
       body: JSON.stringify({ id: clienteId }),
     });
     if (!response.ok) throw new Error("Erro ao excluir cliente");
