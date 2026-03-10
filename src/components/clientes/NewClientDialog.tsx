@@ -84,6 +84,56 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
   const isPending = createMutation.isPending || updateMutation.isPending;
   const [activeTab, setActiveTab] = useState("dados");
   const [activeVehicle, setActiveVehicle] = useState(0);
+  const [arquivoApolice, setArquivoApolice] = useState<File | null>(null);
+  const [arquivoProposta, setArquivoProposta] = useState<File | null>(null);
+
+  const handleDocumentAnalyzed = useCallback((data: ExtractedDocumentData) => {
+    // Auto-fill the active vehicle with extracted data
+    const idx = activeVehicle;
+    const vehicleFields: Record<string, string> = {
+      veiculo_fabricante: data.veiculo_fabricante || "",
+      veiculo_modelo: data.veiculo_modelo || "",
+      veiculo_ano: data.veiculo_ano || "",
+      veiculo_placa: data.veiculo_placa || "",
+      veiculo_chassi: data.veiculo_chassi || "",
+      veiculo_combustivel: data.veiculo_combustivel || "",
+      veiculo_codigo_fipe: data.veiculo_codigo_fipe || "",
+      veiculo_zero_km: data.veiculo_zero_km || "Não",
+      veiculo_utilizacao: data.veiculo_utilizacao || "",
+      seguradora: data.seguradora || "",
+      premio_total: data.premio_total || "",
+      premio_liquido: data.premio_liquido || "",
+      parcelas: data.parcelas || "1",
+      valor_parcela: data.valor_parcela || "",
+      numero_proposta: data.numero_proposta || "",
+      numero_apolice: data.numero_apolice || "",
+      ci: data.ci || "",
+      vigencia_inicio: data.vigencia_inicio || "",
+      vigencia_fim: data.vigencia_fim || "",
+      comissao: data.comissao || "",
+      classe_bonus: data.classe_bonus || "",
+      iof: data.iof || "",
+      forma_pagamento: data.forma_pagamento || "",
+      franquia: data.franquia || "",
+    };
+    Object.entries(vehicleFields).forEach(([key, value]) => {
+      form.setValue(`vehicles.${idx}.${key}` as any, value);
+    });
+
+    // Also fill personal data if available and fields are empty
+    if (data.segurado_nome && !form.getValues("nome")) form.setValue("nome", data.segurado_nome);
+    if (data.segurado_cpf && !form.getValues("cpf")) form.setValue("cpf", data.segurado_cpf);
+    if (data.segurado_email && !form.getValues("email")) form.setValue("email", data.segurado_email);
+    if (data.segurado_telefone && !form.getValues("telefone")) form.setValue("telefone", data.segurado_telefone);
+    if (data.segurado_celular && !form.getValues("celular")) form.setValue("celular", data.segurado_celular);
+    if (data.segurado_endereco && !form.getValues("endereco")) form.setValue("endereco", data.segurado_endereco);
+    if (data.segurado_bairro && !form.getValues("bairro")) form.setValue("bairro", data.segurado_bairro);
+    if (data.segurado_cidade && !form.getValues("cidade")) form.setValue("cidade", data.segurado_cidade);
+    if (data.segurado_uf && !form.getValues("uf")) form.setValue("uf", data.segurado_uf);
+    if (data.segurado_cep && !form.getValues("cep")) form.setValue("cep", data.segurado_cep);
+
+    toast({ title: "Dados importados!", description: `Veículo ${idx + 1} preenchido com os dados do documento.` });
+  }, [activeVehicle, form]);
 
   const defaultValues: ClientFormData = {
     nome: "", cpf: "", telefone: "", celular: "", email: "",
