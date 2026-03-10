@@ -183,7 +183,7 @@ export function buildClientPayload(
       celular: data.segurado_celular,
       email: data.segurado_email,
     },
-    vehicle_data: {
+    vehicle_data: [{
       veiculo_fabricante: data.veiculo_fabricante,
       veiculo_modelo: data.veiculo_modelo,
       veiculo_ano: data.veiculo_ano,
@@ -193,8 +193,8 @@ export function buildClientPayload(
       veiculo_codigo_fipe: data.veiculo_codigo_fipe,
       veiculo_zero_km: data.veiculo_zero_km,
       veiculo_utilizacao: data.veiculo_utilizacao,
-    },
-    financial_data: {
+    }],
+    financial_data: [{
       premio_total: data.premio_total,
       premio_liquido: data.premio_liquido,
       parcelas: data.parcelas,
@@ -211,7 +211,7 @@ export function buildClientPayload(
       forma_pagamento: data.forma_pagamento,
       franquia: data.franquia,
       coberturas: data.coberturas,
-    },
+    }],
   };
 }
 
