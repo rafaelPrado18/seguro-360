@@ -27,7 +27,17 @@ export interface ClientCreatePayload {
     veiculo_codigo_fipe: string;
     veiculo_zero_km: string;
     veiculo_utilizacao: string;
-  };
+  } | Array<{
+    veiculo_fabricante: string;
+    veiculo_modelo: string;
+    veiculo_ano: string;
+    veiculo_placa: string;
+    veiculo_chassi: string;
+    veiculo_combustivel: string;
+    veiculo_codigo_fipe: string;
+    veiculo_zero_km: string;
+    veiculo_utilizacao: string;
+  }>;
   financial_data: {
     premio_total: string;
     premio_liquido: string;
@@ -45,7 +55,24 @@ export interface ClientCreatePayload {
     forma_pagamento: string;
     franquia: string;
     coberturas: Array<{ descricao: string; limite: string; premio: string }>;
-  };
+  } | Array<{
+    premio_total: string;
+    premio_liquido: string;
+    parcelas: string;
+    valor_parcela: string;
+    numero_proposta: string;
+    numero_apolice: string;
+    ci: string;
+    vigencia_inicio: string;
+    vigencia_fim: string;
+    seguradora: string;
+    comissao: string;
+    classe_bonus: string;
+    iof: string;
+    forma_pagamento: string;
+    franquia: string;
+    coberturas: Array<{ descricao: string; limite: string; premio: string }>;
+  }>;
 }
 
 export type VehicleData = ClientCreatePayload["vehicle_data"];
