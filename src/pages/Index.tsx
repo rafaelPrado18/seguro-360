@@ -35,14 +35,45 @@ function parseDateBR(dateStr: string): Date | null {
   return new Date(Number(year), Number(month) - 1, Number(day));
 }
 
-function isToday(dateStr: string): boolean {
-  if (!dateStr) return false;
-  // Try DD/MM/YYYY HH:mm:ss or DD/MM/YYYY
-  const match = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
-  if (!match) return false;
-  const d = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+function getNovosCutoff(): Date {
   const now = new Date();
-  return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon
+  if (dayOfWeek === 1) {
+    // Segunda-feira: desde sábado às 14h
+    const sat = new Date(now);
+    sat.setDate(sat.getDate() - 2);
+    sat.setHours(14, 0, 0, 0);
+    return sat;
+  } else {
+    // Outros dias: desde o dia anterior às 18h
+    const prev = new Date(now);
+    prev.setDate(prev.getDate() - 1);
+    prev.setHours(18, 0, 0, 0);
+    return prev;
+  }
+}
+
+function parseLeadDate(dateStr: string): Date | null {
+  if (!dateStr) return null;
+  // DD/MM/YYYY HH:mm:ss
+  const match = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/);
+  if (match) {
+    return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), Number(match[4]), Number(match[5]), Number(match[6]));
+  }
+  // DD/MM/YYYY only
+  const match2 = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (match2) {
+    return new Date(Number(match2[3]), Number(match2[2]) - 1, Number(match2[1]));
+  }
+  // ISO fallback
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function isNovo(dateStr: string): boolean {
+  const d = parseLeadDate(dateStr);
+  if (!d) return false;
+  return d >= getNovosCutoff();
 }
 
 const Dashboard = () => {
@@ -60,7 +91,7 @@ const Dashboard = () => {
   // Compute real lead summary
   const leadSummary = useMemo(() => {
     const leads = leadsResponse?.data || [];
-    const novosHoje = leads.filter(l => isToday(l.created_at)).length;
+    const novosHoje = leads.filter(l => isNovo(l.created_at)).length;
     const emAtendimento = leads.filter(l => l.status === "em_contato" || l.status === "qualificado").length;
     const aguardandoProposta = leads.filter(l => l.status === "proposta_enviada").length;
     const convertidos = leads.filter(l => l.status === "convertido").length;
