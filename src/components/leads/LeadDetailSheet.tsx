@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
-import { clientService, buildClientPayload } from "@/services/clientService";
+import { clientService, buildClientPayload, type ClientUpdatePayload } from "@/services/clientService";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

@@ -14,7 +14,7 @@ import { Plus, Trash2, Car, Loader2, User, Shield } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCreateClient, useUpdateClient } from "@/hooks/useClients";
-import type { Client } from "@/services/clientService";
+import type { Client, ClientUpdatePayload } from "@/services/clientService";
 import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
 import type { ExtractedDocumentData } from "@/services/documentAnalysisService";
 
