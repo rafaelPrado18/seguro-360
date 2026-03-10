@@ -7,7 +7,8 @@ export interface Cobertura {
 }
 
 export interface ApoliceAPI {
-  financial_data: {
+  id: string;
+  financial_data: Array<{
     premio_total: string;
     premio_liquido: string;
     parcelas: string;
@@ -24,8 +25,8 @@ export interface ApoliceAPI {
     forma_pagamento: string;
     franquia: string;
     coberturas: Cobertura[];
-  };
-  vehicle_data: {
+  }>;
+  vehicle_data: Array<{
     veiculo_fabricante: string;
     veiculo_modelo: string;
     veiculo_ano: string;
@@ -35,10 +36,21 @@ export interface ApoliceAPI {
     veiculo_codigo_fipe: string;
     veiculo_zero_km: string;
     veiculo_utilizacao: string;
-  };
+    numero_apolice?: string;
+  }>;
   customer_data: {
-    id: string | null;
+    lead_id?: string;
+    lead_status?: string;
     nome: string;
+    cpf?: string;
+    endereco?: string;
+    bairro?: string;
+    cidade?: string;
+    uf?: string;
+    cep?: string;
+    telefone?: string;
+    celular?: string;
+    email?: string;
   };
   created_at: string;
   updated_at: string | null;
@@ -86,43 +98,47 @@ function isVigente(fimStr: string): boolean {
   return fim >= new Date();
 }
 
-function formatApolice(raw: ApoliceAPI): ApoliceFormatted {
-  const f = raw.financial_data;
-  const v = raw.vehicle_data;
+function flattenApolice(raw: ApoliceAPI): ApoliceFormatted[] {
   const c = raw.customer_data;
+  const financialArr = Array.isArray(raw.financial_data) ? raw.financial_data : [raw.financial_data];
+  const vehicleArr = Array.isArray(raw.vehicle_data) ? raw.vehicle_data : [raw.vehicle_data];
 
-  return {
-    id: f.numero_apolice || "—",
-    numeroProposta: f.numero_proposta || "—",
-    cliente: c.nome || "—",
-    placa: v.veiculo_placa || "—",
-    seguradora: f.seguradora || "—",
-    inicio: f.vigencia_inicio || "—",
-    fim: f.vigencia_fim || "—",
-    premio: f.premio_total ? `R$ ${f.premio_total}` : "—",
-    premioLiquido: f.premio_liquido ? `R$ ${f.premio_liquido}` : "—",
-    comissao: f.comissao ? `R$ ${f.comissao}` : "—",
-    status: isVigente(f.vigencia_fim) ? "Vigente" : "Vencida",
-    ci: f.ci || "—",
-    parcelas: f.parcelas || "—",
-    valorParcela: f.valor_parcela ? `R$ ${f.valor_parcela}` : "—",
-    classeBonus: f.classe_bonus || "—",
-    iof: f.iof ? `R$ ${f.iof}` : "—",
-    formaPagamento: f.forma_pagamento || "—",
-    franquia: f.franquia ? `R$ ${f.franquia}` : "—",
-    coberturas: f.coberturas || [],
-    veiculo: {
-      fabricante: v.veiculo_fabricante || "—",
-      modelo: v.veiculo_modelo || "—",
-      ano: v.veiculo_ano || "—",
+  return financialArr.map((f) => {
+    const v = vehicleArr.find(veh => veh.numero_apolice === f.numero_apolice) || vehicleArr[0] || {} as any;
+
+    return {
+      id: f.numero_apolice || "—",
+      numeroProposta: f.numero_proposta || "—",
+      cliente: c.nome || "—",
       placa: v.veiculo_placa || "—",
-      chassi: v.veiculo_chassi || "—",
-      combustivel: v.veiculo_combustivel || "—",
-      codigoFipe: v.veiculo_codigo_fipe || "—",
-      zeroKm: v.veiculo_zero_km || "—",
-      utilizacao: v.veiculo_utilizacao || "—",
-    },
-  };
+      seguradora: f.seguradora || "—",
+      inicio: f.vigencia_inicio || "—",
+      fim: f.vigencia_fim || "—",
+      premio: f.premio_total ? `R$ ${f.premio_total}` : "—",
+      premioLiquido: f.premio_liquido ? `R$ ${f.premio_liquido}` : "—",
+      comissao: f.comissao ? `R$ ${f.comissao}` : "—",
+      status: isVigente(f.vigencia_fim) ? "Vigente" : "Vencida",
+      ci: f.ci || "—",
+      parcelas: f.parcelas || "—",
+      valorParcela: f.valor_parcela ? `R$ ${f.valor_parcela}` : "—",
+      classeBonus: f.classe_bonus || "—",
+      iof: f.iof ? `R$ ${f.iof}` : "—",
+      formaPagamento: f.forma_pagamento || "—",
+      franquia: f.franquia ? `R$ ${f.franquia}` : "—",
+      coberturas: f.coberturas || [],
+      veiculo: {
+        fabricante: v.veiculo_fabricante || "—",
+        modelo: v.veiculo_modelo || "—",
+        ano: v.veiculo_ano || "—",
+        placa: v.veiculo_placa || "—",
+        chassi: v.veiculo_chassi || "—",
+        combustivel: v.veiculo_combustivel || "—",
+        codigoFipe: v.veiculo_codigo_fipe || "—",
+        zeroKm: v.veiculo_zero_km || "—",
+        utilizacao: v.veiculo_utilizacao || "—",
+      },
+    };
+  });
 }
 
 export const apolicesService = {
@@ -133,6 +149,6 @@ export const apolicesService = {
     if (!res.ok) throw new Error("Erro ao buscar apólices");
     const data = await res.json();
     const apolices: ApoliceAPI[] = data?.success?.apolices || [];
-    return apolices.map(formatApolice);
+    return apolices.flatMap(flattenApolice);
   },
 };
