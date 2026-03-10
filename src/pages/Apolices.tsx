@@ -76,6 +76,7 @@ const Apolices = () => {
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nº</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Cliente</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Ramo</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Placa</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Seguradora</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Vigência</th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">Prêmio</th>
