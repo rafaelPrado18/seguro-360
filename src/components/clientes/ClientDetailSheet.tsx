@@ -15,6 +15,8 @@ import { toast } from "@/hooks/use-toast";
 import type { Client, VehiclePolicy } from "@/services/clientService";
 import { leadsService } from "@/services/leadsService";
 import { useLeadHistory } from "@/hooks/useLeads";
+import { useClientById } from "@/hooks/useClients";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ClientDetailSheetProps {
   open: boolean;
