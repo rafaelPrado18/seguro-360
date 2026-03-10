@@ -52,7 +52,7 @@ const Dashboard = () => {
   const { data: leadsResponse, isLoading: leadsLoading } = useLeads(
     undefined,
     currentUser?.nome,
-    isAdmin ? "administrador" : currentUser?.funcao
+    isAdmin ? "administrador" : currentUser?.role
   );
 
   const { data: apolices, isLoading: apolicesLoading } = useApolices();
