@@ -192,7 +192,7 @@ export const clientService = {
     const response = await fetch(`${BASE_URL}/v1/read/client`);
     if (!response.ok) throw new Error("Erro ao buscar clientes");
     const result = await response.json();
-    const items: ClientApiResponse[] = result.data || result;
+    const items: ClientApiResponse[] = result.success?.apolices || result.data || result;
     return items.map(mapApiToClient);
   },
 
