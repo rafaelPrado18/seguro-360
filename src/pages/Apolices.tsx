@@ -93,6 +93,7 @@ const Apolices = () => {
                       <td className="px-4 py-3">
                         <Badge variant="secondary" className="text-[10px]">{a.ramo}</Badge>
                       </td>
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{a.placa}</td>
                       <td className="px-4 py-3 text-muted-foreground">{a.seguradora}</td>
                       <td className="px-4 py-3 text-xs text-muted-foreground">{a.inicio} a {a.fim}</td>
                       <td className="px-4 py-3 text-right font-semibold">{a.premio}</td>
