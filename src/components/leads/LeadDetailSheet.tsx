@@ -416,6 +416,7 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
               arquivoProposta={arquivoProposta}
               setArquivoProposta={setArquivoProposta}
               onDocumentAnalyzed={handleDocumentAnalyzed}
+              leadId={lead.id}
             />
 
             {(arquivoApolice || arquivoProposta) && (
