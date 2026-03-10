@@ -166,19 +166,7 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
         celular: data.celular || "",
         email: data.email || "",
       },
-      vehicle_data: data.vehicles.length === 1
-        ? {
-            veiculo_fabricante: firstVehicle.veiculo_fabricante || "",
-            veiculo_modelo: firstVehicle.veiculo_modelo,
-            veiculo_ano: firstVehicle.veiculo_ano,
-            veiculo_placa: firstVehicle.veiculo_placa,
-            veiculo_chassi: firstVehicle.veiculo_chassi || "",
-            veiculo_combustivel: firstVehicle.veiculo_combustivel || "",
-            veiculo_codigo_fipe: firstVehicle.veiculo_codigo_fipe || "",
-            veiculo_zero_km: firstVehicle.veiculo_zero_km || "Não",
-            veiculo_utilizacao: firstVehicle.veiculo_utilizacao || "",
-          }
-        : data.vehicles.map(v => ({
+      vehicle_data: data.vehicles.map(v => ({
             veiculo_fabricante: v.veiculo_fabricante || "",
             veiculo_modelo: v.veiculo_modelo,
             veiculo_ano: v.veiculo_ano,
@@ -189,26 +177,7 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
             veiculo_zero_km: v.veiculo_zero_km || "Não",
             veiculo_utilizacao: v.veiculo_utilizacao || "",
           })),
-      financial_data: data.vehicles.length === 1
-        ? {
-            premio_total: firstVehicle.premio_total || "",
-            premio_liquido: firstVehicle.premio_liquido || "",
-            parcelas: firstVehicle.parcelas || "1",
-            valor_parcela: firstVehicle.valor_parcela || "",
-            numero_proposta: firstVehicle.numero_proposta || "",
-            numero_apolice: firstVehicle.numero_apolice || "",
-            ci: firstVehicle.ci || "",
-            vigencia_inicio: firstVehicle.vigencia_inicio || "",
-            vigencia_fim: firstVehicle.vigencia_fim || "",
-            seguradora: firstVehicle.seguradora || "",
-            comissao: firstVehicle.comissao || "",
-            classe_bonus: firstVehicle.classe_bonus || "",
-            iof: firstVehicle.iof || "",
-            forma_pagamento: firstVehicle.forma_pagamento || "",
-            franquia: firstVehicle.franquia || "",
-            coberturas: [],
-          }
-        : data.vehicles.map(v => ({
+      financial_data: data.vehicles.map(v => ({
             premio_total: v.premio_total || "",
             premio_liquido: v.premio_liquido || "",
             parcelas: v.parcelas || "1",
@@ -225,12 +194,21 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
             forma_pagamento: v.forma_pagamento || "",
             franquia: v.franquia || "",
             coberturas: [],
-          })) as any,
+          })),
     };
 
     if (isEditing && editClient) {
+      const updatePayload = {
+        name: data.nome,
+        phone: data.celular || data.telefone,
+        email: data.email,
+        document: data.cpf,
+        documentType: "pessoa_fisica",
+        vehicle_data: payload.vehicle_data,
+        financial_data: payload.financial_data,
+      };
       updateMutation.mutate(
-        { id: editClient.id, payload },
+        { id: editClient.id, payload: updatePayload },
         {
           onSuccess: () => {
             toast({ title: "Cliente atualizado!", description: `${data.nome} atualizado com sucesso.` });

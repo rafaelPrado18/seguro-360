@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { clientService, type ClientCreatePayload } from "@/services/clientService";
+import { clientService, type ClientCreatePayload, type ClientUpdatePayload } from "@/services/clientService";
 
 export function useClients() {
   return useQuery({
@@ -22,7 +22,7 @@ export function useCreateClient() {
 export function useUpdateClient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: Partial<ClientCreatePayload> }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: ClientUpdatePayload }) =>
       clientService.updateClient(id, payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
   });

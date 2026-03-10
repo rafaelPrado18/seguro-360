@@ -17,62 +17,8 @@ export interface ClientCreatePayload {
     celular: string;
     email: string;
   };
-  vehicle_data: {
-    veiculo_fabricante: string;
-    veiculo_modelo: string;
-    veiculo_ano: string;
-    veiculo_placa: string;
-    veiculo_chassi: string;
-    veiculo_combustivel: string;
-    veiculo_codigo_fipe: string;
-    veiculo_zero_km: string;
-    veiculo_utilizacao: string;
-  } | Array<{
-    veiculo_fabricante: string;
-    veiculo_modelo: string;
-    veiculo_ano: string;
-    veiculo_placa: string;
-    veiculo_chassi: string;
-    veiculo_combustivel: string;
-    veiculo_codigo_fipe: string;
-    veiculo_zero_km: string;
-    veiculo_utilizacao: string;
-  }>;
-  financial_data: {
-    premio_total: string;
-    premio_liquido: string;
-    parcelas: string;
-    valor_parcela: string;
-    numero_proposta: string;
-    numero_apolice: string;
-    ci: string;
-    vigencia_inicio: string;
-    vigencia_fim: string;
-    seguradora: string;
-    comissao: string;
-    classe_bonus: string;
-    iof: string;
-    forma_pagamento: string;
-    franquia: string;
-    coberturas: Array<{ descricao: string; limite: string; premio: string }>;
-  } | Array<{
-    premio_total: string;
-    premio_liquido: string;
-    parcelas: string;
-    valor_parcela: string;
-    numero_proposta: string;
-    numero_apolice: string;
-    ci: string;
-    vigencia_inicio: string;
-    vigencia_fim: string;
-    seguradora: string;
-    comissao: string;
-    classe_bonus: string;
-    iof: string;
-    forma_pagamento: string;
-    franquia: string;
-    coberturas: Array<{ descricao: string; limite: string; premio: string }>;
-  }>;
+  vehicle_data: VehicleDataSingle[];
+  financial_data: FinancialDataSingle[];
 }
 
 export type VehicleDataSingle = {
@@ -183,7 +129,7 @@ export function buildClientPayload(
       celular: data.segurado_celular,
       email: data.segurado_email,
     },
-    vehicle_data: {
+    vehicle_data: [{
       veiculo_fabricante: data.veiculo_fabricante,
       veiculo_modelo: data.veiculo_modelo,
       veiculo_ano: data.veiculo_ano,
@@ -193,8 +139,8 @@ export function buildClientPayload(
       veiculo_codigo_fipe: data.veiculo_codigo_fipe,
       veiculo_zero_km: data.veiculo_zero_km,
       veiculo_utilizacao: data.veiculo_utilizacao,
-    },
-    financial_data: {
+    }],
+    financial_data: [{
       premio_total: data.premio_total,
       premio_liquido: data.premio_liquido,
       parcelas: data.parcelas,
@@ -211,9 +157,30 @@ export function buildClientPayload(
       forma_pagamento: data.forma_pagamento,
       franquia: data.franquia,
       coberturas: data.coberturas,
-    },
+    }],
   };
 }
+
+export interface ClientUpdatePayload {
+  name?: string;
+  phone?: string;
+  email?: string;
+  birthDate?: string;
+  identificationId?: string;
+  branch?: string;
+  netPremium?: string;
+  cia?: string;
+  assignedConsultor?: string;
+  document?: string;
+  documentType?: string;
+  vehicle_data?: VehicleDataSingle[];
+  financial_data?: FinancialDataSingle[];
+}
+
+const HEADERS = {
+  "Content-Type": "application/json",
+  "orchestrator": "crm-hatanaka",
+};
 
 export const clientService = {
   async getClients(): Promise<Client[]> {
@@ -224,30 +191,39 @@ export const clientService = {
     return items.map(mapApiToClient);
   },
 
-  async createClient(payload: ClientCreatePayload): Promise<{ cliente_id: string }> {
+  async createClient(payload: ClientCreatePayload): Promise<void> {
+    const body = {
+      ...payload,
+      vehicle_data: Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data],
+      financial_data: Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data],
+    };
     const response = await fetch(`${BASE_URL}/v1/create/client`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      headers: HEADERS,
+      body: JSON.stringify(body),
     });
     if (!response.ok) throw new Error("Erro ao criar cliente");
-    return response.json();
   },
 
-  async updateClient(clienteId: string, payload: Partial<ClientCreatePayload>): Promise<unknown> {
+  async updateClient(clienteId: string, payload: ClientUpdatePayload): Promise<void> {
+    const body = {
+      id: clienteId,
+      ...payload,
+      vehicle_data: payload.vehicle_data ? (Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data]) : undefined,
+      financial_data: payload.financial_data ? (Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data]) : undefined,
+    };
     const response = await fetch(`${BASE_URL}/v1/update/client`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: clienteId, ...payload }),
+      headers: HEADERS,
+      body: JSON.stringify(body),
     });
     if (!response.ok) throw new Error("Erro ao atualizar cliente");
-    return response.json();
   },
 
   async deleteClient(clienteId: string): Promise<void> {
     const response = await fetch(`${BASE_URL}/v1/delete/client`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: HEADERS,
       body: JSON.stringify({ id: clienteId }),
     });
     if (!response.ok) throw new Error("Erro ao excluir cliente");

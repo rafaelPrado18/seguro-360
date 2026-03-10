@@ -190,20 +190,21 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
       const payload = buildClientPayload(lead.id, lead.status || "negociacao", extractedData);
 
       if (lead.cliente_id) {
-        // Cliente já existe — atualizar
-        await clientService.updateClient(lead.cliente_id, payload);
+        // Cliente já existe — atualizar com estrutura de update
+        const updatePayload = {
+          name: payload.customer_data.nome,
+          phone: payload.customer_data.celular,
+          email: payload.customer_data.email,
+          document: payload.customer_data.cpf,
+          documentType: "pessoa_fisica",
+          vehicle_data: Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data],
+          financial_data: Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data],
+        };
+        await clientService.updateClient(lead.cliente_id, updatePayload);
         toast({ title: "Cliente atualizado!", description: "Dados do documento sincronizados com o cliente existente." });
       } else {
         // Cliente não existe — criar
-        const result = await clientService.createClient(payload);
-        // Atualizar o lead com o cliente_id retornado
-        const updated: Lead = {
-          ...lead,
-          cliente_id: result.cliente_id,
-          valor_estimado: parseFloat(extractedData.premio_total?.replace(/[^\d,]/g, "").replace(",", ".")) || lead.valor_estimado,
-          updated_at: new Date().toISOString(),
-        } as Lead;
-        onLeadUpdate?.(updated);
+        await clientService.createClient(payload);
         toast({ title: "Cliente criado!", description: "Novo cliente vinculado ao lead com os dados do documento." });
       }
     } catch (error) {
