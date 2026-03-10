@@ -164,19 +164,22 @@ export function buildClientPayload(
 }
 
 export interface ClientUpdatePayload {
-  name?: string;
-  phone?: string;
-  email?: string;
-  birthDate?: string;
-  identificationId?: string;
-  branch?: string;
-  netPremium?: string;
-  cia?: string;
-  assignedConsultor?: string;
-  document?: string;
-  documentType?: string;
-  vehicle_data?: VehicleDataSingle[];
-  financial_data?: FinancialDataSingle[];
+  customer_data: {
+    lead_id: string;
+    lead_status: string;
+    nome: string;
+    cpf: string;
+    endereco: string;
+    bairro: string;
+    cidade: string;
+    uf: string;
+    cep: string;
+    telefone: string;
+    celular: string;
+    email: string;
+  };
+  vehicle_data: VehicleDataSingle[];
+  financial_data: FinancialDataSingle[];
 }
 
 const HEADERS = {
@@ -202,12 +205,10 @@ export const clientService = {
   },
 
   async createClient(payload: ClientCreatePayload): Promise<void> {
-    const vehicleArr = Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data];
-    const financialArr = Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data];
     const body = {
       customer_data: payload.customer_data,
-      vehicle_data: vehicleArr,
-      financial_data: financialArr,
+      vehicle_data: Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data],
+      financial_data: Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data],
     };
     const response = await fetch(`${BASE_URL}/v1/create/client`, {
       method: "POST",
@@ -220,9 +221,9 @@ export const clientService = {
   async updateClient(clienteId: string, payload: ClientUpdatePayload): Promise<void> {
     const body = {
       id: clienteId,
-      ...payload,
-      vehicle_data: payload.vehicle_data ? (Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data]) : undefined,
-      financial_data: payload.financial_data ? (Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data]) : undefined,
+      customer_data: payload.customer_data,
+      vehicle_data: Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data],
+      financial_data: Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data],
     };
     const response = await fetch(`${BASE_URL}/v1/update/client`, {
       method: "PATCH",
