@@ -1,26 +1,18 @@
+import { useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { KpiCard } from "@/components/dashboard/KpiCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useRole, ROLE_LABELS, ROLE_EMOJI } from "@/contexts/RoleContext";
 import { useNavigate } from "react-router-dom";
+import { useLeads } from "@/hooks/useLeads";
+import { useApolices } from "@/hooks/useApolices";
 import {
   Users, FileText, DollarSign, AlertTriangle, RefreshCw, TrendingUp, Target, MessageSquare, Bell, Zap,
-  Calendar, Settings, BarChart3, ArrowRight, Clock, UserPlus, FileCheck, PhoneCall,
+  Calendar, Settings, BarChart3, ArrowRight, Clock, UserPlus, FileCheck, PhoneCall, Loader2,
 } from "lucide-react";
-
-// --- KPIs with scope tags ---
-const allKpis = [
-  { title: "Clientes Ativos", value: "1.247", change: "+12% este mês", changeType: "positive" as const, icon: Users, scopes: ["clientes"] },
-  { title: "Leads Ativos", value: "34", change: "+6 esta semana", changeType: "positive" as const, icon: Target, scopes: ["leads"] },
-  { title: "Apólices Vigentes", value: "3.892", change: "+8% este mês", changeType: "positive" as const, icon: FileText, scopes: ["apolices"] },
-  { title: "Comissões (Mês)", value: "R$ 48.520", change: "+15% vs mês anterior", changeType: "positive" as const, icon: DollarSign, scopes: ["comissoes"] },
-  { title: "Sinistros Abertos", value: "23", change: "-5% este mês", changeType: "negative" as const, icon: AlertTriangle, scopes: ["sinistros"] },
-  { title: "Renovações Pendentes", value: "67", change: "Próximos 30 dias", changeType: "neutral" as const, icon: RefreshCw, scopes: ["renovacoes"] },
-  { title: "Mensagens WhatsApp", value: "128", change: "12 não lidas", changeType: "neutral" as const, icon: MessageSquare, scopes: ["whatsapp"] },
-  { title: "Prêmio Total", value: "R$ 2.1M", change: "+18% YoY", changeType: "positive" as const, icon: TrendingUp, scopes: ["comissoes", "apolices"] },
-];
 
 // --- Shortcuts ---
 const allShortcuts = [
@@ -35,47 +27,107 @@ const allShortcuts = [
   { title: "Relatórios", desc: "Análises e relatórios", icon: BarChart3, path: "/relatorios", color: "bg-muted-foreground/15 text-muted-foreground", scopes: ["relatorios"] },
 ];
 
-// --- Activities with scope tags ---
-const allActivities = [
-  { type: "nova_apolice", desc: "Apólice Auto #4521 emitida para João Silva", time: "Há 15 min", status: "success", scopes: ["apolices"] },
-  { type: "sinistro", desc: "Sinistro #892 aberto - Colisão veicular", time: "Há 45 min", status: "warning", scopes: ["sinistros"] },
-  { type: "renovacao", desc: "Renovação #3201 aprovada - Maria Santos", time: "Há 1h", status: "info", scopes: ["renovacoes"] },
-  { type: "comissao", desc: "Comissão R$ 1.250 creditada - Ref. Apólice #4498", time: "Há 2h", status: "success", scopes: ["comissoes"] },
-  { type: "cliente", desc: "Novo cliente cadastrado - Empresa ABC Ltda", time: "Há 3h", status: "info", scopes: ["clientes"] },
-  { type: "sinistro", desc: "Sinistro #887 encerrado - Indenização paga", time: "Há 4h", status: "success", scopes: ["sinistros"] },
-  { type: "lead", desc: "Novo lead capturado - Ricardo Pereira (Auto)", time: "Há 5h", status: "info", scopes: ["leads"] },
-  { type: "renovacao", desc: "Lembrete enviado - Renovação #3180", time: "Há 6h", status: "info", scopes: ["renovacoes"] },
-];
+function parseDateBR(dateStr: string): Date | null {
+  if (!dateStr) return null;
+  const parts = dateStr.split("/");
+  if (parts.length !== 3) return null;
+  const [day, month, year] = parts;
+  return new Date(Number(year), Number(month) - 1, Number(day));
+}
 
-const renewals = [
-  { cliente: "Carlos Mendes", apolice: "Auto #3201", vencimento: "15/02/2026", premio: "R$ 3.200" },
-  { cliente: "Ana Souza", apolice: "Vida #1890", vencimento: "18/02/2026", premio: "R$ 1.800" },
-  { cliente: "Empresa XYZ", apolice: "Emp. #567", vencimento: "20/02/2026", premio: "R$ 12.500" },
-  { cliente: "Roberto Lima", apolice: "Res. #2340", vencimento: "22/02/2026", premio: "R$ 2.100" },
-  { cliente: "Fernanda Costa", apolice: "Auto #3567", vencimento: "25/02/2026", premio: "R$ 4.500" },
-];
-
-// Lead summary data
-const leadSummary = [
-  { label: "Novos Hoje", value: 5, icon: UserPlus, color: "text-accent" },
-  { label: "Em Atendimento", value: 12, icon: PhoneCall, color: "text-primary" },
-  { label: "Aguardando Proposta", value: 8, icon: FileCheck, color: "text-warning" },
-  { label: "Convertidos (Mês)", value: 18, icon: TrendingUp, color: "text-success" },
-];
-
-// Mock count of new leads for demo
-const MOCK_NEW_LEADS_COUNT = 5;
+function isToday(dateStr: string): boolean {
+  if (!dateStr) return false;
+  // Try DD/MM/YYYY HH:mm:ss or DD/MM/YYYY
+  const match = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (!match) return false;
+  const d = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+  const now = new Date();
+  return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+}
 
 const Dashboard = () => {
   const { role, hasScope, isAdmin, currentUser, brokerStatus } = useRole();
   const navigate = useNavigate();
 
-  const visibleKpis = allKpis.filter(k => k.scopes.some(s => hasScope(s)));
-  const visibleActivities = allActivities.filter(a => a.scopes.some(s => hasScope(s)));
+  const { data: leadsResponse, isLoading: leadsLoading } = useLeads(
+    undefined,
+    currentUser?.nome,
+    isAdmin ? "administrador" : currentUser?.funcao
+  );
+
+  const { data: apolices, isLoading: apolicesLoading } = useApolices();
+
+  // Compute real lead summary
+  const leadSummary = useMemo(() => {
+    const leads = leadsResponse?.data || [];
+    const novosHoje = leads.filter(l => isToday(l.created_at)).length;
+    const emAtendimento = leads.filter(l => l.status === "em_contato" || l.status === "qualificado").length;
+    const aguardandoProposta = leads.filter(l => l.status === "proposta_enviada").length;
+    const convertidos = leads.filter(l => l.status === "convertido").length;
+    return [
+      { label: "Novos Hoje", value: novosHoje, icon: UserPlus, color: "text-accent" },
+      { label: "Em Atendimento", value: emAtendimento, icon: PhoneCall, color: "text-primary" },
+      { label: "Aguardando Proposta", value: aguardandoProposta, icon: FileCheck, color: "text-warning" },
+      { label: "Convertidos", value: convertidos, icon: TrendingUp, color: "text-success" },
+    ];
+  }, [leadsResponse]);
+
+  const totalLeads = leadsResponse?.data?.length || 0;
+  const newLeadsCount = leadSummary[0]?.value || 0;
+
+  // Compute real renewals from apolices (vigencia_fim within next 30 days)
+  const upcomingRenewals = useMemo(() => {
+    if (!apolices) return [];
+    const now = new Date();
+    const in30 = new Date();
+    in30.setDate(in30.getDate() + 60);
+
+    return apolices
+      .map(a => {
+        const fimDate = parseDateBR(a.fim);
+        return { ...a, fimDate };
+      })
+      .filter(a => a.fimDate && a.fimDate >= now && a.fimDate <= in30)
+      .sort((a, b) => (a.fimDate!.getTime() - b.fimDate!.getTime()));
+  }, [apolices]);
+
+  // Real KPIs
+  const visibleKpis = useMemo(() => {
+    const kpis = [];
+    if (hasScope("leads")) {
+      kpis.push({
+        title: "Leads Ativos", value: String(totalLeads), change: `${newLeadsCount} novos hoje`,
+        changeType: newLeadsCount > 0 ? "positive" as const : "neutral" as const, icon: Target,
+      });
+    }
+    if (hasScope("apolices")) {
+      const vigentes = apolices?.filter(a => a.status === "Vigente").length || 0;
+      kpis.push({
+        title: "Apólices Vigentes", value: String(vigentes), change: `${apolices?.length || 0} total`,
+        changeType: "positive" as const, icon: FileText,
+      });
+    }
+    if (hasScope("renovacoes")) {
+      kpis.push({
+        title: "Renovações Próximas", value: String(upcomingRenewals.length), change: "Próximos 60 dias",
+        changeType: upcomingRenewals.length > 0 ? "neutral" as const : "positive" as const, icon: RefreshCw,
+      });
+    }
+    if (hasScope("whatsapp")) {
+      kpis.push({
+        title: "Mensagens WhatsApp", value: "—", change: "Acesse para ver",
+        changeType: "neutral" as const, icon: MessageSquare,
+      });
+    }
+    return kpis;
+  }, [totalLeads, newLeadsCount, apolices, upcomingRenewals, hasScope]);
+
   const visibleShortcuts = allShortcuts.filter(s => s.scopes.length === 0 || s.scopes.some(sc => hasScope(sc)));
   const showRenewals = hasScope("renovacoes");
   const showLeadSummary = hasScope("leads");
-  const showNewLeadsAlert = !isAdmin && hasScope("leads") && MOCK_NEW_LEADS_COUNT > 0;
+  const showNewLeadsAlert = !isAdmin && hasScope("leads") && newLeadsCount > 0;
+
+  const isLoadingData = leadsLoading || apolicesLoading;
 
   return (
     <AppLayout>
@@ -99,12 +151,12 @@ const Dashboard = () => {
             <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-accent/20">
               <Zap className="h-6 w-6 text-accent" />
               <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground animate-pulse">
-                {MOCK_NEW_LEADS_COUNT}
+                {newLeadsCount}
               </span>
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-bold text-foreground">
-                {MOCK_NEW_LEADS_COUNT} lead{MOCK_NEW_LEADS_COUNT > 1 ? "s" : ""} aguardando atendimento!
+                {newLeadsCount} lead{newLeadsCount > 1 ? "s" : ""} aguardando atendimento!
               </h3>
               <p className="text-xs text-muted-foreground">Clique para visualizar e iniciar o contato</p>
             </div>
@@ -124,11 +176,19 @@ const Dashboard = () => {
         </div>
 
         {/* KPI Grid */}
-        <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 ${visibleKpis.length > 4 ? "xl:grid-cols-6" : visibleKpis.length > 3 ? "xl:grid-cols-4" : ""}`}>
-          {visibleKpis.map((kpi, i) => (
-            <KpiCard key={kpi.title} title={kpi.title} value={kpi.value} change={kpi.change} changeType={kpi.changeType} icon={kpi.icon} index={i} />
-          ))}
-        </div>
+        {isLoadingData ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 rounded-xl" />
+            ))}
+          </div>
+        ) : (
+          <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${visibleKpis.length > 3 ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
+            {visibleKpis.map((kpi, i) => (
+              <KpiCard key={kpi.title} title={kpi.title} value={kpi.value} change={kpi.change} changeType={kpi.changeType} icon={kpi.icon} index={i} />
+            ))}
+          </div>
+        )}
 
         {/* Shortcuts Grid */}
         <div>
@@ -153,8 +213,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Lead Summary + Renewals + Activities */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Lead Summary + Renewals */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Lead Summary */}
           {showLeadSummary && (
             <Card>
@@ -165,20 +225,24 @@ const Dashboard = () => {
                 </Button>
               </CardHeader>
               <CardContent className="space-y-3">
-                {leadSummary.map((item, i) => (
-                  <div key={i} className="flex items-center justify-between rounded-lg border border-border p-3 animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
-                    <div className="flex items-center gap-3">
-                      <item.icon className={`h-4 w-4 ${item.color}`} />
-                      <span className="text-sm text-foreground">{item.label}</span>
+                {leadsLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)
+                ) : (
+                  leadSummary.map((item, i) => (
+                    <div key={i} className="flex items-center justify-between rounded-lg border border-border p-3 animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
+                      <div className="flex items-center gap-3">
+                        <item.icon className={`h-4 w-4 ${item.color}`} />
+                        <span className="text-sm text-foreground">{item.label}</span>
+                      </div>
+                      <span className={`text-lg font-bold ${item.color}`}>{item.value}</span>
                     </div>
-                    <span className={`text-lg font-bold ${item.color}`}>{item.value}</span>
-                  </div>
-                ))}
+                  ))
+                )}
               </CardContent>
             </Card>
           )}
 
-          {/* Renovações Próximas */}
+          {/* Renovações Próximas (from real apolices data) */}
           {showRenewals && (
             <Card>
               <CardHeader className="pb-3 flex flex-row items-center justify-between">
@@ -188,45 +252,43 @@ const Dashboard = () => {
                 </Button>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {renewals.slice(0, 4).map((r, i) => (
-                    <div key={i} className="flex items-center justify-between rounded-lg border border-border p-3 animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{r.cliente}</p>
-                        <p className="text-[11px] text-muted-foreground">{r.apolice} · Vence {r.vencimento}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-foreground">{r.premio}</p>
-                        <Badge variant="outline" className="text-[10px] mt-0.5 border-warning text-warning">Pendente</Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {apolicesLoading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}
+                  </div>
+                ) : upcomingRenewals.length === 0 ? (
+                  <div className="text-center py-6 text-sm text-muted-foreground">
+                    Nenhuma renovação nos próximos 60 dias.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {upcomingRenewals.slice(0, 5).map((r, i) => {
+                      const daysLeft = r.fimDate ? Math.ceil((r.fimDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
+                      const urgency = daysLeft <= 7 ? "border-destructive text-destructive" :
+                                      daysLeft <= 15 ? "border-warning text-warning" :
+                                      "border-info text-info";
+                      return (
+                        <div key={i} className="flex items-center justify-between rounded-lg border border-border p-3 animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{r.cliente}</p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {r.veiculo.modelo} · {r.placa} · Vence {r.fim}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-semibold text-foreground">{r.premio}</p>
+                            <Badge variant="outline" className={`text-[10px] mt-0.5 ${urgency}`}>
+                              {daysLeft <= 0 ? "Vencida" : `${daysLeft}d restantes`}
+                            </Badge>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
-
-          {/* Atividades Recentes */}
-          <Card className={!showLeadSummary && !showRenewals ? "lg:col-span-3" : ""}>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold">Atividades Recentes</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {visibleActivities.slice(0, 6).map((activity, i) => (
-                <div key={i} className="flex items-start gap-3 animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
-                  <div className={`mt-0.5 h-2 w-2 rounded-full flex-shrink-0 ${
-                    activity.status === "success" ? "bg-success" :
-                    activity.status === "warning" ? "bg-warning" :
-                    "bg-info"
-                  }`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground truncate">{activity.desc}</p>
-                    <p className="text-[11px] text-muted-foreground">{activity.time}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
         </div>
       </div>
     </AppLayout>
