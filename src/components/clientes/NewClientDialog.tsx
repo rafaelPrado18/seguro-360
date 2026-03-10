@@ -166,7 +166,6 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
         celular: data.celular || "",
         email: data.email || "",
       },
-      vehicle_data: data.vehicles.length === 1
       vehicle_data: data.vehicles.map(v => ({
             veiculo_fabricante: v.veiculo_fabricante || "",
             veiculo_modelo: v.veiculo_modelo,
