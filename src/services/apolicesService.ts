@@ -7,7 +7,8 @@ export interface Cobertura {
 }
 
 export interface ApoliceAPI {
-  financial_data: {
+  id: string;
+  financial_data: Array<{
     premio_total: string;
     premio_liquido: string;
     parcelas: string;
@@ -24,8 +25,8 @@ export interface ApoliceAPI {
     forma_pagamento: string;
     franquia: string;
     coberturas: Cobertura[];
-  };
-  vehicle_data: {
+  }>;
+  vehicle_data: Array<{
     veiculo_fabricante: string;
     veiculo_modelo: string;
     veiculo_ano: string;
@@ -35,10 +36,21 @@ export interface ApoliceAPI {
     veiculo_codigo_fipe: string;
     veiculo_zero_km: string;
     veiculo_utilizacao: string;
-  };
+    numero_apolice?: string;
+  }>;
   customer_data: {
-    id: string | null;
+    lead_id?: string;
+    lead_status?: string;
     nome: string;
+    cpf?: string;
+    endereco?: string;
+    bairro?: string;
+    cidade?: string;
+    uf?: string;
+    cep?: string;
+    telefone?: string;
+    celular?: string;
+    email?: string;
   };
   created_at: string;
   updated_at: string | null;
