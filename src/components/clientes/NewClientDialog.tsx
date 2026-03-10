@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,6 +15,8 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCreateClient, useUpdateClient } from "@/hooks/useClients";
 import type { Client } from "@/services/clientService";
+import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
+import type { ExtractedDocumentData } from "@/services/documentAnalysisService";
 
 const vehiclePolicySchema = z.object({
   veiculo_fabricante: z.string().trim().max(100).optional().default(""),
