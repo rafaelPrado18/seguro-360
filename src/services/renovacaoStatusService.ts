@@ -10,7 +10,7 @@ export interface RenovacaoStatus {
   template_id: string | null;
 }
 
-const BASE_URL = "https://crm-hataseg.com.br/mango-softwares";
+const BASE_URL = "https://crm-hataseg.com.br";
 
 export const renovacaoStatusService = {
   async getStatuses(): Promise<RenovacaoStatus[]> {
