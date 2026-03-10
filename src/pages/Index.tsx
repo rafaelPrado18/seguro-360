@@ -7,10 +7,8 @@ import { useRole, ROLE_LABELS, ROLE_EMOJI } from "@/contexts/RoleContext";
 import { useNavigate } from "react-router-dom";
 import {
   Users, FileText, DollarSign, AlertTriangle, RefreshCw, TrendingUp, Target, MessageSquare, Bell, Zap,
+  Calendar, Settings, BarChart3, ArrowRight, Clock, UserPlus, FileCheck, PhoneCall,
 } from "lucide-react";
-import {
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Area, AreaChart,
-} from "recharts";
 
 // --- KPIs with scope tags ---
 const allKpis = [
@@ -24,22 +22,17 @@ const allKpis = [
   { title: "Prêmio Total", value: "R$ 2.1M", change: "+18% YoY", changeType: "positive" as const, icon: TrendingUp, scopes: ["comissoes", "apolices"] },
 ];
 
-const monthlyData = [
-  { mes: "Jul", apolices: 280, sinistros: 12, comissoes: 38000, leads: 22, renovacoes: 35 },
-  { mes: "Ago", apolices: 310, sinistros: 8, comissoes: 42000, leads: 28, renovacoes: 40 },
-  { mes: "Set", apolices: 295, sinistros: 15, comissoes: 39500, leads: 19, renovacoes: 38 },
-  { mes: "Out", apolices: 340, sinistros: 10, comissoes: 45000, leads: 31, renovacoes: 45 },
-  { mes: "Nov", apolices: 360, sinistros: 18, comissoes: 46200, leads: 35, renovacoes: 50 },
-  { mes: "Dez", apolices: 320, sinistros: 14, comissoes: 43800, leads: 25, renovacoes: 42 },
-  { mes: "Jan", apolices: 380, sinistros: 9, comissoes: 48520, leads: 34, renovacoes: 55 },
-];
-
-const ramoData = [
-  { name: "Auto", value: 35, color: "hsl(222, 60%, 22%)" },
-  { name: "Vida", value: 25, color: "hsl(38, 92%, 50%)" },
-  { name: "Residencial", value: 20, color: "hsl(142, 71%, 45%)" },
-  { name: "Empresarial", value: 12, color: "hsl(210, 100%, 52%)" },
-  { name: "Saúde", value: 8, color: "hsl(0, 72%, 51%)" },
+// --- Shortcuts ---
+const allShortcuts = [
+  { title: "Leads", desc: "Gerenciar leads e oportunidades", icon: Target, path: "/leads", color: "bg-accent/15 text-accent", scopes: ["leads"] },
+  { title: "Clientes", desc: "Carteira de clientes", icon: Users, path: "/clientes", color: "bg-primary/15 text-primary", scopes: ["clientes"] },
+  { title: "Apólices", desc: "Consultar apólices vigentes", icon: FileText, path: "/apolices", color: "bg-info/15 text-info", scopes: ["apolices"] },
+  { title: "Sinistros", desc: "Acompanhar sinistros", icon: AlertTriangle, path: "/sinistros", color: "bg-destructive/15 text-destructive", scopes: ["sinistros"] },
+  { title: "Renovações", desc: "Renovações pendentes", icon: RefreshCw, path: "/renovacoes", color: "bg-warning/15 text-warning", scopes: ["renovacoes"] },
+  { title: "Comissões", desc: "Extrato de comissões", icon: DollarSign, path: "/comissoes", color: "bg-success/15 text-success", scopes: ["comissoes"] },
+  { title: "WhatsApp", desc: "Mensagens e atendimento", icon: MessageSquare, path: "/whatsapp", color: "bg-accent/15 text-accent", scopes: ["whatsapp"] },
+  { title: "Agenda", desc: "Compromissos e tarefas", icon: Calendar, path: "/agenda", color: "bg-primary/15 text-primary", scopes: [] },
+  { title: "Relatórios", desc: "Análises e relatórios", icon: BarChart3, path: "/relatorios", color: "bg-muted-foreground/15 text-muted-foreground", scopes: ["relatorios"] },
 ];
 
 // --- Activities with scope tags ---
@@ -62,44 +55,13 @@ const renewals = [
   { cliente: "Fernanda Costa", apolice: "Auto #3567", vencimento: "25/02/2026", premio: "R$ 4.500" },
 ];
 
-// Chart config per role
-const CHART_CONFIG: Record<string, { title: string; series: { key: string; color: string; name: string; yAxisId: string }[] }> = {
-  admin: {
-    title: "Evolução Mensal - Apólices & Comissões",
-    series: [
-      { key: "apolices", color: "hsl(222, 60%, 22%)", name: "Apólices", yAxisId: "left" },
-      { key: "comissoes", color: "hsl(38, 92%, 50%)", name: "Comissões (R$)", yAxisId: "right" },
-    ],
-  },
-  corretor_novo: {
-    title: "Evolução Mensal - Leads & Apólices",
-    series: [
-      { key: "leads", color: "hsl(38, 92%, 50%)", name: "Leads", yAxisId: "left" },
-      { key: "apolices", color: "hsl(222, 60%, 22%)", name: "Apólices", yAxisId: "right" },
-    ],
-  },
-  corretor_renovacao: {
-    title: "Evolução Mensal - Renovações & Apólices",
-    series: [
-      { key: "renovacoes", color: "hsl(142, 71%, 45%)", name: "Renovações", yAxisId: "left" },
-      { key: "apolices", color: "hsl(222, 60%, 22%)", name: "Apólices", yAxisId: "right" },
-    ],
-  },
-  corretor_sinistro: {
-    title: "Evolução Mensal - Sinistros & Apólices",
-    series: [
-      { key: "sinistros", color: "hsl(0, 72%, 51%)", name: "Sinistros", yAxisId: "left" },
-      { key: "apolices", color: "hsl(222, 60%, 22%)", name: "Apólices", yAxisId: "right" },
-    ],
-  },
-  corretor_financeiro: {
-    title: "Evolução Mensal - Comissões & Apólices",
-    series: [
-      { key: "comissoes", color: "hsl(38, 92%, 50%)", name: "Comissões (R$)", yAxisId: "left" },
-      { key: "apolices", color: "hsl(222, 60%, 22%)", name: "Apólices", yAxisId: "right" },
-    ],
-  },
-};
+// Lead summary data
+const leadSummary = [
+  { label: "Novos Hoje", value: 5, icon: UserPlus, color: "text-accent" },
+  { label: "Em Atendimento", value: 12, icon: PhoneCall, color: "text-primary" },
+  { label: "Aguardando Proposta", value: 8, icon: FileCheck, color: "text-warning" },
+  { label: "Convertidos (Mês)", value: 18, icon: TrendingUp, color: "text-success" },
+];
 
 // Mock count of new leads for demo
 const MOCK_NEW_LEADS_COUNT = 5;
@@ -108,25 +70,17 @@ const Dashboard = () => {
   const { role, hasScope, isAdmin, currentUser, brokerStatus } = useRole();
   const navigate = useNavigate();
 
-  // Filter KPIs by scope
   const visibleKpis = allKpis.filter(k => k.scopes.some(s => hasScope(s)));
-
-  // Filter activities by scope
   const visibleActivities = allActivities.filter(a => a.scopes.some(s => hasScope(s)));
-
-  // Chart config
-  const chartConfig = CHART_CONFIG[role] || CHART_CONFIG.admin;
-
-  // Show renewals only if user has renovacoes scope
+  const visibleShortcuts = allShortcuts.filter(s => s.scopes.length === 0 || s.scopes.some(sc => hasScope(sc)));
   const showRenewals = hasScope("renovacoes");
-
-  // Show new leads alert for broker roles with leads scope
+  const showLeadSummary = hasScope("leads");
   const showNewLeadsAlert = !isAdmin && hasScope("leads") && MOCK_NEW_LEADS_COUNT > 0;
 
   return (
     <AppLayout>
       <div className="space-y-6">
-        {/* Offline Warning for Brokers */}
+        {/* Offline Warning */}
         {!isAdmin && brokerStatus === "offline" && (
           <div className="animate-fade-in rounded-xl border-2 border-destructive/30 bg-destructive/10 p-4 flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/20 animate-pulse">
@@ -139,7 +93,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* New Leads Alert for Brokers */}
+        {/* New Leads Alert */}
         {showNewLeadsAlert && (
           <div className="animate-fade-in rounded-xl border-2 border-accent/40 bg-accent/10 p-4 flex items-center gap-4 cursor-pointer hover:bg-accent/15 transition-colors" onClick={() => navigate("/leads")}>
             <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-accent/20">
@@ -176,71 +130,84 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Charts Row */}
-        <div className={`grid grid-cols-1 gap-6 ${showRenewals || isAdmin ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}>
-          {/* Evolução Mensal */}
-          <Card className={showRenewals || isAdmin ? "lg:col-span-2" : ""}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">{chartConfig.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={280}>
-                <AreaChart data={monthlyData}>
-                  <defs>
-                    {chartConfig.series.map(s => (
-                      <linearGradient key={s.key} id={`color-${s.key}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={s.color} stopOpacity={0.15}/>
-                        <stop offset="95%" stopColor={s.color} stopOpacity={0}/>
-                      </linearGradient>
-                    ))}
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" />
-                  <XAxis dataKey="mes" fontSize={12} stroke="hsl(220, 10%, 46%)" />
-                  <YAxis yAxisId="left" fontSize={12} stroke="hsl(220, 10%, 46%)" />
-                  <YAxis yAxisId="right" orientation="right" fontSize={12} stroke="hsl(220, 10%, 46%)"
-                    tickFormatter={(v) => chartConfig.series[1]?.key === "comissoes" ? `R$${(v/1000).toFixed(0)}k` : String(v)}
-                  />
-                  <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid hsl(220, 13%, 91%)", fontSize: "12px" }} />
-                  {chartConfig.series.map(s => (
-                    <Area key={s.key} yAxisId={s.yAxisId} type="monotone" dataKey={s.key} stroke={s.color} fill={`url(#color-${s.key})`} strokeWidth={2} name={s.name} />
-                  ))}
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Distribuição por Ramo */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Distribuição por Ramo</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie data={ramoData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
-                    {ramoData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value: number) => `${value}%`} contentStyle={{ borderRadius: "8px", border: "1px solid hsl(220, 13%, 91%)", fontSize: "12px" }} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="mt-2 flex flex-wrap gap-3 justify-center">
-                {ramoData.map((item) => (
-                  <div key={item.name} className="flex items-center gap-1.5">
-                    <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-[11px] text-muted-foreground">{item.name} ({item.value}%)</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Shortcuts Grid */}
+        <div>
+          <h3 className="text-sm font-semibold text-foreground mb-3">Acesso Rápido</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {visibleShortcuts.map((shortcut) => (
+              <button
+                key={shortcut.path}
+                onClick={() => navigate(shortcut.path)}
+                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-all hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5"
+              >
+                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${shortcut.color} shrink-0`}>
+                  <shortcut.icon className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-foreground truncate">{shortcut.title}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{shortcut.desc}</p>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Bottom Row */}
-        <div className={`grid grid-cols-1 gap-6 ${showRenewals ? "lg:grid-cols-2" : ""}`}>
+        {/* Lead Summary + Renewals + Activities */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Lead Summary */}
+          {showLeadSummary && (
+            <Card>
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                <CardTitle className="text-sm font-semibold">Resumo de Leads</CardTitle>
+                <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => navigate("/leads")}>
+                  Ver todos <ArrowRight className="h-3 w-3" />
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {leadSummary.map((item, i) => (
+                  <div key={i} className="flex items-center justify-between rounded-lg border border-border p-3 animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
+                    <div className="flex items-center gap-3">
+                      <item.icon className={`h-4 w-4 ${item.color}`} />
+                      <span className="text-sm text-foreground">{item.label}</span>
+                    </div>
+                    <span className={`text-lg font-bold ${item.color}`}>{item.value}</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Renovações Próximas */}
+          {showRenewals && (
+            <Card>
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                <CardTitle className="text-sm font-semibold">Renovações Próximas</CardTitle>
+                <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => navigate("/renovacoes")}>
+                  Ver todas <ArrowRight className="h-3 w-3" />
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {renewals.slice(0, 4).map((r, i) => (
+                    <div key={i} className="flex items-center justify-between rounded-lg border border-border p-3 animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{r.cliente}</p>
+                        <p className="text-[11px] text-muted-foreground">{r.apolice} · Vence {r.vencimento}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-foreground">{r.premio}</p>
+                        <Badge variant="outline" className="text-[10px] mt-0.5 border-warning text-warning">Pendente</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Atividades Recentes */}
-          <Card>
+          <Card className={!showLeadSummary && !showRenewals ? "lg:col-span-3" : ""}>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold">Atividades Recentes</CardTitle>
             </CardHeader>
@@ -260,31 +227,6 @@ const Dashboard = () => {
               ))}
             </CardContent>
           </Card>
-
-          {/* Renovações Próximas - only for roles with renovacoes scope */}
-          {showRenewals && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold">Renovações Próximas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {renewals.map((r, i) => (
-                    <div key={i} className="flex items-center justify-between rounded-lg border border-border p-3 animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{r.cliente}</p>
-                        <p className="text-[11px] text-muted-foreground">{r.apolice} · Vence em {r.vencimento}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-foreground">{r.premio}</p>
-                        <Badge variant="outline" className="text-[10px] mt-0.5 border-warning text-warning">Pendente</Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
     </AppLayout>
