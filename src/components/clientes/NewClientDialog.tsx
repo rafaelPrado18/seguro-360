@@ -146,7 +146,7 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
     toast({ title: "Dados importados!", description: `Veículo ${idx + 1} preenchido com os dados do documento.` });
   }, [activeVehicle, form]);
 
-
+  useEffect(() => {
     if (editClient) {
       const vehiclesData = editClient.vehicles.length > 0
         ? editClient.vehicles.map(vp => ({
