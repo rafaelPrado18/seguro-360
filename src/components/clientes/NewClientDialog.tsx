@@ -167,18 +167,7 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
         email: data.email || "",
       },
       vehicle_data: data.vehicles.length === 1
-        ? {
-            veiculo_fabricante: firstVehicle.veiculo_fabricante || "",
-            veiculo_modelo: firstVehicle.veiculo_modelo,
-            veiculo_ano: firstVehicle.veiculo_ano,
-            veiculo_placa: firstVehicle.veiculo_placa,
-            veiculo_chassi: firstVehicle.veiculo_chassi || "",
-            veiculo_combustivel: firstVehicle.veiculo_combustivel || "",
-            veiculo_codigo_fipe: firstVehicle.veiculo_codigo_fipe || "",
-            veiculo_zero_km: firstVehicle.veiculo_zero_km || "Não",
-            veiculo_utilizacao: firstVehicle.veiculo_utilizacao || "",
-          }
-        : data.vehicles.map(v => ({
+      vehicle_data: data.vehicles.map(v => ({
             veiculo_fabricante: v.veiculo_fabricante || "",
             veiculo_modelo: v.veiculo_modelo,
             veiculo_ano: v.veiculo_ano,
