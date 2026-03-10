@@ -193,6 +193,14 @@ export const clientService = {
     return items.map(mapApiToClient);
   },
 
+  async getClientById(clientId: string): Promise<Client> {
+    const response = await fetch(`${BASE_URL}/v1/read/client/${clientId}`);
+    if (!response.ok) throw new Error("Erro ao buscar cliente");
+    const result = await response.json();
+    const raw: ClientApiResponse = result.data || result;
+    return mapApiToClient(raw);
+  },
+
   async createClient(payload: ClientCreatePayload): Promise<void> {
     const vehicleArr = Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data];
     const financialArr = Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data];
