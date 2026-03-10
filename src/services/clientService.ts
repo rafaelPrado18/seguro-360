@@ -96,10 +96,10 @@ function toArray<T>(val: T | T[]): T[] {
 function mapApiToClient(raw: ClientApiResponse): Client {
   const vehicleArr = toArray(raw.vehicle_data);
   const financialArr = toArray(raw.financial_data);
-  const vehicles: VehiclePolicy[] = vehicleArr.map((v, i) => ({
-    vehicle: v,
-    financial: financialArr[i] || financialArr[0],
-  }));
+  const vehicles: VehiclePolicy[] = vehicleArr.map((v) => {
+    const matched = financialArr.find(f => f.numero_apolice === v.numero_apolice);
+    return { vehicle: v, financial: matched || financialArr[0] };
+  });
 
   return {
     id: raw.id,
