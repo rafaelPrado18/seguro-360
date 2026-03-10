@@ -192,10 +192,12 @@ export const clientService = {
   },
 
   async createClient(payload: ClientCreatePayload): Promise<void> {
+    const vehicleArr = Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data];
+    const financialArr = Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data];
     const body = {
-      ...payload,
-      vehicle_data: Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data],
-      financial_data: Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data],
+      customer_data: payload.customer_data,
+      vehicle_data: vehicleArr,
+      financial_data: financialArr,
     };
     const response = await fetch(`${BASE_URL}/v1/create/client`, {
       method: "POST",
