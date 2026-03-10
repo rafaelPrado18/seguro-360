@@ -118,23 +118,6 @@ const Apolices = () => {
                               <DropdownMenuItem className="text-xs gap-2" onClick={() => handleView(a)}>
                                 <Eye className="h-3.5 w-3.5" /> Ver detalhes
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Editar apólice", description: a.id })}>
-                                <Pencil className="h-3.5 w-3.5" /> Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Documentos", description: `Documentos da apólice ${a.id}` })}>
-                                <FileText className="h-3.5 w-3.5" /> Documentos
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Download", description: `Baixando apólice ${a.id}` })}>
-                                <Download className="h-3.5 w-3.5" /> Baixar PDF
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-xs gap-2" onClick={() => toast({ title: "Renovar", description: `Iniciar renovação da apólice ${a.id}` })}>
-                                <RefreshCw className="h-3.5 w-3.5" /> Renovar
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-xs gap-2 text-destructive" onClick={() => toast({ title: "Cancelar", description: `Apólice ${a.id} seria cancelada`, variant: "destructive" })}>
-                                <Trash2 className="h-3.5 w-3.5" /> Cancelar apólice
-                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </td>

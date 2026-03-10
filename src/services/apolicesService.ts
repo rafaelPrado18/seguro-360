@@ -1,4 +1,4 @@
-const API_BASE = "https://rm-hataseg.com/apolices";
+const API_BASE = "https://crm-hataseg.com.br/apolices";
 
 export interface Cobertura {
   descricao: string;
