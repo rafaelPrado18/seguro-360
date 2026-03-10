@@ -284,7 +284,7 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
                   </TabsTrigger>
                 </TabsList>
 
-                <ScrollArea className="max-h-[calc(90vh-220px)] mt-4">
+                <ScrollArea className="h-[calc(90vh-220px)] mt-4 pr-3">
                   {/* ── Tab: Dados do Cliente ── */}
                   <TabsContent value="dados" className="space-y-4 pb-4 mt-0">
                     <div className="grid grid-cols-2 gap-3">
