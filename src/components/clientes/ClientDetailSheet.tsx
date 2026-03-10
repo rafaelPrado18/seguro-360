@@ -15,6 +15,8 @@ import { toast } from "@/hooks/use-toast";
 import type { Client, VehiclePolicy } from "@/services/clientService";
 import { leadsService } from "@/services/leadsService";
 import { useLeadHistory } from "@/hooks/useLeads";
+import { useClientById } from "@/hooks/useClients";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ClientDetailSheetProps {
   open: boolean;
@@ -142,15 +144,21 @@ function VehiclePolicyCard({ vp, index }: { vp: VehiclePolicy; index: number; to
 
 // ── Main Component ──
 
-export function ClientDetailSheet({ open, onOpenChange, client }: ClientDetailSheetProps) {
+export function ClientDetailSheet({ open, onOpenChange, client: clientProp }: ClientDetailSheetProps) {
   const [newNote, setNewNote] = useState("");
   const [sendingNote, setSendingNote] = useState(false);
+
+  const { data: clientFromApi, isLoading: isLoadingClient } = useClientById(
+    open && clientProp?.id ? clientProp.id : undefined
+  );
+
+  const client = clientFromApi || clientProp;
 
   const { data: historyEntries = [], refetch: refetchHistory } = useLeadHistory(
     open && client?.lead_id ? client.lead_id : undefined
   );
 
-  if (!client) return null;
+  if (!clientProp) return null;
 
   const getInitials = (nome: string) =>
     (nome || "").split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
@@ -269,6 +277,13 @@ export function ClientDetailSheet({ open, onOpenChange, client }: ClientDetailSh
           </div>
         </SheetHeader>
 
+        {isLoadingClient ? (
+          <div className="px-6 py-8 space-y-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-6 w-full" />
+            ))}
+          </div>
+        ) : (
         <Tabs defaultValue="dados" className="flex-1">
           <div className="px-6">
             <TabsList className="grid w-full grid-cols-4">
@@ -419,6 +434,7 @@ export function ClientDetailSheet({ open, onOpenChange, client }: ClientDetailSh
             </TabsContent>
           </ScrollArea>
         </Tabs>
+        )}
       </SheetContent>
     </Sheet>
   );

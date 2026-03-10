@@ -11,6 +11,15 @@ export function useClients() {
   });
 }
 
+export function useClientById(clientId: string | undefined) {
+  return useQuery({
+    queryKey: ["client", clientId],
+    queryFn: () => clientService.getClientById(clientId!),
+    enabled: !!clientId,
+    retry: 1,
+  });
+}
+
 export function useCreateClient() {
   const qc = useQueryClient();
   return useMutation({
