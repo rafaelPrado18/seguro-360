@@ -10,11 +10,11 @@ export interface RenovacaoStatus {
   template_id: string | null;
 }
 
-const BASE_URL = "https://crm-hataseg.com.br";
+const BASE_URL = "https://crm-hataseg.com.br/mango-softwares";
 
 export const renovacaoStatusService = {
   async getStatuses(): Promise<RenovacaoStatus[]> {
-    const response = await fetch(`${BASE_URL}/v1/read/renovacao/status`);
+    const response = await fetch(`${BASE_URL}/v1/read/renovacao/status?searchTag=all`);
     if (!response.ok) throw new Error("Erro ao buscar status de renovação");
     return response.json();
   },
@@ -26,17 +26,17 @@ export const renovacaoStatusService = {
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error("Erro ao criar status de renovação");
-    return;
+    return response.json();
   },
 
   async updateStatus(id: string, data: Partial<RenovacaoStatus>): Promise<RenovacaoStatus> {
-    const response = await fetch(`${BASE_URL}/update/renovacao/status/${id}`, {
-      method: "PUT",
+    const response = await fetch(`${BASE_URL}/v1/update/renovacao/status`, {
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ statusId: id, ...data }),
     });
     if (!response.ok) throw new Error("Erro ao atualizar status de renovação");
-    return;
+    return response.json();
   },
 
   async deleteStatus(id: string): Promise<void> {
