@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,6 +15,8 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCreateClient, useUpdateClient } from "@/hooks/useClients";
 import type { Client } from "@/services/clientService";
+import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
+import type { ExtractedDocumentData } from "@/services/documentAnalysisService";
 
 const vehiclePolicySchema = z.object({
   veiculo_fabricante: z.string().trim().max(100).optional().default(""),
@@ -82,6 +84,8 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
   const isPending = createMutation.isPending || updateMutation.isPending;
   const [activeTab, setActiveTab] = useState("dados");
   const [activeVehicle, setActiveVehicle] = useState(0);
+  const [arquivoApolice, setArquivoApolice] = useState<File | null>(null);
+  const [arquivoProposta, setArquivoProposta] = useState<File | null>(null);
 
   const defaultValues: ClientFormData = {
     nome: "", cpf: "", telefone: "", celular: "", email: "",
@@ -95,6 +99,52 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
   });
 
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "vehicles" });
+
+  const handleDocumentAnalyzed = useCallback((data: ExtractedDocumentData) => {
+    const idx = activeVehicle;
+    const vehicleFields: Record<string, string> = {
+      veiculo_fabricante: data.veiculo_fabricante || "",
+      veiculo_modelo: data.veiculo_modelo || "",
+      veiculo_ano: data.veiculo_ano || "",
+      veiculo_placa: data.veiculo_placa || "",
+      veiculo_chassi: data.veiculo_chassi || "",
+      veiculo_combustivel: data.veiculo_combustivel || "",
+      veiculo_codigo_fipe: data.veiculo_codigo_fipe || "",
+      veiculo_zero_km: data.veiculo_zero_km || "Não",
+      veiculo_utilizacao: data.veiculo_utilizacao || "",
+      seguradora: data.seguradora || "",
+      premio_total: data.premio_total || "",
+      premio_liquido: data.premio_liquido || "",
+      parcelas: data.parcelas || "1",
+      valor_parcela: data.valor_parcela || "",
+      numero_proposta: data.numero_proposta || "",
+      numero_apolice: data.numero_apolice || "",
+      ci: data.ci || "",
+      vigencia_inicio: data.vigencia_inicio || "",
+      vigencia_fim: data.vigencia_fim || "",
+      comissao: "",
+      classe_bonus: data.classe_bonus || "",
+      iof: data.iof || "",
+      forma_pagamento: data.forma_pagamento || "",
+      franquia: data.franquia || "",
+    };
+    Object.entries(vehicleFields).forEach(([key, value]) => {
+      form.setValue(`vehicles.${idx}.${key}` as any, value);
+    });
+
+    if (data.segurado_nome && !form.getValues("nome")) form.setValue("nome", data.segurado_nome);
+    if (data.segurado_cpf && !form.getValues("cpf")) form.setValue("cpf", data.segurado_cpf);
+    if (data.segurado_email && !form.getValues("email")) form.setValue("email", data.segurado_email);
+    if (data.segurado_telefone && !form.getValues("telefone")) form.setValue("telefone", data.segurado_telefone);
+    if (data.segurado_celular && !form.getValues("celular")) form.setValue("celular", data.segurado_celular);
+    if (data.segurado_endereco && !form.getValues("endereco")) form.setValue("endereco", data.segurado_endereco);
+    if (data.segurado_bairro && !form.getValues("bairro")) form.setValue("bairro", data.segurado_bairro);
+    if (data.segurado_cidade && !form.getValues("cidade")) form.setValue("cidade", data.segurado_cidade);
+    if (data.segurado_uf && !form.getValues("uf")) form.setValue("uf", data.segurado_uf);
+    if (data.segurado_cep && !form.getValues("cep")) form.setValue("cep", data.segurado_cep);
+
+    toast({ title: "Dados importados!", description: `Veículo ${idx + 1} preenchido com os dados do documento.` });
+  }, [activeVehicle, form]);
 
   useEffect(() => {
     if (editClient) {
@@ -341,6 +391,19 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
 
                   {/* ── Tab: Veículos e Apólices ── */}
                   <TabsContent value="veiculos" className="space-y-4 pb-4 mt-0">
+                    {/* Document Upload */}
+                    <div className="rounded-lg border border-dashed border-border bg-muted/20 p-3">
+                      <DocumentUploadSection
+                        arquivoApolice={arquivoApolice}
+                        setArquivoApolice={setArquivoApolice}
+                        arquivoProposta={arquivoProposta}
+                        setArquivoProposta={setArquivoProposta}
+                        onDocumentAnalyzed={handleDocumentAnalyzed}
+                        leadId={editClient?.lead_id}
+                      />
+                    </div>
+
+                    <Separator />
                     {/* Vehicle selector tabs */}
                     <div className="flex items-center gap-2 flex-wrap">
                       {fields.map((field, index) => (
