@@ -198,8 +198,17 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
     };
 
     if (isEditing && editClient) {
+      const updatePayload = {
+        name: data.nome,
+        phone: data.celular || data.telefone,
+        email: data.email,
+        document: data.cpf,
+        documentType: "pessoa_fisica",
+        vehicle_data: payload.vehicle_data,
+        financial_data: payload.financial_data,
+      };
       updateMutation.mutate(
-        { id: editClient.id, payload },
+        { id: editClient.id, payload: updatePayload },
         {
           onSuccess: () => {
             toast({ title: "Cliente atualizado!", description: `${data.nome} atualizado com sucesso.` });
