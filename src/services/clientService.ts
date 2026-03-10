@@ -140,6 +140,7 @@ export function buildClientPayload(
       veiculo_codigo_fipe: data.veiculo_codigo_fipe,
       veiculo_zero_km: data.veiculo_zero_km,
       veiculo_utilizacao: data.veiculo_utilizacao,
+      numero_apolice: data.numero_apolice,
     }],
     financial_data: [{
       premio_total: data.premio_total,
