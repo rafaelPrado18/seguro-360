@@ -426,6 +426,8 @@ export function ClientDetailSheet({ open, onOpenChange, client: clientProp }: Cl
               )}
             </TabsContent>
           </ScrollArea>
+          </>
+          )}
         </Tabs>
       </SheetContent>
     </Sheet>
