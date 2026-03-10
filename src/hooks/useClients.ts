@@ -22,7 +22,7 @@ export function useCreateClient() {
 export function useUpdateClient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: Partial<ClientCreatePayload> }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: ClientUpdatePayload }) =>
       clientService.updateClient(id, payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
   });
