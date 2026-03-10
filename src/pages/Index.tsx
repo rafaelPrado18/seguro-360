@@ -91,7 +91,7 @@ const Dashboard = () => {
   // Compute real lead summary
   const leadSummary = useMemo(() => {
     const leads = leadsResponse?.data || [];
-    const novosHoje = leads.filter(l => isToday(l.created_at)).length;
+    const novosHoje = leads.filter(l => isNovo(l.created_at)).length;
     const emAtendimento = leads.filter(l => l.status === "em_contato" || l.status === "qualificado").length;
     const aguardandoProposta = leads.filter(l => l.status === "proposta_enviada").length;
     const convertidos = leads.filter(l => l.status === "convertido").length;
