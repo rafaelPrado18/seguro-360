@@ -31,6 +31,7 @@ export type VehicleDataSingle = {
   veiculo_codigo_fipe: string;
   veiculo_zero_km: string;
   veiculo_utilizacao: string;
+  numero_apolice?: string;
 };
 
 export type FinancialDataSingle = {
