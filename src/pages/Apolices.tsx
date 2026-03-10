@@ -14,14 +14,14 @@ import { NovaApoliceDialog } from "@/components/apolices/NovaApoliceDialog";
 import { toast } from "@/hooks/use-toast";
 
 const apolicesData = [
-  { id: "#4521", cliente: "João Silva", ramo: "Auto", seguradora: "Porto Seguro", inicio: "15/01/2026", fim: "15/01/2027", premio: "R$ 3.200", comissao: "R$ 480", status: "Vigente" },
-  { id: "#4520", cliente: "Empresa ABC Ltda", ramo: "Empresarial", seguradora: "Allianz", inicio: "10/01/2026", fim: "10/01/2027", premio: "R$ 25.000", comissao: "R$ 3.750", status: "Vigente" },
-  { id: "#4519", cliente: "Maria Santos", ramo: "Vida", seguradora: "SulAmérica", inicio: "05/01/2026", fim: "05/01/2027", premio: "R$ 1.800", comissao: "R$ 540", status: "Vigente" },
-  { id: "#4518", cliente: "Carlos Mendes", ramo: "Auto", seguradora: "Bradesco Seguros", inicio: "20/12/2025", fim: "20/12/2026", premio: "R$ 4.100", comissao: "R$ 615", status: "Vigente" },
-  { id: "#4517", cliente: "Fernanda Costa", ramo: "Residencial", seguradora: "Tokio Marine", inicio: "15/12/2025", fim: "15/12/2026", premio: "R$ 2.500", comissao: "R$ 500", status: "Vigente" },
-  { id: "#4516", cliente: "Roberto Lima", ramo: "Vida", seguradora: "MetLife", inicio: "01/12/2025", fim: "01/12/2026", premio: "R$ 3.800", comissao: "R$ 760", status: "Vigente" },
-  { id: "#4515", cliente: "Ana Souza", ramo: "Auto", seguradora: "HDI", inicio: "20/11/2025", fim: "20/11/2026", premio: "R$ 2.900", comissao: "R$ 435", status: "Cancelada" },
-  { id: "#4514", cliente: "Indústria XYZ S/A", ramo: "Empresarial", seguradora: "Zurich", inicio: "10/11/2025", fim: "10/11/2026", premio: "R$ 85.000", comissao: "R$ 12.750", status: "Vigente" },
+  { id: "#4521", cliente: "João Silva", ramo: "Auto", placa: "ABC1D23", seguradora: "Porto Seguro", inicio: "15/01/2026", fim: "15/01/2027", premio: "R$ 3.200", comissao: "R$ 480", status: "Vigente" },
+  { id: "#4520", cliente: "Empresa ABC Ltda", ramo: "Empresarial", placa: "—", seguradora: "Allianz", inicio: "10/01/2026", fim: "10/01/2027", premio: "R$ 25.000", comissao: "R$ 3.750", status: "Vigente" },
+  { id: "#4519", cliente: "Maria Santos", ramo: "Vida", placa: "—", seguradora: "SulAmérica", inicio: "05/01/2026", fim: "05/01/2027", premio: "R$ 1.800", comissao: "R$ 540", status: "Vigente" },
+  { id: "#4518", cliente: "Carlos Mendes", ramo: "Auto", placa: "DEF4G56", seguradora: "Bradesco Seguros", inicio: "20/12/2025", fim: "20/12/2026", premio: "R$ 4.100", comissao: "R$ 615", status: "Vigente" },
+  { id: "#4517", cliente: "Fernanda Costa", ramo: "Residencial", placa: "—", seguradora: "Tokio Marine", inicio: "15/12/2025", fim: "15/12/2026", premio: "R$ 2.500", comissao: "R$ 500", status: "Vigente" },
+  { id: "#4516", cliente: "Roberto Lima", ramo: "Vida", placa: "—", seguradora: "MetLife", inicio: "01/12/2025", fim: "01/12/2026", premio: "R$ 3.800", comissao: "R$ 760", status: "Vigente" },
+  { id: "#4515", cliente: "Ana Souza", ramo: "Auto", placa: "GHI7J89", seguradora: "HDI", inicio: "20/11/2025", fim: "20/11/2026", premio: "R$ 2.900", comissao: "R$ 435", status: "Cancelada" },
+  { id: "#4514", cliente: "Indústria XYZ S/A", ramo: "Empresarial", placa: "—", seguradora: "Zurich", inicio: "10/11/2025", fim: "10/11/2026", premio: "R$ 85.000", comissao: "R$ 12.750", status: "Vigente" },
 ];
 
 const Apolices = () => {
