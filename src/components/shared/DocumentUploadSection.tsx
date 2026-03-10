@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Upload, FileText, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { documentAnalysisService, type ExtractedDocumentData } from "@/services/documentAnalysisService";
+import { leadsService } from "@/services/leadsService";
 import { DocumentAnalysisDialog } from "./DocumentAnalysisDialog";
 
 interface DocumentUploadSectionProps {
@@ -14,6 +15,14 @@ interface DocumentUploadSectionProps {
   setArquivoProposta: (f: File | null) => void;
   required?: boolean;
   onDocumentAnalyzed?: (data: ExtractedDocumentData) => void;
+  leadId?: string;
+}
+
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()!.split(";").shift()!;
+  return null;
 }
 
 export function DocumentUploadSection({
@@ -23,6 +32,7 @@ export function DocumentUploadSection({
   setArquivoProposta,
   required = false,
   onDocumentAnalyzed,
+  leadId,
 }: DocumentUploadSectionProps) {
   const { toast } = useToast();
   const [tipoDocumento, setTipoDocumento] = useState<"apolice" | "proposta" | "">("");
