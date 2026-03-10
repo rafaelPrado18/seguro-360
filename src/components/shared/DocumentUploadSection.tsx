@@ -67,6 +67,24 @@ export function DocumentUploadSection({
       const result = await documentAnalysisService.analyzeDocument(file, tipoDocumento);
       setAnalysisResult(result);
       setDialogOpen(true);
+
+      // Criar histórico do lead (arquivo + nota)
+      if (leadId) {
+        const profile = getCookie("userEmail") || "sistema";
+        const fileType = tipoDocumento as "apolice" | "proposta";
+        try {
+          await leadsService.uploadLeadFile(file, fileType, profile, leadId);
+          await leadsService.createLeadHistory({
+            leadId,
+            historyType: "note",
+            textContent: `Documento ${tipoDocumento === "apolice" ? "Apólice" : "Proposta"} enviado para análise: ${file.name}`,
+            profile,
+          });
+        } catch {
+          // Não bloquear o fluxo se o histórico falhar
+          console.warn("Falha ao criar histórico do documento");
+        }
+      }
     } catch {
       toast({ title: "Erro na análise", description: "Não foi possível extrair os dados do documento.", variant: "destructive" });
     } finally {
