@@ -277,6 +277,13 @@ export function ClientDetailSheet({ open, onOpenChange, client: clientProp }: Cl
           </div>
         </SheetHeader>
 
+        {isLoadingClient ? (
+          <div className="px-6 py-8 space-y-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-6 w-full" />
+            ))}
+          </div>
+        ) : (
         <Tabs defaultValue="dados" className="flex-1">
           <div className="px-6">
             <TabsList className="grid w-full grid-cols-4">
@@ -426,9 +433,8 @@ export function ClientDetailSheet({ open, onOpenChange, client: clientProp }: Cl
               )}
             </TabsContent>
           </ScrollArea>
-          </>
-          )}
         </Tabs>
+        )}
       </SheetContent>
     </Sheet>
   );
