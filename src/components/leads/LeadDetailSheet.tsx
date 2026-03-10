@@ -191,12 +191,8 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
 
       if (lead.cliente_id) {
         // Cliente já existe — atualizar com estrutura de update
-        const updatePayload = {
-          name: payload.customer_data.nome,
-          phone: payload.customer_data.celular,
-          email: payload.customer_data.email,
-          document: payload.customer_data.cpf,
-          documentType: "pessoa_fisica",
+        const updatePayload: ClientUpdatePayload = {
+          customer_data: payload.customer_data,
           vehicle_data: Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data],
           financial_data: Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data],
         };

@@ -248,12 +248,8 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
     };
 
     if (isEditing && editClient) {
-      const updatePayload = {
-        name: data.nome,
-        phone: data.celular || data.telefone,
-        email: data.email,
-        document: data.cpf,
-        documentType: "pessoa_fisica",
+      const updatePayload: ClientUpdatePayload = {
+        customer_data: payload.customer_data,
         vehicle_data: payload.vehicle_data,
         financial_data: payload.financial_data,
       };
