@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { clientService, type ClientCreatePayload } from "@/services/clientService";
+import { clientService, type ClientCreatePayload, type ClientUpdatePayload } from "@/services/clientService";
 
 export function useClients() {
   return useQuery({
