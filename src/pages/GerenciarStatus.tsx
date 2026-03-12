@@ -52,7 +52,7 @@ const GerenciarStatus = () => {
 
   useEffect(() => {
     if (apiStatuses && apiStatuses.length > 0) {
-      setStatuses(apiStatuses);
+      setStatuses([...apiStatuses].sort((a, b) => a.ordem - b.ordem));
     }
   }, [apiStatuses]);
   const [editingStatus, setEditingStatus] = useState<LeadStatus | null>(null);
