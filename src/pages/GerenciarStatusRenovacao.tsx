@@ -50,6 +50,7 @@ const GerenciarStatusRenovacao = () => {
     color: "text-info",
     tipo: "ativo" as "ativo" | "ganho" | "perdido",
     template_id: null as string | null,
+    ordem: 1,
   });
 
   const openCreate = () => {
