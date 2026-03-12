@@ -277,6 +277,17 @@ const GerenciarStatus = () => {
                 />
               </div>
               <div className="space-y-1.5">
+                <Label className="text-xs">Ordem</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={formData.ordem}
+                  onChange={(e) => setFormData(prev => ({ ...prev, ordem: Number(e.target.value) || 1 }))}
+                  placeholder="Ex: 1"
+                  className="h-9 text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
                 <Label className="text-xs">Cor</Label>
                 <div className="flex gap-2 flex-wrap">
                   {COLOR_OPTIONS.map((c) => (
