@@ -116,7 +116,7 @@ const GerenciarStatus = () => {
       );
     } else {
       createStatusMutation.mutate(
-        { ...statusData, ordem: statuses.length + 1 },
+        statusData,
         {
           onSuccess: () => {
             setIsDialogOpen(false);
