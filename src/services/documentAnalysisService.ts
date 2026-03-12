@@ -148,6 +148,7 @@ export const documentAnalysisService = {
       valor_parcela: financial.valor_parcela ?? "",
       forma_pagamento: financial.forma_pagamento ?? "",
       franquia: financial.franquia ?? "",
+      comissao: financial.comissao ?? "",
 
       coberturas: Array.isArray(financial.coberturas) ? financial.coberturas : [],
     };
