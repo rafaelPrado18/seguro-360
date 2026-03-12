@@ -395,7 +395,27 @@ const Leads = () => {
     return dateB.getTime() - dateA.getTime();
   });
 
-  return (
+  const handleExportExcel = useCallback(() => {
+    const rows = sortedLeads.map(l => ({
+      "Nome": l.nome || "",
+      "Telefone": l.telefone || "",
+      "Email": l.email || "",
+      "Placa": l.placa || "",
+      "Ramo": l.ramo_interesse || "",
+      "Status": statusLabels[l.status] || l.status,
+      "Corretor": l.corretor_responsavel || "",
+      "Origem": origemLabels[l.origem] || l.origem || "",
+      "Valor Estimado": l.valor_estimado || 0,
+      "Criado em": l.created_at || "",
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Leads");
+    XLSX.writeFile(wb, `leads_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast.success(`${rows.length} leads exportados com sucesso!`);
+  }, [sortedLeads]);
+
+
     <AppLayout>
       <div className="space-y-6">
         {/* Header */}
