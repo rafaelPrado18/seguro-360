@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Search, Plus, MoreHorizontal, Users, Target,
-  TrendingUp, UserCheck, Shuffle, Phone, Kanban, List, Settings2, Send, MessageSquare, CalendarDays
+  TrendingUp, UserCheck, Shuffle, Phone, Kanban, List, Settings2, Send, MessageSquare, CalendarDays, Download
 } from "lucide-react";
+import * as XLSX from "xlsx";
 import { startOfDay, startOfYesterday, subDays, isAfter, isEqual, parse } from "date-fns";
 import { LeadKanban, type KanbanColumn } from "@/components/leads/LeadKanban";
 import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
@@ -394,6 +395,26 @@ const Leads = () => {
     return dateB.getTime() - dateA.getTime();
   });
 
+  const handleExportExcel = useCallback(() => {
+    const rows = sortedLeads.map(l => ({
+      "Nome": l.nome || "",
+      "Telefone": l.telefone || "",
+      "Email": l.email || "",
+      "Placa": l.placa || "",
+      "Ramo": l.ramo_interesse || "",
+      "Status": statusLabels[l.status] || l.status,
+      "Corretor": l.corretor_responsavel || "",
+      "Origem": origemLabels[l.origem] || l.origem || "",
+      "Valor Estimado": l.valor_estimado || 0,
+      "Criado em": l.created_at || "",
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Leads");
+    XLSX.writeFile(wb, `leads_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast.success(`${rows.length} leads exportados com sucesso!`);
+  }, [sortedLeads]);
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -589,6 +610,14 @@ const Leads = () => {
             )}
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={handleExportExcel}
+            >
+              <Download className="h-3.5 w-3.5" /> Exportar
+            </Button>
             <Button
               variant={viewMode === "kanban" ? "default" : "outline"}
               size="sm"
