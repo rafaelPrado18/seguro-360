@@ -84,6 +84,7 @@ const GerenciarStatusRenovacao = () => {
       tipo: formData.tipo,
       is_final: formData.tipo !== "ativo",
       template_id: formData.template_id,
+      ordem: formData.ordem,
     };
 
     if (editingStatus) {
