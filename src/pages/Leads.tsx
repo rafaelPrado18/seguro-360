@@ -447,27 +447,6 @@ const Leads = () => {
           </div>
         </div>
 
-        {/* KPIs */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {[
-            { label: "Total", value: stats.total, icon: Users, color: "text-foreground" },
-            { label: "Novos", value: stats.novos, icon: Plus, color: "text-info" },
-            { label: "Em Contato", value: stats.em_contato, icon: Phone, color: "text-warning" },
-            { label: "Qualificados", value: stats.qualificados, icon: Target, color: "text-primary" },
-            { label: "Convertidos", value: stats.convertidos, icon: UserCheck, color: "text-success" },
-            { label: "Taxa Conversão", value: `${stats.taxa_conversao}%`, icon: TrendingUp, color: "text-success" },
-          ].map((kpi, i) => (
-            <Card key={kpi.label} className="kpi-card-shadow animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
-              <CardContent className="pt-4 pb-3 px-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{kpi.label}</p>
-                  <kpi.icon className={`h-3.5 w-3.5 ${kpi.color}`} />
-                </div>
-                <p className={`mt-1 text-xl font-bold ${kpi.color}`}>{kpi.value}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
         {/* Admin: Distribution Table */}
         {isAdmin && (
