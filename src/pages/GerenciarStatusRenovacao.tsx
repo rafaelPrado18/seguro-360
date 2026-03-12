@@ -97,7 +97,7 @@ const GerenciarStatusRenovacao = () => {
       );
     } else {
       createMutation.mutate(
-        { ...statusData, ordem: statuses.length + 1 },
+        statusData,
         {
           onSuccess: () => { setIsDialogOpen(false); toast({ title: "Status criado com sucesso!" }); },
           onError: (err) => { toast({ title: "Erro ao criar status", description: err.message, variant: "destructive" }); },
