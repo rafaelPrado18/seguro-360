@@ -44,6 +44,7 @@ export interface ExtractedDocumentData {
   valor_parcela: string;
   forma_pagamento: string;
   franquia: string;
+  comissao: string;
 
   // Coberturas (resumo)
   coberturas: Array<{
