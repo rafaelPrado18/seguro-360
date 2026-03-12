@@ -301,7 +301,7 @@ const Relatorios = () => {
     const total = leads.length;
     const convertidos = leads.filter(l => l.status === "convertido").length;
     const perdidos = leads.filter(l => l.status === "perdido").length;
-    const valorTotal = leads.reduce((s, l) => s + (l.valor_estimado || 0), 0);
+    const valorTotal = leads.reduce((s, l) => s + (Number(l.valor_estimado) || 0), 0);
     return { total, convertidos, perdidos, valorTotal, conversao: total > 0 ? Math.round((convertidos / total) * 100) : 0 };
   }, [leads]);
 
