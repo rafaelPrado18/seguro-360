@@ -55,7 +55,7 @@ const GerenciarStatusRenovacao = () => {
 
   const openCreate = () => {
     setEditingStatus(null);
-    setFormData({ label: "", key: "", bgColor: "bg-info", color: "text-info", tipo: "ativo", template_id: null });
+    setFormData({ label: "", key: "", bgColor: "bg-info", color: "text-info", tipo: "ativo", template_id: null, ordem: statuses.length + 1 });
     setIsDialogOpen(true);
   };
 
