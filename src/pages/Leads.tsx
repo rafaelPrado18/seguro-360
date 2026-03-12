@@ -415,7 +415,7 @@ const Leads = () => {
     toast.success(`${rows.length} leads exportados com sucesso!`);
   }, [sortedLeads]);
 
-
+  return (
     <AppLayout>
       <div className="space-y-6">
         {/* Header */}
