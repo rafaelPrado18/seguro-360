@@ -82,6 +82,7 @@ const GerenciarStatus = () => {
       color: status.color,
       tipo: status.tipo,
       template_id: status.template_id,
+      ordem: status.ordem,
     });
     setIsDialogOpen(true);
   };
