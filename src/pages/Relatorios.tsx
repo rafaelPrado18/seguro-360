@@ -223,7 +223,7 @@ const Relatorios = () => {
       map[name].total++;
       if (l.status === "convertido") {
         map[name].convertidos++;
-        map[name].valor += l.valor_estimado || 0;
+        map[name].valor += Number(l.valor_estimado) || 0;
       }
     });
     return Object.entries(map).map(([nome, d]) => ({
