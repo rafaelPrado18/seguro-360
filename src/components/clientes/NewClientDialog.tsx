@@ -599,6 +599,27 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
                               <FormMessage />
                             </FormItem>
                           )} />
+                          <FormField control={form.control} name={`vehicles.${index}.comissao`} render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>Comissão</FormLabel>
+                              <FormControl><Input placeholder="Ex: 20%" {...f} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name={`vehicles.${index}.classe_bonus`} render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>Classe de Bônus</FormLabel>
+                              <FormControl><Input placeholder="0" {...f} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name={`vehicles.${index}.iof`} render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>IOF</FormLabel>
+                              <FormControl><Input placeholder="R$ 0,00" {...f} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
                         </div>
                       </div>
                     ))}
