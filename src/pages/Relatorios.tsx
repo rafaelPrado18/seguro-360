@@ -223,7 +223,7 @@ const Relatorios = () => {
       map[name].total++;
       if (l.status === "convertido") {
         map[name].convertidos++;
-        map[name].valor += l.valor_estimado || 0;
+        map[name].valor += Number(l.valor_estimado) || 0;
       }
     });
     return Object.entries(map).map(([nome, d]) => ({
@@ -301,7 +301,7 @@ const Relatorios = () => {
     const total = leads.length;
     const convertidos = leads.filter(l => l.status === "convertido").length;
     const perdidos = leads.filter(l => l.status === "perdido").length;
-    const valorTotal = leads.reduce((s, l) => s + (l.valor_estimado || 0), 0);
+    const valorTotal = leads.reduce((s, l) => s + (Number(l.valor_estimado) || 0), 0);
     return { total, convertidos, perdidos, valorTotal, conversao: total > 0 ? Math.round((convertidos / total) * 100) : 0 };
   }, [leads]);
 
