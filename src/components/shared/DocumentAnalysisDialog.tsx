@@ -136,6 +136,7 @@ export function DocumentAnalysisDialog({ open, onOpenChange, data, onConfirm }: 
                 <EditableField label="Valor Parcela" value={editData.valor_parcela} onChange={v => set("valor_parcela", v)} />
                 <EditableField label="Pagamento" value={editData.forma_pagamento} onChange={v => set("forma_pagamento", v)} />
                 <EditableField label="Franquia" value={editData.franquia} onChange={v => set("franquia", v)} />
+                <EditableField label="Comissão (%)" value={editData.comissao} onChange={v => set("comissao", v)} />
               </div>
             </div>
 

@@ -44,6 +44,7 @@ export interface ExtractedDocumentData {
   valor_parcela: string;
   forma_pagamento: string;
   franquia: string;
+  comissao: string;
 
   // Coberturas (resumo)
   coberturas: Array<{
@@ -147,6 +148,7 @@ export const documentAnalysisService = {
       valor_parcela: financial.valor_parcela ?? "",
       forma_pagamento: financial.forma_pagamento ?? "",
       franquia: financial.franquia ?? "",
+      comissao: financial.comissao ?? "",
 
       coberturas: Array.isArray(financial.coberturas) ? financial.coberturas : [],
     };
