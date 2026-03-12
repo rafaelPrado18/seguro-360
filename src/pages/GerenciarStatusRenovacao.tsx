@@ -50,11 +50,12 @@ const GerenciarStatusRenovacao = () => {
     color: "text-info",
     tipo: "ativo" as "ativo" | "ganho" | "perdido",
     template_id: null as string | null,
+    ordem: 1,
   });
 
   const openCreate = () => {
     setEditingStatus(null);
-    setFormData({ label: "", key: "", bgColor: "bg-info", color: "text-info", tipo: "ativo", template_id: null });
+    setFormData({ label: "", key: "", bgColor: "bg-info", color: "text-info", tipo: "ativo", template_id: null, ordem: statuses.length + 1 });
     setIsDialogOpen(true);
   };
 
@@ -67,6 +68,7 @@ const GerenciarStatusRenovacao = () => {
       color: status.color,
       tipo: status.tipo,
       template_id: status.template_id,
+      ordem: status.ordem,
     });
     setIsDialogOpen(true);
   };
@@ -82,6 +84,7 @@ const GerenciarStatusRenovacao = () => {
       tipo: formData.tipo,
       is_final: formData.tipo !== "ativo",
       template_id: formData.template_id,
+      ordem: formData.ordem,
     };
 
     if (editingStatus) {
@@ -94,7 +97,7 @@ const GerenciarStatusRenovacao = () => {
       );
     } else {
       createMutation.mutate(
-        { ...statusData, ordem: statuses.length + 1 },
+        statusData,
         {
           onSuccess: () => { setIsDialogOpen(false); toast({ title: "Status criado com sucesso!" }); },
           onError: (err) => { toast({ title: "Erro ao criar status", description: err.message, variant: "destructive" }); },
@@ -240,6 +243,17 @@ const GerenciarStatusRenovacao = () => {
                   onChange={(e) => setFormData(prev => ({ ...prev, key: e.target.value }))}
                   placeholder="Ex: aguardando_proposta"
                   className="h-9 text-sm font-mono"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Ordem</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={formData.ordem}
+                  onChange={(e) => setFormData(prev => ({ ...prev, ordem: Number(e.target.value) || 1 }))}
+                  placeholder="Ex: 1"
+                  className="h-9 text-sm"
                 />
               </div>
               <div className="space-y-1.5">
