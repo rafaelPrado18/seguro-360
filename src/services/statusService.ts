@@ -32,14 +32,13 @@ export const statusService = {
     return;
   },
 
-  async updateLeadStatus(id: string, data: Partial<LeadStatus>): Promise<LeadStatus> {
-    const response = await fetch(`${BASE_URL}/update/lead/status/${id}`, {
-      method: "PUT",
+  async updateLeadStatus(id: string, data: Partial<LeadStatus>): Promise<void> {
+    const response = await fetch(`${BASE_URL}/v1/update/lead/status`, {
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ statusId: id, ...data }),
     });
     if (!response.ok) throw new Error("Erro ao atualizar status");
-    return;
   },
 
   async deleteLeadStatus(id: string): Promise<void> {
