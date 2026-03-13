@@ -10,7 +10,7 @@ export function useAgenda() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: Omit<Tarefa, "id">) => agendaService.create(data),
+    mutationFn: (data: Omit<Tarefa, "id" | "id_usuario">) => agendaService.create(data as Omit<Tarefa, "id">),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["agenda"] }),
   });
 
