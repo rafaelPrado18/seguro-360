@@ -44,7 +44,7 @@ export const agendaService = {
     const response = await fetch(`${BASE_URL}/v1/create/agenda`, {
       method: "POST",
       headers: HEADERS,
-      body: JSON.stringify({ ...data, id_usuario: getUserId() }),
+    body: JSON.stringify({ id_usuario: getUserId(), ...data }),
     });
     if (!response.ok) throw new Error("Erro ao criar tarefa");
     return response.json();
