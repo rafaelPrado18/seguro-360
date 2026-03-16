@@ -71,7 +71,7 @@ export function RenovacaoKanban({ renovacoes, columns, onStatusChange, onItemCli
 
   return (
     <>
-      <div className="flex gap-4 overflow-x-auto pb-4" style={{ height: "calc(100vh - 22rem)" }}>
+      <div className="flex gap-4 overflow-x-auto pb-4" style={{ height: "calc(100vh - 14rem)" }}>
         {columns.map((col) => {
           const colItems = getColumnItems(col.id);
           const isOver = dragOverColumn === col.id;
