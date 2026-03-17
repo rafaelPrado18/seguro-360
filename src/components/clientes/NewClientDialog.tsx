@@ -78,7 +78,7 @@ const emptyVehicle: z.infer<typeof vehiclePolicySchema> = {
   comissao: "", classe_bonus: "", iof: "", forma_pagamento: "", franquia: "",
 };
 
-export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDialogProps) {
+export function NewClientDialog({ open, onOpenChange, editClient, onClientCreated }: NewClientDialogProps) {
   const isEditing = !!editClient;
   const createMutation = useCreateClient();
   const updateMutation = useUpdateClient();
