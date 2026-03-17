@@ -21,13 +21,13 @@ const SINISTRO_COLUMNS: SinistroKanbanColumn[] = [
 ];
 
 const FILTER_OPTIONS = [
-  { value: "all", label: "Todos os filtros" },
-  { value: "seguradora", label: "Seguradora" },
-  { value: "agendamento_vistoria", label: "Agendamento de vistoria" },
-  { value: "retorno_pos_vistoria", label: "Acompanhamento retorno pós vistoria" },
-  { value: "prazo_entrega_peca", label: "Acompanhamento prazo entrega de peça" },
-  { value: "pos_envio_documentos", label: "Acompanhamento pós envio de documentos" },
-  { value: "oficinas", label: "Oficinas (contatos oficina)" },
+  { value: "all", label: "Todos os filtros", type: "none" },
+  { value: "seguradora", label: "Seguradora", type: "text" },
+  { value: "agendamento_vistoria", label: "Agendamento de vistoria", type: "status", statusId: "abertura" },
+  { value: "retorno_pos_vistoria", label: "Acompanhamento retorno pós vistoria", type: "status", statusId: "primeiro_atendimento" },
+  { value: "prazo_entrega_peca", label: "Acompanhamento prazo entrega de peça", type: "status", statusId: "acompanhamento_reparo" },
+  { value: "pos_envio_documentos", label: "Acompanhamento pós envio de documentos", type: "status", statusId: "pendente" },
+  { value: "oficinas", label: "Oficinas (contatos oficina)", type: "text" },
 ];
 
 const initialSinistros: SinistroItem[] = [
