@@ -52,6 +52,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"existente" | "novo">("existente");
   const [showNewClientDialog, setShowNewClientDialog] = useState(false);
+  const [pendingClientName, setPendingClientName] = useState<string | null>(null);
   const { data: clients, isLoading: loadingClients } = useClients();
 
   const form = useForm<SinistroFormData>({
