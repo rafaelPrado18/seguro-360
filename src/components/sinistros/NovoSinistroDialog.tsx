@@ -67,8 +67,21 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
     if (open) {
       form.reset();
       setActiveTab("existente");
+      setPendingClientName(null);
     }
   }, [open]);
+
+  // Auto-select newly created client after react-query refetches
+  useEffect(() => {
+    if (pendingClientName && clients?.length) {
+      const match = clients.find(c => c.nome === pendingClientName);
+      if (match) {
+        form.setValue("clienteId", match.id);
+        setPendingClientName(null);
+        setActiveTab("existente");
+      }
+    }
+  }, [clients, pendingClientName]);
 
   const selectedClientId = form.watch("clienteId");
   const selectedVehicleIndex = form.watch("vehicleIndex");
