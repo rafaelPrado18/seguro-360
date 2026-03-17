@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, UserPlus, Users, Car } from "lucide-react";
 import { useClients } from "@/hooks/useClients";
+import { useAgenda } from "@/hooks/useAgenda";
 import { NewClientDialog } from "@/components/clientes/NewClientDialog";
 import type { SinistroItem } from "./SinistroKanban";
 import type { Client, VehiclePolicy } from "@/services/clientService";
@@ -54,6 +55,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
   const [showNewClientDialog, setShowNewClientDialog] = useState(false);
   const [pendingClientName, setPendingClientName] = useState<string | null>(null);
   const { data: clients, isLoading: loadingClients } = useClients();
+  const { createTarefa } = useAgenda();
 
   const form = useForm<SinistroFormData>({
     resolver: zodResolver(sinistroSchema),
@@ -139,6 +141,20 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
       };
 
       onSinistroCriado?.(newSinistro);
+
+      // Criar evento na agenda
+      try {
+        await createTarefa({
+          titulo: `Sinistro ${newSinistro.id} - ${data.tipo} - ${clientName}${vehicle ? ` (${vehicle.vehicle.veiculo_placa || vehicle.vehicle.veiculo_modelo})` : ""}`,
+          hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+          tipo: "Sinistro",
+          prioridade: data.prioridade,
+          concluida: false,
+        });
+      } catch {
+        console.warn("Não foi possível criar evento na agenda");
+      }
+
       toast({ title: "Sinistro criado!", description: `Sinistro para ${clientName} registrado com sucesso.` });
       form.reset();
       onOpenChange(false);
