@@ -376,6 +376,9 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
       <NewClientDialog
         open={showNewClientDialog}
         onOpenChange={setShowNewClientDialog}
+        onClientCreated={(clientName) => {
+          setPendingClientName(clientName);
+        }}
       />
     </>
   );
