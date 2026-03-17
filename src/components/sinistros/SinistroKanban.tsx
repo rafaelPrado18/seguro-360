@@ -14,6 +14,14 @@ export interface SinistroKanbanColumn {
   bgColor: string;
 }
 
+export interface SinistroVeiculo {
+  fabricante: string;
+  modelo: string;
+  ano: string;
+  placa: string;
+  chassi: string;
+}
+
 export interface SinistroItem {
   id: string;
   cliente: string;
@@ -28,6 +36,7 @@ export interface SinistroItem {
   apolice?: string;
   oficina?: string;
   observacoes?: string;
+  veiculo?: SinistroVeiculo;
 }
 
 interface SinistroKanbanProps {
@@ -135,6 +144,11 @@ export function SinistroKanban({ sinistros, columns, onStatusChange, onItemClick
                         </div>
                         <p className="text-sm font-medium text-foreground truncate">{item.cliente}</p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">{item.tipo}</p>
+                        {item.veiculo && (
+                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                            {item.veiculo.fabricante} {item.veiculo.modelo} • <span className="font-mono">{item.veiculo.placa}</span>
+                          </p>
+                        )}
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant="secondary" className="text-[9px]">{item.seguradora}</Badge>
                           {item.oficina && <span className="text-[10px] text-muted-foreground truncate">{item.oficina}</span>}

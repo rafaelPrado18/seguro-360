@@ -12,15 +12,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, UserPlus, Users } from "lucide-react";
+import { Loader2, UserPlus, Users, Car } from "lucide-react";
 import { useClients } from "@/hooks/useClients";
-import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
+import { NewClientDialog } from "@/components/clientes/NewClientDialog";
 import type { SinistroItem } from "./SinistroKanban";
+import type { Client, VehiclePolicy } from "@/services/clientService";
 
 const sinistroSchema = z.object({
   clienteId: z.string().min(1, "Selecione um cliente"),
   clienteNome: z.string().optional(),
+  vehicleIndex: z.string().min(1, "Selecione um veículo"),
   tipo: z.string().min(1, "Informe o tipo do sinistro"),
   seguradora: z.string().min(1, "Informe a seguradora"),
   apolice: z.string().optional(),
@@ -48,13 +51,13 @@ interface NovoSinistroDialogProps {
 export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: NovoSinistroDialogProps) {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"existente" | "novo">("existente");
-  const [showNewLeadDialog, setShowNewLeadDialog] = useState(false);
+  const [showNewClientDialog, setShowNewClientDialog] = useState(false);
   const { data: clients, isLoading: loadingClients } = useClients();
 
   const form = useForm<SinistroFormData>({
     resolver: zodResolver(sinistroSchema),
     defaultValues: {
-      clienteId: "", clienteNome: "", tipo: "", seguradora: "", apolice: "",
+      clienteId: "", clienteNome: "", vehicleIndex: "", tipo: "", seguradora: "", apolice: "",
       valor: "", prioridade: "Média", telefone: "", oficina: "", observacoes: "",
     },
   });
@@ -67,28 +70,37 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
   }, [open]);
 
   const selectedClientId = form.watch("clienteId");
+  const selectedVehicleIndex = form.watch("vehicleIndex");
 
+  const selectedClient: Client | undefined = clients?.find(c => c.id === selectedClientId);
+  const selectedVehicle: VehiclePolicy | undefined = selectedClient?.vehicles?.[Number(selectedVehicleIndex)];
+
+  // Auto-fill fields when client is selected
   useEffect(() => {
-    if (selectedClientId && clients) {
-      const client = clients.find(c => c.id === selectedClientId);
-      if (client) {
-        form.setValue("clienteNome", client.nome);
-        form.setValue("telefone", client.telefone || client.celular || "");
-        // Auto-fill seguradora from first vehicle if available
-        if (client.vehicles?.[0]?.financial?.seguradora) {
-          form.setValue("seguradora", client.vehicles[0].financial.seguradora);
-        }
-        if (client.vehicles?.[0]?.financial?.numero_apolice) {
-          form.setValue("apolice", client.vehicles[0].financial.numero_apolice);
-        }
-      }
+    if (selectedClient) {
+      form.setValue("clienteNome", selectedClient.nome);
+      form.setValue("telefone", selectedClient.telefone || selectedClient.celular || "");
+      // Reset vehicle selection when client changes
+      form.setValue("vehicleIndex", "");
+      form.setValue("seguradora", "");
+      form.setValue("apolice", "");
     }
-  }, [selectedClientId, clients]);
+  }, [selectedClientId]);
+
+  // Auto-fill from vehicle selection
+  useEffect(() => {
+    if (selectedVehicle) {
+      form.setValue("seguradora", selectedVehicle.financial?.seguradora || "");
+      form.setValue("apolice", selectedVehicle.financial?.numero_apolice || "");
+    }
+  }, [selectedVehicleIndex, selectedClientId]);
 
   const onSubmit = async (data: SinistroFormData) => {
     try {
       setLoading(true);
-      const clientName = clients?.find(c => c.id === data.clienteId)?.nome || data.clienteNome || "Cliente";
+      const clientName = selectedClient?.nome || data.clienteNome || "Cliente";
+      const vehicle = selectedVehicle;
+
       const newSinistro: SinistroItem = {
         id: `#${Math.floor(Math.random() * 9000) + 1000}`,
         cliente: clientName,
@@ -103,6 +115,13 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
         apolice: data.apolice || "",
         oficina: data.oficina || "",
         observacoes: data.observacoes || "",
+        veiculo: vehicle ? {
+          fabricante: vehicle.vehicle.veiculo_fabricante,
+          modelo: vehicle.vehicle.veiculo_modelo,
+          ano: vehicle.vehicle.veiculo_ano,
+          placa: vehicle.vehicle.veiculo_placa,
+          chassi: vehicle.vehicle.veiculo_chassi,
+        } : undefined,
       };
 
       onSinistroCriado?.(newSinistro);
@@ -122,7 +141,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
         <DialogContent className="sm:max-w-[580px] max-h-[90vh] p-0">
           <DialogHeader className="px-6 pt-6 pb-2">
             <DialogTitle>Novo Sinistro</DialogTitle>
-            <DialogDescription>Registre um novo sinistro vinculado a um cliente.</DialogDescription>
+            <DialogDescription>Registre um novo sinistro vinculado a um cliente e veículo.</DialogDescription>
           </DialogHeader>
 
           <Form {...form}>
@@ -130,31 +149,53 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
               <ScrollArea className="h-[calc(90vh-200px)] px-6">
                 <div className="space-y-4 pb-4">
                   {/* Client selection */}
-                  <div className="space-y-3">
-                    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "existente" | "novo")}>
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="existente" className="text-xs gap-1.5">
-                          <Users className="h-3.5 w-3.5" /> Cliente existente
-                        </TabsTrigger>
-                        <TabsTrigger value="novo" className="text-xs gap-1.5">
-                          <UserPlus className="h-3.5 w-3.5" /> Novo cliente
-                        </TabsTrigger>
-                      </TabsList>
+                  <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "existente" | "novo")}>
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="existente" className="text-xs gap-1.5">
+                        <Users className="h-3.5 w-3.5" /> Cliente existente
+                      </TabsTrigger>
+                      <TabsTrigger value="novo" className="text-xs gap-1.5">
+                        <UserPlus className="h-3.5 w-3.5" /> Novo cliente
+                      </TabsTrigger>
+                    </TabsList>
 
-                      <TabsContent value="existente" className="mt-3">
-                        <FormField control={form.control} name="clienteId" render={({ field }) => (
+                    <TabsContent value="existente" className="mt-3 space-y-3">
+                      <FormField control={form.control} name="clienteId" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cliente</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder={loadingClients ? "Carregando..." : "Selecione um cliente"} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {(clients || []).map(c => (
+                                <SelectItem key={c.id} value={c.id}>
+                                  {c.nome} — {c.cpf}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+
+                      {/* Vehicle selection - shown when client is selected */}
+                      {selectedClient && selectedClient.vehicles.length > 0 && (
+                        <FormField control={form.control} name="vehicleIndex" render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Cliente</FormLabel>
+                            <FormLabel>Veículo</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder={loadingClients ? "Carregando..." : "Selecione um cliente"} />
+                                  <SelectValue placeholder="Selecione o veículo" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {(clients || []).map(c => (
-                                  <SelectItem key={c.id} value={c.id}>
-                                    {c.nome} — {c.cpf}
+                                {selectedClient.vehicles.map((vp, idx) => (
+                                  <SelectItem key={idx} value={String(idx)}>
+                                    {vp.vehicle.veiculo_fabricante} {vp.vehicle.veiculo_modelo} — {vp.vehicle.veiculo_placa || "Sem placa"}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -162,19 +203,63 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
                             <FormMessage />
                           </FormItem>
                         )} />
-                      </TabsContent>
+                      )}
 
-                      <TabsContent value="novo" className="mt-3">
-                        <p className="text-sm text-muted-foreground mb-2">
-                          Crie um novo cliente/lead que será vinculado ao sinistro.
-                        </p>
-                        <Button type="button" variant="outline" className="w-full gap-2" onClick={() => setShowNewLeadDialog(true)}>
-                          <UserPlus className="h-4 w-4" />
-                          Cadastrar novo cliente (Lead)
-                        </Button>
-                      </TabsContent>
-                    </Tabs>
-                  </div>
+                      {/* Vehicle info card */}
+                      {selectedVehicle && (
+                        <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Car className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-semibold text-foreground">Dados do Veículo</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Fabricante</span>
+                              <span className="font-medium">{selectedVehicle.vehicle.veiculo_fabricante || "—"}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Modelo</span>
+                              <span className="font-medium">{selectedVehicle.vehicle.veiculo_modelo || "—"}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Ano</span>
+                              <span className="font-medium">{selectedVehicle.vehicle.veiculo_ano || "—"}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Placa</span>
+                              <span className="font-medium font-mono">{selectedVehicle.vehicle.veiculo_placa || "—"}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Chassi</span>
+                              <span className="font-medium font-mono text-xs">{selectedVehicle.vehicle.veiculo_chassi || "—"}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Combustível</span>
+                              <span className="font-medium">{selectedVehicle.vehicle.veiculo_combustivel || "—"}</span>
+                            </div>
+                          </div>
+                          {selectedVehicle.financial?.seguradora && (
+                            <div className="flex items-center gap-2 pt-1 border-t border-border mt-1">
+                              <Badge variant="secondary" className="text-[10px]">{selectedVehicle.financial.seguradora}</Badge>
+                              {selectedVehicle.financial.numero_apolice && (
+                                <span className="text-[11px] text-muted-foreground font-mono">Apólice: {selectedVehicle.financial.numero_apolice}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="novo" className="mt-3">
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Crie um novo cliente que será vinculado ao sinistro.
+                      </p>
+                      <Button type="button" variant="outline" className="w-full gap-2" onClick={() => setShowNewClientDialog(true)}>
+                        <UserPlus className="h-4 w-4" />
+                        Cadastrar novo cliente
+                      </Button>
+                    </TabsContent>
+                  </Tabs>
 
                   {/* Sinistro details */}
                   <div className="grid grid-cols-2 gap-3">
@@ -274,13 +359,9 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
         </DialogContent>
       </Dialog>
 
-      <NewLeadDialog
-        open={showNewLeadDialog}
-        onOpenChange={setShowNewLeadDialog}
-        onLeadCreated={() => {
-          toast({ title: "Lead/Cliente criado!", description: "Agora selecione o cliente na aba 'Cliente existente'." });
-          setActiveTab("existente");
-        }}
+      <NewClientDialog
+        open={showNewClientDialog}
+        onOpenChange={setShowNewClientDialog}
       />
     </>
   );
