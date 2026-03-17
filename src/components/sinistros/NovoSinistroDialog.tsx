@@ -55,6 +55,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
   const [showNewClientDialog, setShowNewClientDialog] = useState(false);
   const [pendingClientName, setPendingClientName] = useState<string | null>(null);
   const { data: clients, isLoading: loadingClients } = useClients();
+  const { createTarefa } = useAgenda();
 
   const form = useForm<SinistroFormData>({
     resolver: zodResolver(sinistroSchema),
