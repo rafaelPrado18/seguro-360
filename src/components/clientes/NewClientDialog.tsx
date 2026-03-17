@@ -270,6 +270,7 @@ export function NewClientDialog({ open, onOpenChange, editClient, onClientCreate
       createMutation.mutate(payload, {
         onSuccess: () => {
           toast({ title: "Cliente cadastrado!", description: `${data.nome} adicionado com sucesso.` });
+          onClientCreated?.(data.nome);
           form.reset(defaultValues);
           onOpenChange(false);
         },
