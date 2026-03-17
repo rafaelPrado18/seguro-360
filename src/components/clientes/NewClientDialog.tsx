@@ -66,6 +66,7 @@ interface NewClientDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editClient?: Client | null;
+  onClientCreated?: (clientName: string) => void;
 }
 
 const emptyVehicle: z.infer<typeof vehiclePolicySchema> = {
@@ -77,7 +78,7 @@ const emptyVehicle: z.infer<typeof vehiclePolicySchema> = {
   comissao: "", classe_bonus: "", iof: "", forma_pagamento: "", franquia: "",
 };
 
-export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDialogProps) {
+export function NewClientDialog({ open, onOpenChange, editClient, onClientCreated }: NewClientDialogProps) {
   const isEditing = !!editClient;
   const createMutation = useCreateClient();
   const updateMutation = useUpdateClient();
@@ -269,6 +270,7 @@ export function NewClientDialog({ open, onOpenChange, editClient }: NewClientDia
       createMutation.mutate(payload, {
         onSuccess: () => {
           toast({ title: "Cliente cadastrado!", description: `${data.nome} adicionado com sucesso.` });
+          onClientCreated?.(data.nome);
           form.reset(defaultValues);
           onOpenChange(false);
         },

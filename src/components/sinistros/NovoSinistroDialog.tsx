@@ -52,6 +52,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"existente" | "novo">("existente");
   const [showNewClientDialog, setShowNewClientDialog] = useState(false);
+  const [pendingClientName, setPendingClientName] = useState<string | null>(null);
   const { data: clients, isLoading: loadingClients } = useClients();
 
   const form = useForm<SinistroFormData>({
@@ -66,8 +67,21 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
     if (open) {
       form.reset();
       setActiveTab("existente");
+      setPendingClientName(null);
     }
   }, [open]);
+
+  // Auto-select newly created client after react-query refetches
+  useEffect(() => {
+    if (pendingClientName && clients?.length) {
+      const match = clients.find(c => c.nome === pendingClientName);
+      if (match) {
+        form.setValue("clienteId", match.id);
+        setPendingClientName(null);
+        setActiveTab("existente");
+      }
+    }
+  }, [clients, pendingClientName]);
 
   const selectedClientId = form.watch("clienteId");
   const selectedVehicleIndex = form.watch("vehicleIndex");
@@ -362,6 +376,9 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
       <NewClientDialog
         open={showNewClientDialog}
         onOpenChange={setShowNewClientDialog}
+        onClientCreated={(clientName) => {
+          setPendingClientName(clientName);
+        }}
       />
     </>
   );
