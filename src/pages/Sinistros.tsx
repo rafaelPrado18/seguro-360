@@ -113,9 +113,9 @@ const Sinistros = () => {
               ))}
             </SelectContent>
           </Select>
-          {activeFilter !== "all" && (
+          {activeFilterOption?.type === "text" && (
             <Input
-              placeholder={`Filtrar por ${FILTER_OPTIONS.find(f => f.value === activeFilter)?.label || ""}...`}
+              placeholder={`Filtrar por ${activeFilterOption.label}...`}
               className="h-9 text-sm max-w-xs"
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
