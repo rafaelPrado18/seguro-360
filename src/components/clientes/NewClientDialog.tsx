@@ -66,6 +66,7 @@ interface NewClientDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editClient?: Client | null;
+  onClientCreated?: (clientName: string) => void;
 }
 
 const emptyVehicle: z.infer<typeof vehiclePolicySchema> = {
