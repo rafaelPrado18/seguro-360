@@ -141,6 +141,20 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
       };
 
       onSinistroCriado?.(newSinistro);
+
+      // Criar evento na agenda
+      try {
+        await createTarefa({
+          titulo: `Sinistro ${newSinistro.id} - ${data.tipo} - ${clientName}${vehicle ? ` (${vehicle.vehicle.veiculo_placa || vehicle.vehicle.veiculo_modelo})` : ""}`,
+          hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+          tipo: "Sinistro",
+          prioridade: data.prioridade,
+          concluida: false,
+        });
+      } catch {
+        console.warn("Não foi possível criar evento na agenda");
+      }
+
       toast({ title: "Sinistro criado!", description: `Sinistro para ${clientName} registrado com sucesso.` });
       form.reset();
       onOpenChange(false);
