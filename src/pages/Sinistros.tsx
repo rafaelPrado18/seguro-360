@@ -49,15 +49,22 @@ const Sinistros = () => {
   const [selectedSinistro, setSelectedSinistro] = useState<SinistroItem | null>(null);
   const [novoDialogOpen, setNovoDialogOpen] = useState(false);
 
+  const activeFilterOption = FILTER_OPTIONS.find(f => f.value === activeFilter);
+
   const filtered = sinistros.filter(s => {
     const matchSearch = !search || s.cliente.toLowerCase().includes(search.toLowerCase()) || s.id.includes(search);
+
     let matchFilter = true;
-    if (activeFilter === "seguradora" && filterValue) {
-      matchFilter = s.seguradora.toLowerCase().includes(filterValue.toLowerCase());
+    if (activeFilterOption && activeFilterOption.type === "text" && filterValue) {
+      if (activeFilter === "seguradora") {
+        matchFilter = s.seguradora.toLowerCase().includes(filterValue.toLowerCase());
+      } else if (activeFilter === "oficinas") {
+        matchFilter = (s.oficina || "").toLowerCase().includes(filterValue.toLowerCase());
+      }
+    } else if (activeFilterOption && activeFilterOption.type === "status") {
+      matchFilter = s.status === activeFilterOption.statusId;
     }
-    if (activeFilter === "oficinas" && filterValue) {
-      matchFilter = (s.oficina || "").toLowerCase().includes(filterValue.toLowerCase());
-    }
+
     return matchSearch && matchFilter;
   });
 
