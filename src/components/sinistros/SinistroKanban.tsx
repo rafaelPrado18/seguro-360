@@ -14,6 +14,14 @@ export interface SinistroKanbanColumn {
   bgColor: string;
 }
 
+export interface SinistroVeiculo {
+  fabricante: string;
+  modelo: string;
+  ano: string;
+  placa: string;
+  chassi: string;
+}
+
 export interface SinistroItem {
   id: string;
   cliente: string;
@@ -28,6 +36,7 @@ export interface SinistroItem {
   apolice?: string;
   oficina?: string;
   observacoes?: string;
+  veiculo?: SinistroVeiculo;
 }
 
 interface SinistroKanbanProps {
