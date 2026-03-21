@@ -53,4 +53,14 @@ export const sinistroService = {
     if (!res.ok) throw new Error("Erro ao criar sinistro");
     return res.json();
   },
+
+  async updateSinistro(filtros: Record<string, string>, dados: Record<string, string>): Promise<{ matched_count: number; modified_count: number }> {
+    const res = await fetch(`${BASE_URL}/v1/update/sinistro`, {
+      method: "PATCH",
+      headers: HEADERS,
+      body: JSON.stringify({ filtros, dados }),
+    });
+    if (!res.ok) throw new Error("Erro ao atualizar sinistro");
+    return res.json();
+  },
 };
