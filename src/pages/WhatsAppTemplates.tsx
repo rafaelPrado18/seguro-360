@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Copy, Send, Eye, Variable, FileText } from "lucide-react";
 import type { WhatsAppTemplate } from "@/services/whatsappService";
-import { useWhatsAppTemplates } from "@/hooks/useWhatsApp";
+import { useWhatsAppTemplates, useCreateWhatsAppTemplate } from "@/hooks/useWhatsApp";
+import { toast } from "@/hooks/use-toast";
 
 const AVAILABLE_VARIABLES = [
   { key: "{{nome}}", label: "Nome do Cliente", example: "João Silva" },
