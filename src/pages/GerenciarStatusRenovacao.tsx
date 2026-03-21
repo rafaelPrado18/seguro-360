@@ -183,7 +183,7 @@ const GerenciarStatusRenovacao = () => {
                     {status.template_id ? (
                       <Badge variant="outline" className="text-[9px] gap-1 border-accent text-accent">
                         <MessageSquare className="h-2.5 w-2.5" />
-                        {AVAILABLE_TEMPLATES.find(t => t.id === status.template_id)?.nome || "Template"}
+                        {templates.find(t => t.id === status.template_id)?.nome || "Template"}
                       </Badge>
                     ) : (
                       <span className="text-[10px] text-muted-foreground italic">Sem template</span>
