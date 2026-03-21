@@ -82,6 +82,7 @@ const Leads = () => {
   const { data: apiData } = useLeads(null, currentUser.nome, role);
   const { data: apiStatuses } = useLeadStatuses();
   const { data: agents } = useAgents();
+  const { data: templates = [] } = useWhatsAppTemplates();
 
   const agentCorretores = useMemo(() => {
     if (!agents) return [];
