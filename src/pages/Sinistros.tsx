@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plus, Filter } from "lucide-react";
+import { Search, Plus, Filter, Loader2 } from "lucide-react";
 import { SinistroKanban, type SinistroItem, type SinistroKanbanColumn } from "@/components/sinistros/SinistroKanban";
 import { SinistroDetailSheet } from "@/components/sinistros/SinistroDetailSheet";
 import { NovoSinistroDialog } from "@/components/sinistros/NovoSinistroDialog";
 import { toast } from "@/hooks/use-toast";
+import { sinistroService } from "@/services/sinistroService";
 
 const SINISTRO_COLUMNS: SinistroKanbanColumn[] = [
   { id: "abertura", label: "Abertura / Agendamento Vistoria", color: "text-info", bgColor: "bg-info" },
@@ -30,24 +31,47 @@ const FILTER_OPTIONS = [
   { value: "oficinas", label: "Oficinas (contatos oficina)", type: "text" },
 ];
 
-const initialSinistros: SinistroItem[] = [
-  { id: "#892", cliente: "João Silva", clienteId: "1", seguradora: "Porto Seguro", tipo: "Colisão", dataAbertura: "10/02/2026", valor: "R$ 15.000", status: "abertura", prioridade: "Alta", telefone: "(11) 99999-1234", apolice: "#4521" },
-  { id: "#891", cliente: "Carlos Mendes", clienteId: "2", seguradora: "Bradesco Seguros", tipo: "Furto", dataAbertura: "08/02/2026", valor: "R$ 42.000", status: "primeiro_atendimento", prioridade: "Alta", telefone: "(31) 97777-9012", apolice: "#4518" },
-  { id: "#890", cliente: "Fernanda Costa", clienteId: "3", seguradora: "SulAmérica", tipo: "Danos Elétricos", dataAbertura: "05/02/2026", valor: "R$ 3.200", status: "acompanhamento_reparo", prioridade: "Média", telefone: "(41) 96666-3456", apolice: "#4517" },
-  { id: "#889", cliente: "Empresa ABC Ltda", clienteId: "4", seguradora: "Tokio Marine", tipo: "Incêndio", dataAbertura: "01/02/2026", valor: "R$ 120.000", status: "indenizacao_integral", prioridade: "Crítica", telefone: "(11) 3333-4567", apolice: "#4520" },
-  { id: "#888", cliente: "Roberto Lima", clienteId: "5", seguradora: "HDI", tipo: "Invalidez", dataAbertura: "28/01/2026", valor: "R$ 80.000", status: "pendente", prioridade: "Alta", telefone: "(51) 95555-1234", apolice: "#4516" },
-  { id: "#887", cliente: "Maria Santos", clienteId: "6", seguradora: "Allianz", tipo: "Hospitalização", dataAbertura: "20/01/2026", valor: "R$ 8.500", status: "acordo_terceiro", prioridade: "Média", telefone: "(21) 98888-5678", apolice: "#4519" },
-  { id: "#886", cliente: "Indústria XYZ S/A", clienteId: "7", seguradora: "Mapfre", tipo: "RC Geral", dataAbertura: "15/01/2026", valor: "R$ 250.000", status: "em_atraso", prioridade: "Crítica", telefone: "(11) 4444-7890", apolice: "#4514", oficina: "Auto Center SP" },
-];
-
 const Sinistros = () => {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [filterValue, setFilterValue] = useState("");
-  const [sinistros, setSinistros] = useState<SinistroItem[]>(initialSinistros);
+  const [sinistros, setSinistros] = useState<SinistroItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedSinistro, setSelectedSinistro] = useState<SinistroItem | null>(null);
   const [novoDialogOpen, setNovoDialogOpen] = useState(false);
+
+  const loadSinistros = async () => {
+    try {
+      setLoading(true);
+      const data = await sinistroService.fetchSinistros();
+      setSinistros(data.map(s => ({
+        id: s.id,
+        cliente: s.cliente,
+        clienteId: s.clienteId,
+        seguradora: s.seguradora,
+        tipo: s.tipo,
+        dataAbertura: s.dataAbertura,
+        valor: s.valor,
+        status: s.status,
+        prioridade: s.prioridade,
+        telefone: s.telefone,
+        apolice: s.apolice,
+        oficina: s.oficina,
+        observacoes: s.observacoes,
+        veiculo: s.veiculo,
+      })));
+    } catch (err) {
+      console.error("Erro ao carregar sinistros:", err);
+      toast({ title: "Erro", description: "Não foi possível carregar os sinistros", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSinistros();
+  }, []);
 
   const activeFilterOption = FILTER_OPTIONS.find(f => f.value === activeFilter);
 
@@ -80,6 +104,7 @@ const Sinistros = () => {
 
   const handleSinistroCriado = (sinistro: SinistroItem) => {
     setSinistros(prev => [sinistro, ...prev]);
+    loadSinistros(); // Refresh from API
   };
 
   return (
@@ -123,12 +148,18 @@ const Sinistros = () => {
           )}
         </div>
 
-        <SinistroKanban
-          sinistros={filtered}
-          columns={SINISTRO_COLUMNS}
-          onStatusChange={handleStatusChange}
-          onItemClick={handleItemClick}
-        />
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <SinistroKanban
+            sinistros={filtered}
+            columns={SINISTRO_COLUMNS}
+            onStatusChange={handleStatusChange}
+            onItemClick={handleItemClick}
+          />
+        )}
       </div>
 
       <SinistroDetailSheet
