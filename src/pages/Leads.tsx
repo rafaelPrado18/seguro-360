@@ -73,23 +73,6 @@ const STATUS_TEMPLATE_MAP: Record<string, string> = {
   perdido: "geral",
 };
 
-const DEFAULT_TEMPLATES: WhatsAppTemplate[] = [
-  {
-    id: "1", nome: "Boas-vindas Lead", categoria: "boas_vindas",
-    conteudo: "Olá {{nome}}! 👋\n\nSou {{corretor}} da SeguraCRM. Vi que você tem interesse em seguro {{ramo}}.\n\nPosso te ajudar a encontrar a melhor cobertura com o melhor preço. Quando podemos conversar?",
-    variaveis: ["nome", "corretor", "ramo"], status: "aprovado",
-  },
-  {
-    id: "2", nome: "Envio de Proposta", categoria: "proposta",
-    conteudo: "Olá {{nome}}! 📋\n\nSegue a proposta do seguro {{ramo}} que conversamos:\n\n🏢 Seguradora: {{seguradora}}\n💰 Prêmio: {{valor_premio}}\n\n📎 Acesse a proposta completa: {{link_proposta}}\n\nQualquer dúvida estou à disposição!",
-    variaveis: ["nome", "ramo", "seguradora", "valor_premio", "link_proposta"], status: "aprovado",
-  },
-  {
-    id: "4", nome: "Follow-up Lead", categoria: "follow_up",
-    conteudo: "Oi {{nome}}, tudo bem? 😊\n\nEntrei em contato recentemente sobre o seguro {{ramo}}. Gostaria de saber se ainda tem interesse?\n\nEstou com condições especiais essa semana. Posso enviar uma cotação?",
-    variaveis: ["nome", "ramo"], status: "aprovado",
-  },
-];
 
 const Leads = () => {
   
