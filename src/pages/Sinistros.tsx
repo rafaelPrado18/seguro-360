@@ -104,6 +104,7 @@ const Sinistros = () => {
 
   const handleSinistroCriado = (sinistro: SinistroItem) => {
     setSinistros(prev => [sinistro, ...prev]);
+    loadSinistros(); // Refresh from API
   };
 
   return (
