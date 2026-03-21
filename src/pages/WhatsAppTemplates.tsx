@@ -72,7 +72,7 @@ const WhatsAppTemplates = () => {
     return [...new Set(matches.map(m => m.replace(/\{\{|\}\}/g, "")))];
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.nome.trim() || !formData.conteudo.trim()) return;
     const vars = extractVariables(formData.conteudo);
 
@@ -83,14 +83,20 @@ const WhatsAppTemplates = () => {
           : t
       ));
     } else {
-      setTemplates(prev => [...prev, {
-        id: Date.now().toString(),
-        nome: formData.nome,
-        categoria: formData.categoria,
-        conteudo: formData.conteudo,
-        variaveis: vars,
-        status: "pendente",
-      }]);
+      try {
+        await createTemplateMutation.mutateAsync({
+          nome: formData.nome,
+          categoria: formData.categoria,
+          conteudo: formData.conteudo,
+          variaveis: vars,
+          status: "pendente",
+        });
+        toast({ title: "Template criado", description: "Template salvo com sucesso na API." });
+      } catch (err) {
+        console.error("Erro ao criar template:", err);
+        toast({ title: "Erro", description: "Não foi possível criar o template.", variant: "destructive" });
+        return;
+      }
     }
     setIsDialogOpen(false);
   };
