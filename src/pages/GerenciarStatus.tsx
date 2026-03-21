@@ -41,6 +41,7 @@ const GerenciarStatus = () => {
   const createStatusMutation = useCreateLeadStatus();
   const updateStatusMutation = useUpdateLeadStatusMutation();
   const deleteStatusMutation = useDeleteLeadStatusMutation();
+  const { data: templates = [] } = useWhatsAppTemplates();
   const [statuses, setStatuses] = useState<LeadStatus[]>([]);
 
   useEffect(() => {
