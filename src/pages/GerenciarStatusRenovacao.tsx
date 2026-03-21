@@ -296,7 +296,7 @@ const GerenciarStatusRenovacao = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Nenhum template</SelectItem>
-                    {AVAILABLE_TEMPLATES.filter(t => t.status === "aprovado").map(t => (
+                    {templates.filter(t => t.status === "aprovado").map(t => (
                       <SelectItem key={t.id} value={t.id}>
                         <span className="flex items-center gap-2">
                           {t.nome}
