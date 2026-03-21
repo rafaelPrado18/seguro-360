@@ -118,8 +118,10 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
       const clientName = selectedClient?.nome || data.clienteNome || "Cliente";
       const vehicle = selectedVehicle;
 
-      const newSinistro: SinistroItem = {
-        id: `#${Math.floor(Math.random() * 9000) + 1000}`,
+      const sinistroId = `#${Math.floor(Math.random() * 9000) + 1000}`;
+
+      const payload = {
+        id: sinistroId,
         cliente: clientName,
         clienteId: data.clienteId,
         seguradora: data.seguradora,
@@ -141,12 +143,16 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
         } : undefined,
       };
 
+      // Enviar para API
+      await sinistroService.createSinistro(payload);
+
+      const newSinistro: SinistroItem = { ...payload };
       onSinistroCriado?.(newSinistro);
 
       // Criar evento na agenda
       try {
         await createTarefa({
-          titulo: `Sinistro ${newSinistro.id} - ${data.tipo} - ${clientName}${vehicle ? ` (${vehicle.vehicle.veiculo_placa || vehicle.vehicle.veiculo_modelo})` : ""}`,
+          titulo: `Sinistro ${sinistroId} - ${data.tipo} - ${clientName}${vehicle ? ` (${vehicle.vehicle.veiculo_placa || vehicle.vehicle.veiculo_modelo})` : ""}`,
           hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
           tipo: "Sinistro",
           prioridade: data.prioridade,
@@ -160,7 +166,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
       form.reset();
       onOpenChange(false);
     } catch {
-      toast({ title: "Erro ao criar sinistro", variant: "destructive" });
+      toast({ title: "Erro ao criar sinistro", description: "Não foi possível registrar o sinistro. Tente novamente.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
