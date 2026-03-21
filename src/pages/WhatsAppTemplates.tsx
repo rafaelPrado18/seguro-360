@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Copy, Send, Eye, Variable, FileText } from "lucide-react";
 import type { WhatsAppTemplate } from "@/services/whatsappService";
-import { useWhatsAppTemplates } from "@/hooks/useWhatsApp";
+import { useWhatsAppTemplates, useCreateWhatsAppTemplate } from "@/hooks/useWhatsApp";
+import { toast } from "@/hooks/use-toast";
 
 const AVAILABLE_VARIABLES = [
   { key: "{{nome}}", label: "Nome do Cliente", example: "João Silva" },
@@ -34,6 +35,7 @@ const categoriaLabels: Record<string, string> = {
 
 const WhatsAppTemplates = () => {
   const { data: apiTemplates = [], isLoading } = useWhatsAppTemplates();
+  const createTemplateMutation = useCreateWhatsAppTemplate();
   const [templates, setTemplates] = useState<WhatsAppTemplate[]>([]);
 
   useEffect(() => {
@@ -70,7 +72,7 @@ const WhatsAppTemplates = () => {
     return [...new Set(matches.map(m => m.replace(/\{\{|\}\}/g, "")))];
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.nome.trim() || !formData.conteudo.trim()) return;
     const vars = extractVariables(formData.conteudo);
 
@@ -81,14 +83,20 @@ const WhatsAppTemplates = () => {
           : t
       ));
     } else {
-      setTemplates(prev => [...prev, {
-        id: Date.now().toString(),
-        nome: formData.nome,
-        categoria: formData.categoria,
-        conteudo: formData.conteudo,
-        variaveis: vars,
-        status: "pendente",
-      }]);
+      try {
+        await createTemplateMutation.mutateAsync({
+          nome: formData.nome,
+          categoria: formData.categoria,
+          conteudo: formData.conteudo,
+          variaveis: vars,
+          status: "pendente",
+        });
+        toast({ title: "Template criado", description: "Template salvo com sucesso na API." });
+      } catch (err) {
+        console.error("Erro ao criar template:", err);
+        toast({ title: "Erro", description: "Não foi possível criar o template.", variant: "destructive" });
+        return;
+      }
     }
     setIsDialogOpen(false);
   };

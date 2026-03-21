@@ -184,6 +184,16 @@ export const whatsappService = {
     return result.data || result;
   },
 
+  // POST /v1/create/template - Criar template
+  async createTemplate(payload: Omit<WhatsAppTemplate, "id">): Promise<void> {
+    const response = await fetch(`${BASE_URL}/v1/create/template`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", orchestrator: "crm-hatanaka" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error("Erro ao criar template");
+  },
+
   // POST /api/whatsapp/conversations/:id/archive - Arquivar conversa
   async archiveConversation(contatoId: string): Promise<void> {
     const response = await fetch(`${BASE_URL}/whatsapp/conversations/${contatoId}/archive`, { method: "POST" });

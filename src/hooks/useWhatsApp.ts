@@ -31,6 +31,15 @@ export function useWhatsAppTemplates(filters?: { categoria?: string; status?: st
   });
 }
 
+export function useCreateWhatsAppTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: Omit<import("@/services/whatsappService").WhatsAppTemplate, "id">) =>
+      whatsappService.createTemplate(payload),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["whatsapp", "templates"] }),
+  });
+}
+
 export function useWhatsAppStatus() {
   return useQuery({
     queryKey: ["whatsapp", "status"],
