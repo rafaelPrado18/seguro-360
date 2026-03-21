@@ -28,7 +28,22 @@ export interface SinistroCreatePayload {
   };
 }
 
+export interface SinistroReadResponse {
+  status: string;
+  data: (SinistroCreatePayload & { created_at?: string; updated_at?: string | null })[];
+}
+
 export const sinistroService = {
+  async fetchSinistros(params?: { status?: string; seguradora?: string }): Promise<SinistroCreatePayload[]> {
+    const url = new URL(`${BASE_URL}/v1/read/sinistro`);
+    if (params?.status) url.searchParams.set("status", params.status);
+    if (params?.seguradora) url.searchParams.set("seguradora", params.seguradora);
+    const res = await fetch(url.toString(), { headers: HEADERS });
+    if (!res.ok) throw new Error("Erro ao buscar sinistros");
+    const json: SinistroReadResponse = await res.json();
+    return json.data || [];
+  },
+
   async createSinistro(payload: SinistroCreatePayload): Promise<SinistroCreatePayload> {
     const res = await fetch(`${BASE_URL}/v1/create/sinistro`, {
       method: "POST",

@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plus, Filter } from "lucide-react";
+import { Search, Plus, Filter, Loader2 } from "lucide-react";
 import { SinistroKanban, type SinistroItem, type SinistroKanbanColumn } from "@/components/sinistros/SinistroKanban";
 import { SinistroDetailSheet } from "@/components/sinistros/SinistroDetailSheet";
 import { NovoSinistroDialog } from "@/components/sinistros/NovoSinistroDialog";
 import { toast } from "@/hooks/use-toast";
+import { sinistroService } from "@/services/sinistroService";
 
 const SINISTRO_COLUMNS: SinistroKanbanColumn[] = [
   { id: "abertura", label: "Abertura / Agendamento Vistoria", color: "text-info", bgColor: "bg-info" },
