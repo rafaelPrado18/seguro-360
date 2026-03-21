@@ -158,8 +158,10 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
           prioridade: data.prioridade,
           concluida: false,
         });
-      } catch {
-        console.warn("Não foi possível criar evento na agenda");
+        toast({ title: "Agenda", description: "Evento de acompanhamento criado na agenda." });
+      } catch (err) {
+        console.error("Erro ao criar evento na agenda:", err);
+        toast({ title: "Aviso", description: "Sinistro criado, mas não foi possível criar o evento na agenda.", variant: "destructive" });
       }
 
       toast({ title: "Sinistro criado!", description: `Sinistro para ${clientName} registrado com sucesso.` });
