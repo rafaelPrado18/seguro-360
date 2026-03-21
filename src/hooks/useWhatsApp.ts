@@ -24,10 +24,10 @@ export function useWhatsAppMessages(contatoId: string | null, consultantId: stri
   });
 }
 
-export function useWhatsAppTemplates() {
+export function useWhatsAppTemplates(filters?: { categoria?: string; status?: string }) {
   return useQuery({
-    queryKey: ["whatsapp", "templates"],
-    queryFn: () => whatsappService.getTemplates(),
+    queryKey: ["whatsapp", "templates", filters],
+    queryFn: () => whatsappService.getTemplates(filters),
   });
 }
 

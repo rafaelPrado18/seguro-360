@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRenovacaoStatuses, useCreateRenovacaoStatus, useUpdateRenovacaoStatus, useDeleteRenovacaoStatus } from "@/hooks/useRenovacaoStatus";
+import { useWhatsAppTemplates } from "@/hooks/useWhatsApp";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,13 +12,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Plus, Pencil, Trash2, GripVertical, ArrowRight, MessageSquare } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import type { RenovacaoStatus } from "@/services/renovacaoStatusService";
-import type { WhatsAppTemplate } from "@/services/whatsappService";
-
-const AVAILABLE_TEMPLATES: WhatsAppTemplate[] = [
-  { id: "1", nome: "Boas-vindas Lead", categoria: "boas_vindas", conteudo: "Olá {{nome}}! 👋\n\nSou {{corretor}}...", variaveis: ["nome", "corretor", "ramo"], status: "aprovado" },
-  { id: "3", nome: "Lembrete de Renovação", categoria: "renovacao", conteudo: "Olá {{nome}}! 🔔\n\nSua apólice...", variaveis: ["nome", "numero_apolice", "ramo", "data_vencimento", "corretor"], status: "aprovado" },
-  { id: "4", nome: "Follow-up Lead", categoria: "follow_up", conteudo: "Oi {{nome}}, tudo bem? 😊\n\nEntrei em contato...", variaveis: ["nome", "ramo"], status: "aprovado" },
-];
 
 const COLOR_OPTIONS = [
   { label: "Azul", value: "bg-info", text: "text-info" },
@@ -33,6 +27,7 @@ const GerenciarStatusRenovacao = () => {
   const createMutation = useCreateRenovacaoStatus();
   const updateMutation = useUpdateRenovacaoStatus();
   const deleteMutation = useDeleteRenovacaoStatus();
+  const { data: templates = [] } = useWhatsAppTemplates();
   const [statuses, setStatuses] = useState<RenovacaoStatus[]>([]);
 
   useEffect(() => {
@@ -188,7 +183,7 @@ const GerenciarStatusRenovacao = () => {
                     {status.template_id ? (
                       <Badge variant="outline" className="text-[9px] gap-1 border-accent text-accent">
                         <MessageSquare className="h-2.5 w-2.5" />
-                        {AVAILABLE_TEMPLATES.find(t => t.id === status.template_id)?.nome || "Template"}
+                        {templates.find(t => t.id === status.template_id)?.nome || "Template"}
                       </Badge>
                     ) : (
                       <span className="text-[10px] text-muted-foreground italic">Sem template</span>
@@ -301,7 +296,7 @@ const GerenciarStatusRenovacao = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Nenhum template</SelectItem>
-                    {AVAILABLE_TEMPLATES.filter(t => t.status === "aprovado").map(t => (
+                    {templates.filter(t => t.status === "aprovado").map(t => (
                       <SelectItem key={t.id} value={t.id}>
                         <span className="flex items-center gap-2">
                           {t.nome}

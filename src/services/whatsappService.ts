@@ -170,11 +170,18 @@ export const whatsappService = {
     return response.json();
   },
 
-  // GET /api/whatsapp/templates - Listar templates
-  async getTemplates(): Promise<WhatsAppTemplate[]> {
-    const response = await fetch(`${BASE_URL}/whatsapp/templates`);
+  // GET /v1/read/template - Listar templates
+  async getTemplates(filters?: { categoria?: string; status?: string }): Promise<WhatsAppTemplate[]> {
+    const params = new URLSearchParams();
+    if (filters?.categoria) params.append("categoria", filters.categoria);
+    if (filters?.status) params.append("status", filters.status);
+    const query = params.toString() ? `?${params.toString()}` : "";
+    const response = await fetch(`${BASE_URL}/v1/read/template${query}`, {
+      headers: { "Content-Type": "application/json", orchestrator: "crm-hatanaka" },
+    });
     if (!response.ok) throw new Error("Erro ao buscar templates");
-    return response.json();
+    const result = await response.json();
+    return result.data || result;
   },
 
   // POST /api/whatsapp/conversations/:id/archive - Arquivar conversa
