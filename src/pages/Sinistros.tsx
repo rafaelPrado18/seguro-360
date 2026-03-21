@@ -92,9 +92,15 @@ const Sinistros = () => {
     return matchSearch && matchFilter;
   });
 
-  const handleStatusChange = (sinistroId: string, newStatus: string) => {
+  const handleStatusChange = async (sinistroId: string, newStatus: string) => {
     setSinistros(prev => prev.map(s => s.id === sinistroId ? { ...s, status: newStatus } : s));
-    toast({ title: "Status atualizado", description: `Sinistro ${sinistroId} movido para ${SINISTRO_COLUMNS.find(c => c.id === newStatus)?.label || newStatus}` });
+    try {
+      await sinistroService.updateSinistro({ id: sinistroId }, { status: newStatus });
+      toast({ title: "Status atualizado", description: `Sinistro ${sinistroId} movido para ${SINISTRO_COLUMNS.find(c => c.id === newStatus)?.label || newStatus}` });
+    } catch {
+      setSinistros(prev => prev.map(s => s.id === sinistroId ? { ...s, status: sinistros.find(x => x.id === sinistroId)?.status || s.status } : s));
+      toast({ title: "Erro", description: "Não foi possível atualizar o status", variant: "destructive" });
+    }
   };
 
   const handleItemClick = (sinistro: SinistroItem) => {
