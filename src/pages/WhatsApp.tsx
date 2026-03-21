@@ -31,13 +31,6 @@ import {
 
 const REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 
-const TEMPLATES = [
-  { id: "1", nome: "Boas-vindas Lead", categoria: "boas_vindas", conteudo: "Olá {{nome}}! 👋\n\nSou {{corretor}} da SeguraCRM. Vi que você tem interesse em seguro {{ramo}}.\n\nPosso te ajudar a encontrar a melhor cobertura com o melhor preço. Quando podemos conversar?" },
-  { id: "2", nome: "Envio de Proposta", categoria: "proposta", conteudo: "Olá {{nome}}! 📋\n\nSegue a proposta do seguro {{ramo}} que conversamos:\n\n🏢 Seguradora: {{seguradora}}\n💰 Prêmio: {{valor_premio}}\n\n📎 Acesse a proposta completa: {{link_proposta}}\n\nQualquer dúvida estou à disposição!" },
-  { id: "3", nome: "Lembrete de Renovação", categoria: "renovacao", conteudo: "Olá {{nome}}! 🔔\n\nSua apólice {{numero_apolice}} ({{ramo}}) vence em {{data_vencimento}}.\n\nJá estou preparando a renovação com as melhores condições. Podemos agendar uma conversa para revisar as coberturas?\n\nAbraços, {{corretor}}" },
-  { id: "4", nome: "Follow-up Lead", categoria: "follow_up", conteudo: "Oi {{nome}}, tudo bem? 😊\n\nEntrei em contato recentemente sobre o seguro {{ramo}}. Gostaria de saber se ainda tem interesse?\n\nEstou com condições especiais essa semana. Posso enviar uma cotação?" },
-  { id: "5", nome: "Sinistro - Abertura", categoria: "sinistro", conteudo: "Olá {{nome}}, recebi seu chamado e já estou cuidando da abertura do sinistro.\n\n📋 Apólice: {{numero_apolice}}\n🏢 Seguradora: {{seguradora}}\n\nVou te manter informado(a) sobre cada etapa. Se precisar, é só chamar!\n\n{{corretor}}" },
-];
 
 const categoriaLabels: Record<string, string> = {
   boas_vindas: "Boas-vindas", proposta: "Proposta", renovacao: "Renovação",
