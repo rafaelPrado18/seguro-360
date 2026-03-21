@@ -31,6 +31,7 @@ import { useNotifications } from "@/contexts/NotificationContext";
 import { useLeads, useUpdateLeadStatus, useRedistributeLeads } from "@/hooks/useLeads";
 import { useLeadStatuses } from "@/hooks/useStatus";
 import { useAgents } from "@/hooks/useAgents";
+import { useWhatsAppTemplates } from "@/hooks/useWhatsApp";
 import { v4 as uuidv4 } from "uuid";
 
 const PLACEHOLDER_LEADS: Lead[] = [];

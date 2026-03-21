@@ -135,6 +135,7 @@ const AudioPlayer = ({ src }: { src: string }) => {
 
 const EMOJI_LIST = ["😀","😂","😍","🥰","😎","🤩","😢","😡","👍","👎","❤️","🔥","🎉","👏","🙏","💪","🤝","✅","⭐","💯"];
 const WhatsApp = () => {
+  const { data: TEMPLATES = [] } = useWhatsAppTemplates();
   const [selectedContact, setSelectedContact] = useState<WhatsAppContact | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [messageInput, setMessageInput] = useState("");
