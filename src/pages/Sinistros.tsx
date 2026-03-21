@@ -148,12 +148,18 @@ const Sinistros = () => {
           )}
         </div>
 
-        <SinistroKanban
-          sinistros={filtered}
-          columns={SINISTRO_COLUMNS}
-          onStatusChange={handleStatusChange}
-          onItemClick={handleItemClick}
-        />
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <SinistroKanban
+            sinistros={filtered}
+            columns={SINISTRO_COLUMNS}
+            onStatusChange={handleStatusChange}
+            onItemClick={handleItemClick}
+          />
+        )}
       </div>
 
       <SinistroDetailSheet
