@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Copy, Send, Eye, Variable, FileText } from "lucide-react";
 import type { WhatsAppTemplate } from "@/services/whatsappService";
+import { useWhatsAppTemplates } from "@/hooks/useWhatsApp";
 
 const AVAILABLE_VARIABLES = [
   { key: "{{nome}}", label: "Nome do Cliente", example: "João Silva" },
@@ -26,56 +27,14 @@ const AVAILABLE_VARIABLES = [
   { key: "{{link_proposta}}", label: "Link da Proposta", example: "https://..." },
 ];
 
-const DEFAULT_TEMPLATES: WhatsAppTemplate[] = [
-  {
-    id: "1",
-    nome: "Boas-vindas Lead",
-    categoria: "boas_vindas",
-    conteudo: "Olá {{nome}}! 👋\n\nSou {{corretor}} da SeguraCRM. Vi que você tem interesse em seguro {{ramo}}.\n\nPosso te ajudar a encontrar a melhor cobertura com o melhor preço. Quando podemos conversar?",
-    variaveis: ["nome", "corretor", "ramo"],
-    status: "aprovado",
-  },
-  {
-    id: "2",
-    nome: "Envio de Proposta",
-    categoria: "proposta",
-    conteudo: "Olá {{nome}}! 📋\n\nSegue a proposta do seguro {{ramo}} que conversamos:\n\n🏢 Seguradora: {{seguradora}}\n💰 Prêmio: {{valor_premio}}\n\n📎 Acesse a proposta completa: {{link_proposta}}\n\nQualquer dúvida estou à disposição!",
-    variaveis: ["nome", "ramo", "seguradora", "valor_premio", "link_proposta"],
-    status: "aprovado",
-  },
-  {
-    id: "3",
-    nome: "Lembrete de Renovação",
-    categoria: "renovacao",
-    conteudo: "Olá {{nome}}! 🔔\n\nSua apólice {{numero_apolice}} ({{ramo}}) vence em {{data_vencimento}}.\n\nJá estou preparando a renovação com as melhores condições. Podemos agendar uma conversa para revisar as coberturas?\n\nAbraços, {{corretor}}",
-    variaveis: ["nome", "numero_apolice", "ramo", "data_vencimento", "corretor"],
-    status: "aprovado",
-  },
-  {
-    id: "4",
-    nome: "Follow-up Lead",
-    categoria: "follow_up",
-    conteudo: "Oi {{nome}}, tudo bem? 😊\n\nEntrei em contato recentemente sobre o seguro {{ramo}}. Gostaria de saber se ainda tem interesse?\n\nEstou com condições especiais essa semana. Posso enviar uma cotação?",
-    variaveis: ["nome", "ramo"],
-    status: "aprovado",
-  },
-  {
-    id: "5",
-    nome: "Sinistro - Abertura",
-    categoria: "sinistro",
-    conteudo: "Olá {{nome}}, recebi seu chamado e já estou cuidando da abertura do sinistro.\n\n📋 Apólice: {{numero_apolice}}\n🏢 Seguradora: {{seguradora}}\n\nVou te manter informado(a) sobre cada etapa. Se precisar, é só chamar!\n\n{{corretor}}",
-    variaveis: ["nome", "numero_apolice", "seguradora", "corretor"],
-    status: "pendente",
-  },
-];
-
 const categoriaLabels: Record<string, string> = {
   boas_vindas: "Boas-vindas", proposta: "Proposta", renovacao: "Renovação",
   follow_up: "Follow-up", sinistro: "Sinistro", cobranca: "Cobrança", geral: "Geral",
 };
 
 const WhatsAppTemplates = () => {
-  const [templates, setTemplates] = useState(DEFAULT_TEMPLATES);
+  const { data: apiTemplates = [], isLoading } = useWhatsAppTemplates();
+  const [templates, setTemplates] = useState<WhatsAppTemplate[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<WhatsAppTemplate | null>(null);
