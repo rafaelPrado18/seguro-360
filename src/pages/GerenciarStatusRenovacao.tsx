@@ -13,11 +13,7 @@ import { Plus, Pencil, Trash2, GripVertical, ArrowRight, MessageSquare } from "l
 import { toast } from "@/hooks/use-toast";
 import type { RenovacaoStatus } from "@/services/renovacaoStatusService";
 
-const AVAILABLE_TEMPLATES: WhatsAppTemplate[] = [
-  { id: "1", nome: "Boas-vindas Lead", categoria: "boas_vindas", conteudo: "Olá {{nome}}! 👋\n\nSou {{corretor}}...", variaveis: ["nome", "corretor", "ramo"], status: "aprovado" },
-  { id: "3", nome: "Lembrete de Renovação", categoria: "renovacao", conteudo: "Olá {{nome}}! 🔔\n\nSua apólice...", variaveis: ["nome", "numero_apolice", "ramo", "data_vencimento", "corretor"], status: "aprovado" },
-  { id: "4", nome: "Follow-up Lead", categoria: "follow_up", conteudo: "Oi {{nome}}, tudo bem? 😊\n\nEntrei em contato...", variaveis: ["nome", "ramo"], status: "aprovado" },
-];
+const AVAILABLE_TEMPLATES: { id: string; nome: string; categoria: string }[] = [];
 
 const COLOR_OPTIONS = [
   { label: "Azul", value: "bg-info", text: "text-info" },
