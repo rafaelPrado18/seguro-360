@@ -35,6 +35,10 @@ const categoriaLabels: Record<string, string> = {
 const WhatsAppTemplates = () => {
   const { data: apiTemplates = [], isLoading } = useWhatsAppTemplates();
   const [templates, setTemplates] = useState<WhatsAppTemplate[]>([]);
+
+  useEffect(() => {
+    if (apiTemplates.length > 0) setTemplates(apiTemplates);
+  }, [apiTemplates]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<WhatsAppTemplate | null>(null);
