@@ -30,7 +30,7 @@ const sinistroSchema = z.object({
   seguradora: z.string().min(1, "Informe a seguradora"),
   apolice: z.string().optional(),
   valor: z.string().optional(),
-  prioridade: z.enum(["Baixa", "Média", "Alta", "Crítica"]),
+  prioridade: z.enum(["Baixa", "Media", "Alta", "Crítica"]),
   telefone: z.string().optional(),
   oficina: z.string().optional(),
   observacoes: z.string().optional(),
@@ -62,7 +62,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
     resolver: zodResolver(sinistroSchema),
     defaultValues: {
       clienteId: "", clienteNome: "", vehicleIndex: "", tipo: "", seguradora: "", apolice: "",
-      valor: "", prioridade: "Média", telefone: "", oficina: "", observacoes: "",
+      valor: "", prioridade: "Media", telefone: "", oficina: "", observacoes: "",
     },
   });
 
@@ -350,7 +350,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="Baixa">Baixa</SelectItem>
-                            <SelectItem value="Média">Média</SelectItem>
+                            <SelectItem value="Media">Média</SelectItem>
                             <SelectItem value="Alta">Alta</SelectItem>
                             <SelectItem value="Crítica">Crítica</SelectItem>
                           </SelectContent>

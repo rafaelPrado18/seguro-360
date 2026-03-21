@@ -47,7 +47,7 @@ export const agendaService = {
     body: JSON.stringify({ id_usuario: getUserId(), ...data }),
     });
     if (!response.ok) throw new Error("Erro ao criar tarefa");
-    return response.json();
+    return ;
   },
 
   async update(data: Partial<Tarefa> & { id: string }): Promise<void> {
