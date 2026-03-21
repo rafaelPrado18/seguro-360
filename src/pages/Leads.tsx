@@ -213,7 +213,7 @@ const Leads = () => {
     console.log('status:', status)
     const category = STATUS_TEMPLATE_MAP[status];
     if (!category) return null;
-    return DEFAULT_TEMPLATES.find(t => t.categoria === category && t.status === "aprovado") || null;
+    return templates.find(t => t.categoria === category && t.status === "aprovado") || null;
   };
 
   const handleStatusChange = (leadId: string, newStatus: string) => {
