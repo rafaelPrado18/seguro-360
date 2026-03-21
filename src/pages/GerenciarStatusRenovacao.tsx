@@ -13,8 +13,6 @@ import { Plus, Pencil, Trash2, GripVertical, ArrowRight, MessageSquare } from "l
 import { toast } from "@/hooks/use-toast";
 import type { RenovacaoStatus } from "@/services/renovacaoStatusService";
 
-const AVAILABLE_TEMPLATES: { id: string; nome: string; categoria: string }[] = [];
-
 const COLOR_OPTIONS = [
   { label: "Azul", value: "bg-info", text: "text-info" },
   { label: "Amarelo", value: "bg-warning", text: "text-warning" },
