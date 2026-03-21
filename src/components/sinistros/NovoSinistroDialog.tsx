@@ -18,6 +18,7 @@ import { Loader2, UserPlus, Users, Car } from "lucide-react";
 import { useClients } from "@/hooks/useClients";
 import { useAgenda } from "@/hooks/useAgenda";
 import { NewClientDialog } from "@/components/clientes/NewClientDialog";
+import { sinistroService } from "@/services/sinistroService";
 import type { SinistroItem } from "./SinistroKanban";
 import type { Client, VehiclePolicy } from "@/services/clientService";
 
