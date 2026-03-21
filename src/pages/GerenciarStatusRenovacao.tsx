@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRenovacaoStatuses, useCreateRenovacaoStatus, useUpdateRenovacaoStatus, useDeleteRenovacaoStatus } from "@/hooks/useRenovacaoStatus";
+import { useWhatsAppTemplates } from "@/hooks/useWhatsApp";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Plus, Pencil, Trash2, GripVertical, ArrowRight, MessageSquare } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import type { RenovacaoStatus } from "@/services/renovacaoStatusService";
-import type { WhatsAppTemplate } from "@/services/whatsappService";
 
 const AVAILABLE_TEMPLATES: WhatsAppTemplate[] = [
   { id: "1", nome: "Boas-vindas Lead", categoria: "boas_vindas", conteudo: "Olá {{nome}}! 👋\n\nSou {{corretor}}...", variaveis: ["nome", "corretor", "ramo"], status: "aprovado" },
