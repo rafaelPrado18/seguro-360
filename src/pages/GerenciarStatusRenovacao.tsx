@@ -27,6 +27,7 @@ const GerenciarStatusRenovacao = () => {
   const createMutation = useCreateRenovacaoStatus();
   const updateMutation = useUpdateRenovacaoStatus();
   const deleteMutation = useDeleteRenovacaoStatus();
+  const { data: templates = [] } = useWhatsAppTemplates();
   const [statuses, setStatuses] = useState<RenovacaoStatus[]>([]);
 
   useEffect(() => {
