@@ -274,8 +274,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Lead Summary + Renewals */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Lead Summary + Sinistros + Renewals */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
           {/* Lead Summary */}
           {showLeadSummary && (
             <Card>
