@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,14 +9,7 @@ import { SinistroDetailSheet } from "@/components/sinistros/SinistroDetailSheet"
 import { NovoSinistroDialog } from "@/components/sinistros/NovoSinistroDialog";
 import { toast } from "@/hooks/use-toast";
 import { sinistroService } from "@/services/sinistroService";
-
-const SINISTRO_COLUMNS: SinistroKanbanColumn[] = [
-  { id: "abertura", label: "Abertura / Agendamento Vistoria", color: "text-info", bgColor: "bg-info" },
-  { id: "indenizacao_integral", label: "Indenização Integral", color: "text-accent", bgColor: "bg-accent" },
-  { id: "fora_do_prazo", label: "Fora do Prazo", color: "text-destructive", bgColor: "bg-destructive" },
-  { id: "acompanhamento_reparo", label: "Acompanhamento de Reparo", color: "text-success", bgColor: "bg-success" },
-  { id: "whats", label: "WhatsApp", color: "text-primary", bgColor: "bg-primary" },
-];
+import { useSinistroStatuses } from "@/hooks/useSinistroStatus";
 
 const FILTER_OPTIONS = [
   { value: "all", label: "Todos os filtros", type: "none" },
