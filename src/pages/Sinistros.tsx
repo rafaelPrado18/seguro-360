@@ -151,19 +151,14 @@ const Sinistros = () => {
           )}
         </div>
 
-        {loading || statusesLoading ? (
+        {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : columns.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-            <p className="text-sm">Nenhum status cadastrado para sinistros.</p>
-            <p className="text-xs mt-1">Configure os status em Gerenciar Status Sinistro.</p>
           </div>
         ) : (
           <SinistroKanban
             sinistros={filtered}
-            columns={columns}
+            columns={SINISTRO_COLUMNS}
             onStatusChange={handleStatusChange}
             onItemClick={handleItemClick}
           />
