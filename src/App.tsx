@@ -10,6 +10,7 @@ import Clientes from "./pages/Clientes";
 import Apolices from "./pages/Apolices";
 import Sinistros from "./pages/Sinistros";
 import Comissoes from "./pages/Comissoes";
+import Financeiro from "./pages/Financeiro";
 import Renovacoes from "./pages/Renovacoes";
 import Agenda from "./pages/Agenda";
 import Relatorios from "./pages/Relatorios";
