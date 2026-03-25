@@ -21,14 +21,28 @@ const FALLBACK_COLUMNS: RenovacaoKanbanColumn[] = [
 
 const Renovacoes = () => {
   const [search, setSearch] = useState("");
-  const [renovacoes, setRenovacoes] = useState(renovacoesData);
   const [selectedRenovacao, setSelectedRenovacao] = useState<RenovacaoData | null>(null);
   const [viewMode, setViewMode] = useState<"table" | "kanban">("kanban");
   const { data: apiStatuses } = useRenovacaoStatuses();
+  const { data: apiClients, isLoading } = useRenovacaoClients();
 
-  const kanbanColumns: RenovacaoKanbanColumn[] = apiStatuses && apiStatuses.length > 0
-    ? apiStatuses.sort((a, b) => a.ordem - b.ordem).map(s => ({ id: s.key, label: s.label, color: s.color, bgColor: s.bgColor }))
-    : FALLBACK_COLUMNS;
+  // Map API data to the RenovacaoData shape used by components
+  const renovacoes: RenovacaoData[] = useMemo(() => {
+    if (!apiClients) return [];
+    return apiClients.map((c: RenovacaoClient) => ({
+      id: c.id as unknown as number,
+      apolice: c.apolice || "",
+      cliente: c.cliente || "",
+      ramo: c.ramo || "",
+      seguradora: c.seguradora || "",
+      vencimento: c.vencimento || "",
+      premio: c.premio || "",
+      dias: c.dias ?? 0,
+      status: c.status || "",
+      observacoes: c.observacoes || "",
+      veiculos: c.veiculos || [],
+    }));
+  }, [apiClients]);
 
   const filtered = renovacoes.filter(r => r.cliente.toLowerCase().includes(search.toLowerCase()) || r.apolice.includes(search));
 
