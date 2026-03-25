@@ -10,7 +10,8 @@ import { RenovacaoDetailDialog, type RenovacaoData } from "@/components/renovaco
 import { RenovacaoKanban, type RenovacaoKanbanColumn } from "@/components/renovacoes/RenovacaoKanban";
 import { useRenovacaoStatuses } from "@/hooks/useRenovacaoStatus";
 import { useRenovacaoClients } from "@/hooks/useRenovacaoClients";
-import type { RenovacaoClient } from "@/services/renovacaoClientService";
+import { renovacaoClientService, type RenovacaoClient } from "@/services/renovacaoClientService";
+import { useQueryClient } from "@tanstack/react-query";
 
 const FALLBACK_COLUMNS: RenovacaoKanbanColumn[] = [
   { id: "Urgente", label: "Urgente", color: "text-destructive", bgColor: "bg-destructive" },
