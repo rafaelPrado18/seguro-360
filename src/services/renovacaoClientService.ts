@@ -47,4 +47,16 @@ export const renovacaoClientService = {
     if (!response.ok) throw new Error("Erro ao buscar renovações por apólice");
     return response.json();
   },
+
+  async update(id: string, updates: Record<string, unknown>): Promise<void> {
+    const response = await fetch(`${BASE_URL}/v1/update/renovacao/client`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "orchestrator": "crm_hatanaka",
+      },
+      body: JSON.stringify({ id, updates }),
+    });
+    if (!response.ok) throw new Error("Erro ao atualizar cliente de renovação");
+  },
 };
