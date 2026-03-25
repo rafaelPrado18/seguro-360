@@ -101,7 +101,11 @@ const Renovacoes = () => {
           <Button variant="outline" size="sm" className="gap-2"><Filter className="h-3.5 w-3.5" /> Filtros</Button>
         </div>
 
-        {viewMode === "kanban" ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : viewMode === "kanban" ? (
           <RenovacaoKanban
             renovacoes={filtered}
             columns={kanbanColumns}
