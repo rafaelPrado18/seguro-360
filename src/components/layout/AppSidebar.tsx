@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, FileText, AlertTriangle, DollarSign,
   RefreshCw, CalendarCheck, Settings, BarChart3, Target,
   MessageSquare, FileStack, Workflow, X, Circle, Smartphone, Building2,
-  ChevronsLeft, ChevronsRight,
+  ChevronsLeft, ChevronsRight, Wallet,
 } from "lucide-react";
 import { useRole, ROLE_LABELS } from "@/contexts/RoleContext";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ const menuItems = [
   { icon: FileText, label: "Apólices", path: "/apolices", adminOnly: false, superAdminOnly: false, scope: "apolices" },
   { icon: AlertTriangle, label: "Sinistros", path: "/sinistros", adminOnly: false, superAdminOnly: false, scope: "sinistros" },
   { icon: DollarSign, label: "Comissões", path: "/comissoes", adminOnly: false, superAdminOnly: false, scope: "comissoes" },
+  { icon: Wallet, label: "Financeiro", path: "/financeiro", adminOnly: false, superAdminOnly: false, scope: "comissoes" },
   { icon: RefreshCw, label: "Renovações", path: "/renovacoes", adminOnly: false, superAdminOnly: false, scope: "renovacoes" },
   { icon: CalendarCheck, label: "Agenda", path: "/agenda", adminOnly: false, superAdminOnly: false, scope: null },
   { icon: BarChart3, label: "Relatórios", path: "/relatorios", adminOnly: false, superAdminOnly: false, scope: "relatorios" },

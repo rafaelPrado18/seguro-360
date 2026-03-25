@@ -10,6 +10,7 @@ import Clientes from "./pages/Clientes";
 import Apolices from "./pages/Apolices";
 import Sinistros from "./pages/Sinistros";
 import Comissoes from "./pages/Comissoes";
+import Financeiro from "./pages/Financeiro";
 import Renovacoes from "./pages/Renovacoes";
 import Agenda from "./pages/Agenda";
 import Relatorios from "./pages/Relatorios";
@@ -42,6 +43,7 @@ const App = () => (
         <Route path="/apolices" element={<AuthGuard><ScopeGuard scope="apolices"><Apolices /></ScopeGuard></AuthGuard>} />
         <Route path="/sinistros" element={<AuthGuard><ScopeGuard scope="sinistros"><Sinistros /></ScopeGuard></AuthGuard>} />
         <Route path="/comissoes" element={<AuthGuard><ScopeGuard scope="comissoes"><Comissoes /></ScopeGuard></AuthGuard>} />
+        <Route path="/financeiro" element={<AuthGuard><ScopeGuard scope="comissoes"><Financeiro /></ScopeGuard></AuthGuard>} />
         <Route path="/renovacoes" element={<AuthGuard><ScopeGuard scope="renovacoes"><Renovacoes /></ScopeGuard></AuthGuard>} />
         <Route path="/agenda" element={<AuthGuard><Agenda /></AuthGuard>} />
         <Route path="/relatorios" element={<AuthGuard><ScopeGuard scope="relatorios"><Relatorios /></ScopeGuard></AuthGuard>} />
