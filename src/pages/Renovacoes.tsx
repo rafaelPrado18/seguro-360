@@ -174,8 +174,8 @@ const Renovacoes = () => {
           onOpenChange={(open) => { if (!open) setSelectedRenovacao(null); }}
           renovacao={selectedRenovacao}
           onSave={(updated) => {
-            setRenovacoes(prev => prev.map(r => r.id === updated.id ? updated : r));
             setSelectedRenovacao(null);
+            toast.success(`Renovação ${updated.apolice} atualizada!`);
           }}
         />
       </div>
