@@ -26,6 +26,7 @@ const Renovacoes = () => {
   const [viewMode, setViewMode] = useState<"table" | "kanban">("kanban");
   const { data: apiStatuses } = useRenovacaoStatuses();
   const { data: apiClients, isLoading } = useRenovacaoClients();
+  const queryClient = useQueryClient();
 
   // Map API data to the RenovacaoData shape used by components
   const renovacoes: RenovacaoData[] = useMemo(() => {
