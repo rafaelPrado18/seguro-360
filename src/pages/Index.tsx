@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { KpiCard } from "@/components/dashboard/KpiCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,9 +9,11 @@ import { useRole, ROLE_LABELS, ROLE_EMOJI } from "@/contexts/RoleContext";
 import { useNavigate } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
 import { useApolices } from "@/hooks/useApolices";
+import { sinistroService, type SinistroCreatePayload } from "@/services/sinistroService";
 import {
   Users, FileText, DollarSign, AlertTriangle, RefreshCw, TrendingUp, Target, MessageSquare, Bell, Zap,
   Calendar, Settings, BarChart3, ArrowRight, Clock, UserPlus, FileCheck, PhoneCall, Loader2,
+  ShieldAlert, Wrench, TimerOff, MessageCircle,
 } from "lucide-react";
 
 // --- Shortcuts ---
@@ -88,6 +90,27 @@ const Dashboard = () => {
 
   const { data: apolices, isLoading: apolicesLoading } = useApolices();
 
+  // Fetch sinistros
+  const [sinistros, setSinistros] = useState<SinistroCreatePayload[]>([]);
+  const [sinistrosLoading, setSinistrosLoading] = useState(true);
+  useEffect(() => {
+    sinistroService.fetchSinistros()
+      .then(data => setSinistros(data))
+      .catch(() => setSinistros([]))
+      .finally(() => setSinistrosLoading(false));
+  }, []);
+
+  const sinistroSummary = useMemo(() => {
+    const count = (status: string) => sinistros.filter(s => s.status === status).length;
+    return [
+      { label: "Abertura / Agend. Vistoria", value: count("abertura"), icon: ShieldAlert, color: "text-info" },
+      { label: "Indenização Integral", value: count("indenizacao_integral"), icon: DollarSign, color: "text-accent" },
+      { label: "Fora do Prazo", value: count("fora_do_prazo"), icon: TimerOff, color: "text-destructive" },
+      { label: "Acompanhamento de Reparo", value: count("acompanhamento_reparo"), icon: Wrench, color: "text-success" },
+      { label: "WhatsApp", value: count("whats"), icon: MessageCircle, color: "text-primary" },
+    ];
+  }, [sinistros]);
+
   // Compute real lead summary
   const leadSummary = useMemo(() => {
     const leads = leadsResponse?.data || [];
@@ -150,15 +173,22 @@ const Dashboard = () => {
         changeType: "neutral" as const, icon: MessageSquare,
       });
     }
+    if (hasScope("sinistros")) {
+      kpis.push({
+        title: "Sinistros", value: String(sinistros.length), change: `${sinistroSummary.find(s => s.label.includes("Abertura"))?.value || 0} em abertura`,
+        changeType: sinistros.length > 0 ? "neutral" as const : "positive" as const, icon: AlertTriangle,
+      });
+    }
     return kpis;
-  }, [totalLeads, newLeadsCount, apolices, upcomingRenewals, hasScope]);
+  }, [totalLeads, newLeadsCount, apolices, upcomingRenewals, sinistros, sinistroSummary, hasScope]);
 
   const visibleShortcuts = allShortcuts.filter(s => s.scopes.length === 0 || s.scopes.some(sc => hasScope(sc)));
   const showRenewals = hasScope("renovacoes");
   const showLeadSummary = hasScope("leads");
   const showNewLeadsAlert = !isAdmin && hasScope("leads") && newLeadsCount > 0;
+  const showSinistros = hasScope("sinistros");
 
-  const isLoadingData = leadsLoading || apolicesLoading;
+  const isLoadingData = leadsLoading || apolicesLoading || sinistrosLoading;
 
   return (
     <AppLayout>
@@ -244,8 +274,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Lead Summary + Renewals */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Lead Summary + Sinistros + Renewals */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
           {/* Lead Summary */}
           {showLeadSummary && (
             <Card>
@@ -316,6 +346,33 @@ const Dashboard = () => {
                       );
                     })}
                   </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Sinistros Summary */}
+          {showSinistros && (
+            <Card>
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                <CardTitle className="text-sm font-semibold">Resumo de Sinistros</CardTitle>
+                <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => navigate("/sinistros")}>
+                  Ver todos <ArrowRight className="h-3 w-3" />
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {sinistrosLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)
+                ) : (
+                  sinistroSummary.map((item, i) => (
+                    <div key={i} className="flex items-center justify-between rounded-lg border border-border p-3 animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
+                      <div className="flex items-center gap-3">
+                        <item.icon className={`h-4 w-4 ${item.color}`} />
+                        <span className="text-sm text-foreground">{item.label}</span>
+                      </div>
+                      <span className={`text-lg font-bold ${item.color}`}>{item.value}</span>
+                    </div>
+                  ))
                 )}
               </CardContent>
             </Card>
