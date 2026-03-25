@@ -180,7 +180,7 @@ const Dashboard = () => {
       });
     }
     return kpis;
-  }, [totalLeads, newLeadsCount, apolices, upcomingRenewals, hasScope]);
+  }, [totalLeads, newLeadsCount, apolices, upcomingRenewals, sinistros, sinistroSummary, hasScope]);
 
   const visibleShortcuts = allShortcuts.filter(s => s.scopes.length === 0 || s.scopes.some(sc => hasScope(sc)));
   const showRenewals = hasScope("renovacoes");
