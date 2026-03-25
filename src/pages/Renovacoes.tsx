@@ -1,34 +1,16 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Mail, Phone, RefreshCw, LayoutGrid, List } from "lucide-react";
-import { useState } from "react";
+import { Search, Filter, Mail, Phone, RefreshCw, LayoutGrid, List, Loader2 } from "lucide-react";
+import { useState, useMemo } from "react";
 import { RenovacaoDetailDialog, type RenovacaoData } from "@/components/renovacoes/RenovacaoDetailDialog";
 import { RenovacaoKanban, type RenovacaoKanbanColumn } from "@/components/renovacoes/RenovacaoKanban";
 import { useRenovacaoStatuses } from "@/hooks/useRenovacaoStatus";
-
-const renovacoesData: RenovacaoData[] = [
-  { id: 1, apolice: "#3201", cliente: "Carlos Mendes", ramo: "Auto", seguradora: "Porto Seguro", vencimento: "15/02/2026", premio: "R$ 3.200", dias: 3, status: "Urgente", observacoes: "", veiculos: [
-    { id: "v1", marca: "Toyota", modelo: "Corolla", ano: "2023", placa: "ABC-1D23", chassi: "9BRBL3HE8D0123456" },
-  ]},
-  { id: 2, apolice: "#1890", cliente: "Ana Souza", ramo: "Vida", seguradora: "SulAmérica", vencimento: "18/02/2026", premio: "R$ 1.800", dias: 6, status: "Pendente", observacoes: "", veiculos: [] },
-  { id: 3, apolice: "#567", cliente: "Empresa XYZ", ramo: "Empresarial", seguradora: "Allianz", vencimento: "20/02/2026", premio: "R$ 12.500", dias: 8, status: "Pendente", observacoes: "", veiculos: [
-    { id: "v2", marca: "Fiat", modelo: "Strada", ano: "2024", placa: "DEF-5G67", chassi: "9BGRD08X04G234567" },
-    { id: "v3", marca: "Volkswagen", modelo: "Amarok", ano: "2023", placa: "GHI-8J90", chassi: "9BWDB45J6YT345678" },
-  ]},
-  { id: 4, apolice: "#2340", cliente: "Roberto Lima", ramo: "Residencial", seguradora: "Tokio Marine", vencimento: "22/02/2026", premio: "R$ 2.100", dias: 10, status: "Pendente", observacoes: "", veiculos: [] },
-  { id: 5, apolice: "#3567", cliente: "Fernanda Costa", ramo: "Auto", seguradora: "HDI", vencimento: "25/02/2026", premio: "R$ 4.500", dias: 13, status: "Em Contato", observacoes: "", veiculos: [
-    { id: "v4", marca: "Honda", modelo: "Civic", ano: "2022", placa: "JKL-2M34", chassi: "93HFC2630AZ456789" },
-  ]},
-  { id: 6, apolice: "#4100", cliente: "João Silva", ramo: "Vida", seguradora: "MetLife", vencimento: "01/03/2026", premio: "R$ 2.800", dias: 17, status: "Pendente", observacoes: "", veiculos: [] },
-  { id: 7, apolice: "#2890", cliente: "Maria Santos", ramo: "Auto", seguradora: "Bradesco", vencimento: "05/03/2026", premio: "R$ 3.600", dias: 21, status: "Renovado", observacoes: "", veiculos: [
-    { id: "v5", marca: "Chevrolet", modelo: "Onix", ano: "2024", placa: "MNO-5P67", chassi: "9BGCA80X0CG567890" },
-    { id: "v6", marca: "Hyundai", modelo: "HB20", ano: "2023", placa: "PQR-8S90", chassi: "9BHBG41DBDP678901" },
-  ]},
-];
+import { useRenovacaoClients } from "@/hooks/useRenovacaoClients";
+import type { RenovacaoClient } from "@/services/renovacaoClientService";
 
 const FALLBACK_COLUMNS: RenovacaoKanbanColumn[] = [
   { id: "Urgente", label: "Urgente", color: "text-destructive", bgColor: "bg-destructive" },
