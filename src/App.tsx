@@ -19,6 +19,7 @@ import WhatsApp from "./pages/WhatsApp";
 import WhatsAppTemplates from "./pages/WhatsAppTemplates";
 import GerenciarStatus from "./pages/GerenciarStatus";
 import GerenciarStatusRenovacao from "./pages/GerenciarStatusRenovacao";
+import GerenciarStatusSinistro from "./pages/GerenciarStatusSinistro";
 import Usuarios from "./pages/Usuarios";
 import WhatsAppInstancias from "./pages/WhatsAppInstancias";
 import Empresas from "./pages/Empresas";
@@ -37,6 +38,7 @@ const App = () => (
         <Route path="/whatsapp/templates" element={<AuthGuard><ScopeGuard scope="whatsapp"><WhatsAppTemplates /></ScopeGuard></AuthGuard>} />
         <Route path="/gerenciar-status" element={<AuthGuard><AdminGuard><GerenciarStatus /></AdminGuard></AuthGuard>} />
         <Route path="/gerenciar-status-renovacao" element={<AuthGuard><AdminGuard><GerenciarStatusRenovacao /></AdminGuard></AuthGuard>} />
+        <Route path="/gerenciar-status-sinistro" element={<AuthGuard><AdminGuard><GerenciarStatusSinistro /></AdminGuard></AuthGuard>} />
         <Route path="/whatsapp/instancias" element={<AuthGuard><AdminGuard><WhatsAppInstancias /></AdminGuard></AuthGuard>} />
         <Route path="/clientes" element={<AuthGuard><ScopeGuard scope="clientes"><Clientes /></ScopeGuard></AuthGuard>} />
         <Route path="/apolices" element={<AuthGuard><ScopeGuard scope="apolices"><Apolices /></ScopeGuard></AuthGuard>} />
