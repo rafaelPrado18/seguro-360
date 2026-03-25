@@ -30,6 +30,14 @@ const Sinistros = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedSinistro, setSelectedSinistro] = useState<SinistroItem | null>(null);
   const [novoDialogOpen, setNovoDialogOpen] = useState(false);
+  const { data: sinistroStatuses = [], isLoading: statusesLoading } = useSinistroStatuses();
+
+  const columns: SinistroKanbanColumn[] = useMemo(() => {
+    if (sinistroStatuses.length === 0) return [];
+    return [...sinistroStatuses]
+      .sort((a, b) => a.ordem - b.ordem)
+      .map(s => ({ id: s.key, label: s.label, color: s.color, bgColor: s.bgColor }));
+  }, [sinistroStatuses]);
 
   const loadSinistros = async () => {
     try {
