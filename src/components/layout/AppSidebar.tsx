@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, FileText, AlertTriangle, DollarSign,
   RefreshCw, CalendarCheck, Settings, BarChart3, Target,
   MessageSquare, FileStack, Workflow, X, Circle, Smartphone, Building2,
-  ChevronsLeft, ChevronsRight,
+  ChevronsLeft, ChevronsRight, Wallet,
 } from "lucide-react";
 import { useRole, ROLE_LABELS } from "@/contexts/RoleContext";
 import { Button } from "@/components/ui/button";
