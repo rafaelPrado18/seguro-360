@@ -44,10 +44,13 @@ const Renovacoes = () => {
     }));
   }, [apiClients]);
 
+  const kanbanColumns: RenovacaoKanbanColumn[] = apiStatuses && apiStatuses.length > 0
+    ? apiStatuses.sort((a, b) => a.ordem - b.ordem).map(s => ({ id: s.key, label: s.label, color: s.color, bgColor: s.bgColor }))
+    : FALLBACK_COLUMNS;
+
   const filtered = renovacoes.filter(r => r.cliente.toLowerCase().includes(search.toLowerCase()) || r.apolice.includes(search));
 
   const handleKanbanStatusChange = (renovacaoId: number, newStatus: string) => {
-    setRenovacoes(prev => prev.map(r => r.id === renovacaoId ? { ...r, status: newStatus } : r));
     const item = renovacoes.find(r => r.id === renovacaoId);
     if (item) toast.success(`Renovação de ${item.cliente} movida para "${newStatus}"`);
   };
