@@ -173,6 +173,12 @@ const Dashboard = () => {
         changeType: "neutral" as const, icon: MessageSquare,
       });
     }
+    if (hasScope("sinistros")) {
+      kpis.push({
+        title: "Sinistros", value: String(sinistros.length), change: `${sinistroSummary.find(s => s.label.includes("Abertura"))?.value || 0} em abertura`,
+        changeType: sinistros.length > 0 ? "neutral" as const : "positive" as const, icon: AlertTriangle,
+      });
+    }
     return kpis;
   }, [totalLeads, newLeadsCount, apolices, upcomingRenewals, hasScope]);
 
