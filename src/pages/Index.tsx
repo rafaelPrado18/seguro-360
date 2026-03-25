@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { KpiCard } from "@/components/dashboard/KpiCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,9 +9,11 @@ import { useRole, ROLE_LABELS, ROLE_EMOJI } from "@/contexts/RoleContext";
 import { useNavigate } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
 import { useApolices } from "@/hooks/useApolices";
+import { sinistroService, type SinistroCreatePayload } from "@/services/sinistroService";
 import {
   Users, FileText, DollarSign, AlertTriangle, RefreshCw, TrendingUp, Target, MessageSquare, Bell, Zap,
   Calendar, Settings, BarChart3, ArrowRight, Clock, UserPlus, FileCheck, PhoneCall, Loader2,
+  ShieldAlert, Wrench, TimerOff, MessageCircle,
 } from "lucide-react";
 
 // --- Shortcuts ---
