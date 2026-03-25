@@ -90,6 +90,27 @@ const Dashboard = () => {
 
   const { data: apolices, isLoading: apolicesLoading } = useApolices();
 
+  // Fetch sinistros
+  const [sinistros, setSinistros] = useState<SinistroCreatePayload[]>([]);
+  const [sinistrosLoading, setSinistrosLoading] = useState(true);
+  useEffect(() => {
+    sinistroService.fetchSinistros()
+      .then(data => setSinistros(data))
+      .catch(() => setSinistros([]))
+      .finally(() => setSinistrosLoading(false));
+  }, []);
+
+  const sinistroSummary = useMemo(() => {
+    const count = (status: string) => sinistros.filter(s => s.status === status).length;
+    return [
+      { label: "Abertura / Agend. Vistoria", value: count("abertura"), icon: ShieldAlert, color: "text-info" },
+      { label: "Indenização Integral", value: count("indenizacao_integral"), icon: DollarSign, color: "text-accent" },
+      { label: "Fora do Prazo", value: count("fora_do_prazo"), icon: TimerOff, color: "text-destructive" },
+      { label: "Acompanhamento de Reparo", value: count("acompanhamento_reparo"), icon: Wrench, color: "text-success" },
+      { label: "WhatsApp", value: count("whats"), icon: MessageCircle, color: "text-primary" },
+    ];
+  }, [sinistros]);
+
   // Compute real lead summary
   const leadSummary = useMemo(() => {
     const leads = leadsResponse?.data || [];
