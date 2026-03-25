@@ -186,8 +186,9 @@ const Dashboard = () => {
   const showRenewals = hasScope("renovacoes");
   const showLeadSummary = hasScope("leads");
   const showNewLeadsAlert = !isAdmin && hasScope("leads") && newLeadsCount > 0;
+  const showSinistros = hasScope("sinistros");
 
-  const isLoadingData = leadsLoading || apolicesLoading;
+  const isLoadingData = leadsLoading || apolicesLoading || sinistrosLoading;
 
   return (
     <AppLayout>
