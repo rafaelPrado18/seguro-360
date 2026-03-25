@@ -93,7 +93,7 @@ const Sinistros = () => {
     setSinistros(prev => prev.map(s => s.id === sinistroId ? { ...s, status: newStatus } : s));
     try {
       await sinistroService.updateSinistro({ id: sinistroId }, { status: newStatus });
-      toast({ title: "Status atualizado", description: `Sinistro ${sinistroId} movido para ${columns.find(c => c.id === newStatus)?.label || newStatus}` });
+      toast({ title: "Status atualizado", description: `Sinistro ${sinistroId} movido para ${SINISTRO_COLUMNS.find(c => c.id === newStatus)?.label || newStatus}` });
     } catch {
       setSinistros(prev => prev.map(s => s.id === sinistroId ? { ...s, status: sinistros.find(x => x.id === sinistroId)?.status || s.status } : s));
       toast({ title: "Erro", description: "Não foi possível atualizar o status", variant: "destructive" });
