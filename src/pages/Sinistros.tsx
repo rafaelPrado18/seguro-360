@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,14 @@ import { SinistroDetailSheet } from "@/components/sinistros/SinistroDetailSheet"
 import { NovoSinistroDialog } from "@/components/sinistros/NovoSinistroDialog";
 import { toast } from "@/hooks/use-toast";
 import { sinistroService } from "@/services/sinistroService";
-import { useSinistroStatuses } from "@/hooks/useSinistroStatus";
+
+const SINISTRO_COLUMNS: SinistroKanbanColumn[] = [
+  { id: "abertura", label: "Abertura / Agendamento Vistoria", color: "text-info", bgColor: "bg-info" },
+  { id: "indenizacao_integral", label: "Indenização Integral", color: "text-accent", bgColor: "bg-accent" },
+  { id: "fora_do_prazo", label: "Fora do Prazo", color: "text-destructive", bgColor: "bg-destructive" },
+  { id: "acompanhamento_reparo", label: "Acompanhamento de Reparo", color: "text-success", bgColor: "bg-success" },
+  { id: "whats", label: "WhatsApp", color: "text-primary", bgColor: "bg-primary" },
+];
 
 const FILTER_OPTIONS = [
   { value: "all", label: "Todos os filtros", type: "none" },
@@ -30,14 +37,6 @@ const Sinistros = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedSinistro, setSelectedSinistro] = useState<SinistroItem | null>(null);
   const [novoDialogOpen, setNovoDialogOpen] = useState(false);
-  const { data: sinistroStatuses = [], isLoading: statusesLoading } = useSinistroStatuses();
-
-  const columns: SinistroKanbanColumn[] = useMemo(() => {
-    if (sinistroStatuses.length === 0) return [];
-    return [...sinistroStatuses]
-      .sort((a, b) => a.ordem - b.ordem)
-      .map(s => ({ id: s.key, label: s.label, color: s.color, bgColor: s.bgColor }));
-  }, [sinistroStatuses]);
 
   const loadSinistros = async () => {
     try {
@@ -94,7 +93,7 @@ const Sinistros = () => {
     setSinistros(prev => prev.map(s => s.id === sinistroId ? { ...s, status: newStatus } : s));
     try {
       await sinistroService.updateSinistro({ id: sinistroId }, { status: newStatus });
-      toast({ title: "Status atualizado", description: `Sinistro ${sinistroId} movido para ${columns.find(c => c.id === newStatus)?.label || newStatus}` });
+      toast({ title: "Status atualizado", description: `Sinistro ${sinistroId} movido para ${SINISTRO_COLUMNS.find(c => c.id === newStatus)?.label || newStatus}` });
     } catch {
       setSinistros(prev => prev.map(s => s.id === sinistroId ? { ...s, status: sinistros.find(x => x.id === sinistroId)?.status || s.status } : s));
       toast({ title: "Erro", description: "Não foi possível atualizar o status", variant: "destructive" });
@@ -152,19 +151,14 @@ const Sinistros = () => {
           )}
         </div>
 
-        {loading || statusesLoading ? (
+        {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : columns.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-            <p className="text-sm">Nenhum status cadastrado para sinistros.</p>
-            <p className="text-xs mt-1">Configure os status em Gerenciar Status Sinistro.</p>
           </div>
         ) : (
           <SinistroKanban
             sinistros={filtered}
-            columns={columns}
+            columns={SINISTRO_COLUMNS}
             onStatusChange={handleStatusChange}
             onItemClick={handleItemClick}
           />

@@ -27,7 +27,6 @@ const menuItems = [
   { icon: BarChart3, label: "Relatórios", path: "/relatorios", adminOnly: false, superAdminOnly: false, scope: "relatorios" },
   { icon: Workflow, label: "Ger. Status Leads", path: "/gerenciar-status", adminOnly: true, superAdminOnly: false, scope: null },
   { icon: Workflow, label: "Ger. Status Renov.", path: "/gerenciar-status-renovacao", adminOnly: true, superAdminOnly: false, scope: null },
-  { icon: Workflow, label: "Ger. Status Sinistro", path: "/gerenciar-status-sinistro", adminOnly: true, superAdminOnly: false, scope: null },
   { icon: Users, label: "Usuários", path: "/usuarios", adminOnly: true, superAdminOnly: false, scope: null },
   { icon: Settings, label: "Configurações", path: "/configuracoes", adminOnly: true, superAdminOnly: false, scope: null },
   { icon: Building2, label: "Empresas", path: "/empresas", adminOnly: false, superAdminOnly: true, scope: null },
