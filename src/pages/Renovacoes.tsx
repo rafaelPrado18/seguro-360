@@ -52,9 +52,16 @@ const Renovacoes = () => {
 
   const filtered = renovacoes.filter(r => r.cliente.toLowerCase().includes(search.toLowerCase()) || r.apolice.includes(search));
 
-  const handleKanbanStatusChange = (renovacaoId: number, newStatus: string) => {
+  const handleKanbanStatusChange = async (renovacaoId: number, newStatus: string) => {
     const item = renovacoes.find(r => r.id === renovacaoId);
-    if (item) toast.success(`Renovação de ${item.cliente} movida para "${newStatus}"`);
+    if (!item) return;
+    try {
+      await renovacaoClientService.update(String(item.id), { status: newStatus });
+      queryClient.invalidateQueries({ queryKey: ["renovacao-clients"] });
+      toast.success(`Renovação de ${item.cliente} movida para "${newStatus}"`);
+    } catch {
+      toast.error(`Erro ao atualizar status da renovação de ${item.cliente}`);
+    }
   };
 
   const statusColor = (s: string) => {
