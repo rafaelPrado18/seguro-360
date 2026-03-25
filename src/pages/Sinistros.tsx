@@ -12,13 +12,10 @@ import { sinistroService } from "@/services/sinistroService";
 
 const SINISTRO_COLUMNS: SinistroKanbanColumn[] = [
   { id: "abertura", label: "Abertura / Agendamento Vistoria", color: "text-info", bgColor: "bg-info" },
-  { id: "primeiro_atendimento", label: "Primeiro Atendimento", color: "text-warning", bgColor: "bg-warning" },
   { id: "indenizacao_integral", label: "Indenização Integral", color: "text-accent", bgColor: "bg-accent" },
-  { id: "acordo_terceiro", label: "Acordo Terceiro", color: "text-primary", bgColor: "bg-primary" },
-  { id: "lucros_cessantes", label: "Lucros Cessantes", color: "text-secondary-foreground", bgColor: "bg-secondary" },
-  { id: "pendente", label: "Pendente", color: "text-muted-foreground", bgColor: "bg-muted-foreground" },
-  { id: "em_atraso", label: "Em Atraso", color: "text-destructive", bgColor: "bg-destructive" },
+  { id: "fora_do_prazo", label: "Fora do Prazo", color: "text-destructive", bgColor: "bg-destructive" },
   { id: "acompanhamento_reparo", label: "Acompanhamento de Reparo", color: "text-success", bgColor: "bg-success" },
+  { id: "whats", label: "WhatsApp", color: "text-primary", bgColor: "bg-primary" },
 ];
 
 const FILTER_OPTIONS = [
