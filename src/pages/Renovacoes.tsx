@@ -156,7 +156,6 @@ const Renovacoes = () => {
                             <Button variant="ghost" size="icon" className="h-7 w-7" title="Ligar" onClick={(e) => { e.stopPropagation(); }}><Phone className="h-3.5 w-3.5 text-muted-foreground" /></Button>
                             <Button variant="ghost" size="icon" className="h-7 w-7" title="Renovar" onClick={(e) => {
                               e.stopPropagation();
-                              setRenovacoes(prev => prev.map(item => item.id === r.id ? { ...item, status: "Renovado" } : item));
                               toast.success(`Apólice ${r.apolice} de ${r.cliente} renovada com sucesso!`);
                             }}><RefreshCw className="h-3.5 w-3.5 text-muted-foreground" /></Button>
                           </div>
