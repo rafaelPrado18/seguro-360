@@ -206,9 +206,29 @@ const DetailField = ({ label, value }: { label: string; value: string }) => (
 
 const Financeiro = () => {
   const [search, setSearch] = useState("");
+  const [clientes, setClientes] = useState<ClientePendencia[]>(clientesMock);
   const [selectedClient, setSelectedClient] = useState<ClientePendencia | null>(null);
 
-  const filtered = clientesMock.filter((c) =>
+  const updateParcelaStatus = (clienteId: number, parcelaIndex: number, newStatus: "pago" | "pendente") => {
+    setClientes((prev) =>
+      prev.map((c) => {
+        if (c.id !== clienteId) return c;
+        const updatedParcelas = c.parcelas.map((p, i) =>
+          i === parcelaIndex ? { ...p, status: newStatus } : p
+        );
+        return { ...c, parcelas: updatedParcelas };
+      })
+    );
+    setSelectedClient((prev) => {
+      if (!prev || prev.id !== clienteId) return prev;
+      const updatedParcelas = prev.parcelas.map((p, i) =>
+        i === parcelaIndex ? { ...p, status: newStatus } : p
+      );
+      return { ...prev, parcelas: updatedParcelas };
+    });
+  };
+
+  const filtered = clientes.filter((c) =>
     c.nome.toLowerCase().includes(search.toLowerCase()) ||
     c.apolice.toLowerCase().includes(search.toLowerCase())
   );
@@ -222,7 +242,7 @@ const Financeiro = () => {
           <div>
             <h2 className="text-2xl font-bold text-foreground">Financeiro</h2>
             <p className="text-sm text-muted-foreground">
-              {clientesMock.length} clientes · {clientesMock.filter((c) => getPendentesCount(c) > 0).length} com pendências
+              {clientes.length} clientes · {clientes.filter((c) => getPendentesCount(c) > 0).length} com pendências
             </p>
           </div>
           <div className="relative w-64">
@@ -406,16 +426,43 @@ const Financeiro = () => {
                             <p className="text-sm font-medium">Parcela {i + 1}/{selectedClient.totalParcelas}</p>
                             <p className="text-xs text-muted-foreground">{p.mes}</p>
                           </div>
-                          <Badge
-                            variant="outline"
-                            className={`text-[10px] ${
-                              p.status === "pago"
-                                ? "border-success text-success bg-success/5"
-                                : "border-destructive text-destructive bg-destructive/5"
-                            }`}
-                          >
-                            {p.status === "pago" ? "Pago" : "Não pago"}
-                          </Badge>
+                          <div className="flex items-center gap-1.5">
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] ${
+                                p.status === "pago"
+                                  ? "border-success text-success bg-success/5"
+                                  : "border-destructive text-destructive bg-destructive/5"
+                              }`}
+                            >
+                              {p.status === "pago" ? "Pago" : "Não pago"}
+                            </Badge>
+                            {p.status === "pendente" ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-[10px] px-2 border-success text-success hover:bg-success hover:text-success-foreground"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateParcelaStatus(selectedClient.id, i, "pago");
+                                }}
+                              >
+                                <CheckCircle2 className="h-3 w-3 mr-1" /> Confirmar
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-[10px] px-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateParcelaStatus(selectedClient.id, i, "pendente");
+                                }}
+                              >
+                                <XCircle className="h-3 w-3 mr-1" /> Não pago
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
