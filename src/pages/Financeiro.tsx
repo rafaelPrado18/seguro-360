@@ -206,7 +206,27 @@ const DetailField = ({ label, value }: { label: string; value: string }) => (
 
 const Financeiro = () => {
   const [search, setSearch] = useState("");
+  const [clientes, setClientes] = useState<ClientePendencia[]>(clientesMock);
   const [selectedClient, setSelectedClient] = useState<ClientePendencia | null>(null);
+
+  const updateParcelaStatus = (clienteId: number, parcelaIndex: number, newStatus: "pago" | "pendente") => {
+    setClientes((prev) =>
+      prev.map((c) => {
+        if (c.id !== clienteId) return c;
+        const updatedParcelas = c.parcelas.map((p, i) =>
+          i === parcelaIndex ? { ...p, status: newStatus } : p
+        );
+        return { ...c, parcelas: updatedParcelas };
+      })
+    );
+    setSelectedClient((prev) => {
+      if (!prev || prev.id !== clienteId) return prev;
+      const updatedParcelas = prev.parcelas.map((p, i) =>
+        i === parcelaIndex ? { ...p, status: newStatus } : p
+      );
+      return { ...prev, parcelas: updatedParcelas };
+    });
+  };
 
   const filtered = clientesMock.filter((c) =>
     c.nome.toLowerCase().includes(search.toLowerCase()) ||
