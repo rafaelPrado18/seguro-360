@@ -562,6 +562,8 @@ const Financeiro = () => {
                       </div>
                     )}
                   </div>
+                </TabsContent>
+
                 {/* Histórico */}
                 <TabsContent value="historico">
                   <div className="space-y-0 mt-2">
