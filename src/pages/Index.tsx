@@ -196,8 +196,15 @@ const Dashboard = () => {
         changeType: sinistros.length > 0 ? "neutral" as const : "positive" as const, icon: AlertTriangle,
       });
     }
+    if (hasScope("comissoes")) {
+      const pendencias = financeiroSummary[1]?.value || 0;
+      kpis.push({
+        title: "Financeiro", value: String(financeiroClients.length), change: `${pendencias} com pendências`,
+        changeType: pendencias > 0 ? "neutral" as const : "positive" as const, icon: Wallet,
+      });
+    }
     return kpis;
-  }, [totalLeads, newLeadsCount, apolices, upcomingRenewals, sinistros, sinistroSummary, hasScope]);
+  }, [totalLeads, newLeadsCount, apolices, upcomingRenewals, sinistros, sinistroSummary, financeiroClients, financeiroSummary, hasScope]);
 
   const visibleShortcuts = allShortcuts.filter(s => s.scopes.length === 0 || s.scopes.some(sc => hasScope(sc)));
   const showRenewals = hasScope("renovacoes");
