@@ -9,11 +9,12 @@ import { useRole, ROLE_LABELS, ROLE_EMOJI } from "@/contexts/RoleContext";
 import { useNavigate } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
 import { useApolices } from "@/hooks/useApolices";
+import { useFinanceiro } from "@/hooks/useFinanceiro";
 import { sinistroService, type SinistroCreatePayload } from "@/services/sinistroService";
 import {
   Users, FileText, DollarSign, AlertTriangle, RefreshCw, TrendingUp, Target, MessageSquare, Bell, Zap,
   Calendar, Settings, BarChart3, ArrowRight, Clock, UserPlus, FileCheck, PhoneCall, Loader2,
-  ShieldAlert, Wrench, TimerOff, MessageCircle,
+  ShieldAlert, Wrench, TimerOff, MessageCircle, Wallet, CheckCircle2, XCircle, AlertCircle,
 } from "lucide-react";
 
 // --- Shortcuts ---
