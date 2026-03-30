@@ -153,6 +153,11 @@ const clientesMock: ClientePendencia[] = [
       premioTotal: "R$ 8.500,00", premioLiquido: "R$ 7.200,00", iof: "R$ 540,00",
       comissao: "15%", formaPagamento: "12x boleto", franquia: "R$ 5.000,00", classeBonus: "-",
     },
+    historico: [
+      { data: "27/03/2026 16:00", tipo: "email", descricao: "E-mail de cobrança enviado para parcelas em atraso", autor: "Ana Paula" },
+      { data: "10/03/2026 09:30", tipo: "ligacao", descricao: "Tentativa de contato sem sucesso", autor: "Carlos" },
+      { data: "01/06/2025 10:00", tipo: "apolice", descricao: "Apólice #4520 emitida - Tokio Marine Empresarial", autor: "Sistema" },
+    ],
   },
   {
     id: 3, nome: "Maria Santos", apolice: "#4519", totalParcelas: 6,
