@@ -222,7 +222,12 @@ export function RenovacaoDetailDialog({ open, onOpenChange, renovacao, onSave }:
             setArquivoApolice={setArquivoApolice}
             arquivoProposta={arquivoProposta}
             setArquivoProposta={setArquivoProposta}
+            leadId={String(form.id)}
           />
+
+          <Separator />
+
+          <HistorySection referenceId={String(form.id)} />
         </div>
 
         <DialogFooter>
