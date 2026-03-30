@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   AlertCircle, Search, CheckCircle2, XCircle, User, FileText, Car,
-  GripVertical,
+  GripVertical, Clock, MessageSquare, Phone, Mail, FileUp, ShieldCheck,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────
@@ -56,6 +56,13 @@ interface DadosApolice {
   };
 }
 
+interface HistoricoEntry {
+  data: string;
+  tipo: "nota" | "ligacao" | "email" | "whatsapp" | "documento" | "pagamento" | "apolice";
+  descricao: string;
+  autor: string;
+}
+
 interface ClientePendencia {
   id: number;
   nome: string;
@@ -64,6 +71,7 @@ interface ClientePendencia {
   parcelas: Parcela[];
   dadosCliente: DadosCliente;
   dadosApolice: DadosApolice;
+  historico: HistoricoEntry[];
 }
 
 interface KanbanColumn {
@@ -116,6 +124,14 @@ const clientesMock: ClientePendencia[] = [
         placa: "ABC-1D23", chassi: "9BWAA05U5LT000001", combustivel: "Flex", fipe: "R$ 85.000,00",
       },
     },
+    historico: [
+      { data: "28/03/2026 14:30", tipo: "pagamento", descricao: "Parcela 10 confirmada como paga", autor: "Sistema" },
+      { data: "25/03/2026 10:15", tipo: "ligacao", descricao: "Ligação de cobrança realizada - cliente informou que pagará até dia 28", autor: "Ana Paula" },
+      { data: "20/03/2026 09:00", tipo: "whatsapp", descricao: "Lembrete de parcela enviado via WhatsApp", autor: "Sistema" },
+      { data: "01/03/2026 08:00", tipo: "nota", descricao: "Cliente solicitou revisão do valor do prêmio", autor: "Carlos" },
+      { data: "15/01/2026 11:30", tipo: "documento", descricao: "Apólice atualizada enviada ao cliente", autor: "Ana Paula" },
+      { data: "01/04/2025 10:00", tipo: "apolice", descricao: "Apólice #4521 emitida - Porto Seguro Automóvel", autor: "Sistema" },
+    ],
   },
   {
     id: 2, nome: "Empresa ABC Ltda", apolice: "#4520", totalParcelas: 12,
@@ -138,6 +154,11 @@ const clientesMock: ClientePendencia[] = [
       premioTotal: "R$ 8.500,00", premioLiquido: "R$ 7.200,00", iof: "R$ 540,00",
       comissao: "15%", formaPagamento: "12x boleto", franquia: "R$ 5.000,00", classeBonus: "-",
     },
+    historico: [
+      { data: "27/03/2026 16:00", tipo: "email", descricao: "E-mail de cobrança enviado para parcelas em atraso", autor: "Ana Paula" },
+      { data: "10/03/2026 09:30", tipo: "ligacao", descricao: "Tentativa de contato sem sucesso", autor: "Carlos" },
+      { data: "01/06/2025 10:00", tipo: "apolice", descricao: "Apólice #4520 emitida - Tokio Marine Empresarial", autor: "Sistema" },
+    ],
   },
   {
     id: 3, nome: "Maria Santos", apolice: "#4519", totalParcelas: 6,
@@ -161,6 +182,11 @@ const clientesMock: ClientePendencia[] = [
         placa: "DEF-5G67", chassi: "93HFC6830PZ000002", combustivel: "Flex", fipe: "R$ 130.000,00",
       },
     },
+    historico: [
+      { data: "26/03/2026 11:00", tipo: "whatsapp", descricao: "Cobrança enviada via WhatsApp para 4 parcelas pendentes", autor: "Ana Paula" },
+      { data: "15/02/2026 14:00", tipo: "ligacao", descricao: "Cliente não atendeu - 3ª tentativa", autor: "Carlos" },
+      { data: "01/10/2025 10:00", tipo: "apolice", descricao: "Apólice #4519 emitida - Bradesco Seguros Automóvel", autor: "Sistema" },
+    ],
   },
   {
     id: 4, nome: "Carlos Mendes", apolice: "#4518", totalParcelas: 12,
@@ -187,6 +213,11 @@ const clientesMock: ClientePendencia[] = [
         placa: "GHI-8J01", chassi: "9BR53ZEC5R0000003", combustivel: "Flex", fipe: "R$ 155.000,00",
       },
     },
+    historico: [
+      { data: "29/03/2026 09:45", tipo: "pagamento", descricao: "Parcela 11 confirmada como paga", autor: "Sistema" },
+      { data: "20/03/2026 15:30", tipo: "nota", descricao: "Cliente perguntou sobre renovação antecipada", autor: "Ana Paula" },
+      { data: "01/04/2025 10:00", tipo: "apolice", descricao: "Apólice #4518 emitida - SulAmérica Automóvel", autor: "Sistema" },
+    ],
   },
 ];
 
@@ -372,7 +403,7 @@ const Financeiro = () => {
               </SheetHeader>
 
               <Tabs defaultValue="pendencias" className="mt-4">
-                <TabsList className="w-full grid grid-cols-3">
+                <TabsList className="w-full grid grid-cols-4">
                   <TabsTrigger value="pendencias" className="text-xs gap-1.5">
                     <AlertCircle className="h-3.5 w-3.5" /> Pendências
                   </TabsTrigger>
@@ -381,6 +412,9 @@ const Financeiro = () => {
                   </TabsTrigger>
                   <TabsTrigger value="apolice" className="text-xs gap-1.5">
                     <FileText className="h-3.5 w-3.5" /> Apólice
+                  </TabsTrigger>
+                  <TabsTrigger value="historico" className="text-xs gap-1.5">
+                    <Clock className="h-3.5 w-3.5" /> Histórico
                   </TabsTrigger>
                 </TabsList>
 
@@ -525,6 +559,50 @@ const Financeiro = () => {
                           <DetailField label="Combustível" value={selectedClient.dadosApolice.veiculo.combustivel} />
                           <DetailField label="Valor FIPE" value={selectedClient.dadosApolice.veiculo.fipe} />
                         </div>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                {/* Histórico */}
+                <TabsContent value="historico">
+                  <div className="space-y-0 mt-2">
+                    {selectedClient.historico.map((entry, i) => {
+                      const iconMap: Record<HistoricoEntry["tipo"], { icon: React.ReactNode; color: string }> = {
+                        nota: { icon: <MessageSquare className="h-3.5 w-3.5" />, color: "bg-primary/10 text-primary" },
+                        ligacao: { icon: <Phone className="h-3.5 w-3.5" />, color: "bg-info/10 text-info" },
+                        email: { icon: <Mail className="h-3.5 w-3.5" />, color: "bg-accent/10 text-accent" },
+                        whatsapp: { icon: <MessageSquare className="h-3.5 w-3.5" />, color: "bg-success/10 text-success" },
+                        documento: { icon: <FileUp className="h-3.5 w-3.5" />, color: "bg-warning/10 text-warning" },
+                        pagamento: { icon: <CheckCircle2 className="h-3.5 w-3.5" />, color: "bg-success/10 text-success" },
+                        apolice: { icon: <ShieldCheck className="h-3.5 w-3.5" />, color: "bg-primary/10 text-primary" },
+                      };
+                      const { icon, color } = iconMap[entry.tipo];
+
+                      return (
+                        <div key={i} className="flex items-start gap-3">
+                          <div className="flex flex-col items-center">
+                            {i > 0 && <div className="w-0.5 h-3 bg-border" />}
+                            <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 ${color}`}>
+                              {icon}
+                            </div>
+                            {i < selectedClient.historico.length - 1 && <div className="w-0.5 h-3 bg-border" />}
+                          </div>
+                          <div className="flex-1 py-1.5">
+                            <p className="text-sm text-foreground">{entry.descricao}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[10px] text-muted-foreground">{entry.data}</span>
+                              <span className="text-[10px] text-muted-foreground">·</span>
+                              <span className="text-[10px] font-medium text-muted-foreground">{entry.autor}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {selectedClient.historico.length === 0 && (
+                      <div className="flex items-center justify-center h-20 text-sm text-muted-foreground">
+                        Nenhum registro no histórico.
                       </div>
                     )}
                   </div>
