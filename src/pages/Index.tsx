@@ -402,6 +402,33 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Financeiro Summary */}
+          {showFinanceiro && (
+            <Card>
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                <CardTitle className="text-sm font-semibold">Resumo Financeiro</CardTitle>
+                <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => navigate("/financeiro")}>
+                  Ver detalhes <ArrowRight className="h-3 w-3" />
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {financeiroLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)
+                ) : (
+                  financeiroSummary.map((item, i) => (
+                    <div key={i} className="flex items-center justify-between rounded-lg border border-border p-3 animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
+                      <div className="flex items-center gap-3">
+                        <item.icon className={`h-4 w-4 ${item.color}`} />
+                        <span className="text-sm text-foreground">{item.label}</span>
+                      </div>
+                      <span className={`text-lg font-bold ${item.color}`}>{item.value}</span>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </AppLayout>
