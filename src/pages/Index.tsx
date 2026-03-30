@@ -211,8 +211,9 @@ const Dashboard = () => {
   const showLeadSummary = hasScope("leads");
   const showNewLeadsAlert = !isAdmin && hasScope("leads") && newLeadsCount > 0;
   const showSinistros = hasScope("sinistros");
+  const showFinanceiro = hasScope("comissoes");
 
-  const isLoadingData = leadsLoading || apolicesLoading || sinistrosLoading;
+  const isLoadingData = leadsLoading || apolicesLoading || sinistrosLoading || financeiroLoading;
 
   return (
     <AppLayout>
