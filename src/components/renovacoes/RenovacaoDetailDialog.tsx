@@ -13,6 +13,7 @@ import { Car, Save, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
+import { HistorySection } from "@/components/shared/HistorySection";
 
 export interface Veiculo {
   id: string;
