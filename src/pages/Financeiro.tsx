@@ -426,16 +426,43 @@ const Financeiro = () => {
                             <p className="text-sm font-medium">Parcela {i + 1}/{selectedClient.totalParcelas}</p>
                             <p className="text-xs text-muted-foreground">{p.mes}</p>
                           </div>
-                          <Badge
-                            variant="outline"
-                            className={`text-[10px] ${
-                              p.status === "pago"
-                                ? "border-success text-success bg-success/5"
-                                : "border-destructive text-destructive bg-destructive/5"
-                            }`}
-                          >
-                            {p.status === "pago" ? "Pago" : "Não pago"}
-                          </Badge>
+                          <div className="flex items-center gap-1.5">
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] ${
+                                p.status === "pago"
+                                  ? "border-success text-success bg-success/5"
+                                  : "border-destructive text-destructive bg-destructive/5"
+                              }`}
+                            >
+                              {p.status === "pago" ? "Pago" : "Não pago"}
+                            </Badge>
+                            {p.status === "pendente" ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-[10px] px-2 border-success text-success hover:bg-success hover:text-success-foreground"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateParcelaStatus(selectedClient.id, i, "pago");
+                                }}
+                              >
+                                <CheckCircle2 className="h-3 w-3 mr-1" /> Confirmar
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-[10px] px-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateParcelaStatus(selectedClient.id, i, "pendente");
+                                }}
+                              >
+                                <XCircle className="h-3 w-3 mr-1" /> Não pago
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
