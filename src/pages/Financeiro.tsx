@@ -403,7 +403,7 @@ const Financeiro = () => {
               </SheetHeader>
 
               <Tabs defaultValue="pendencias" className="mt-4">
-                <TabsList className="w-full grid grid-cols-3">
+                <TabsList className="w-full grid grid-cols-4">
                   <TabsTrigger value="pendencias" className="text-xs gap-1.5">
                     <AlertCircle className="h-3.5 w-3.5" /> Pendências
                   </TabsTrigger>
@@ -412,6 +412,9 @@ const Financeiro = () => {
                   </TabsTrigger>
                   <TabsTrigger value="apolice" className="text-xs gap-1.5">
                     <FileText className="h-3.5 w-3.5" /> Apólice
+                  </TabsTrigger>
+                  <TabsTrigger value="historico" className="text-xs gap-1.5">
+                    <Clock className="h-3.5 w-3.5" /> Histórico
                   </TabsTrigger>
                 </TabsList>
 
