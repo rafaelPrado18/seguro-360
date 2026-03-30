@@ -213,6 +213,11 @@ const clientesMock: ClientePendencia[] = [
         placa: "GHI-8J01", chassi: "9BR53ZEC5R0000003", combustivel: "Flex", fipe: "R$ 155.000,00",
       },
     },
+    historico: [
+      { data: "29/03/2026 09:45", tipo: "pagamento", descricao: "Parcela 11 confirmada como paga", autor: "Sistema" },
+      { data: "20/03/2026 15:30", tipo: "nota", descricao: "Cliente perguntou sobre renovação antecipada", autor: "Ana Paula" },
+      { data: "01/04/2025 10:00", tipo: "apolice", descricao: "Apólice #4518 emitida - SulAmérica Automóvel", autor: "Sistema" },
+    ],
   },
 ];
 
