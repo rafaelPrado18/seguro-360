@@ -122,8 +122,15 @@ const clientesMock: ClientePendencia[] = [
       veiculo: {
         fabricante: "Volkswagen", modelo: "Polo 1.0 TSI", ano: "2023",
         placa: "ABC-1D23", chassi: "9BWAA05U5LT000001", combustivel: "Flex", fipe: "R$ 85.000,00",
-      },
     },
+    historico: [
+      { data: "28/03/2026 14:30", tipo: "pagamento", descricao: "Parcela 10 confirmada como paga", autor: "Sistema" },
+      { data: "25/03/2026 10:15", tipo: "ligacao", descricao: "Ligação de cobrança realizada - cliente informou que pagará até dia 28", autor: "Ana Paula" },
+      { data: "20/03/2026 09:00", tipo: "whatsapp", descricao: "Lembrete de parcela enviado via WhatsApp", autor: "Sistema" },
+      { data: "01/03/2026 08:00", tipo: "nota", descricao: "Cliente solicitou revisão do valor do prêmio", autor: "Carlos" },
+      { data: "15/01/2026 11:30", tipo: "documento", descricao: "Apólice atualizada enviada ao cliente", autor: "Ana Paula" },
+      { data: "01/04/2025 10:00", tipo: "apolice", descricao: "Apólice #4521 emitida - Porto Seguro Automóvel", autor: "Sistema" },
+    ],
   },
   {
     id: 2, nome: "Empresa ABC Ltda", apolice: "#4520", totalParcelas: 12,
