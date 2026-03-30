@@ -91,6 +91,22 @@ const Dashboard = () => {
 
   const { data: apolices, isLoading: apolicesLoading } = useApolices();
 
+  // Fetch financeiro
+  const { data: financeiroClients = [], isLoading: financeiroLoading } = useFinanceiro();
+
+  const financeiroSummary = useMemo(() => {
+    const total = financeiroClients.length;
+    const comPendencias = financeiroClients.filter(c => c.parcelas?.some(p => p.status === "pendente")).length;
+    const totalPendentes = financeiroClients.reduce((acc, c) => acc + (c.parcelas?.filter(p => p.status === "pendente").length || 0), 0);
+    const criticos = financeiroClients.filter(c => (c.parcelas?.filter(p => p.status === "pendente").length || 0) >= 3).length;
+    return [
+      { label: "Total de Clientes", value: total, icon: Users, color: "text-primary" },
+      { label: "Com Pendências", value: comPendencias, icon: AlertCircle, color: "text-warning" },
+      { label: "Parcelas Pendentes", value: totalPendentes, icon: XCircle, color: "text-destructive" },
+      { label: "Situação Crítica", value: criticos, icon: AlertTriangle, color: "text-destructive" },
+    ];
+  }, [financeiroClients]);
+
   // Fetch sinistros
   const [sinistros, setSinistros] = useState<SinistroCreatePayload[]>([]);
   const [sinistrosLoading, setSinistrosLoading] = useState(true);
