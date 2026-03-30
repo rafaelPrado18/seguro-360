@@ -56,6 +56,13 @@ interface DadosApolice {
   };
 }
 
+interface HistoricoEntry {
+  data: string;
+  tipo: "nota" | "ligacao" | "email" | "whatsapp" | "documento" | "pagamento" | "apolice";
+  descricao: string;
+  autor: string;
+}
+
 interface ClientePendencia {
   id: number;
   nome: string;
@@ -64,6 +71,7 @@ interface ClientePendencia {
   parcelas: Parcela[];
   dadosCliente: DadosCliente;
   dadosApolice: DadosApolice;
+  historico: HistoricoEntry[];
 }
 
 interface KanbanColumn {
