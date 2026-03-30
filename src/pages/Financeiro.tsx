@@ -122,6 +122,7 @@ const clientesMock: ClientePendencia[] = [
       veiculo: {
         fabricante: "Volkswagen", modelo: "Polo 1.0 TSI", ano: "2023",
         placa: "ABC-1D23", chassi: "9BWAA05U5LT000001", combustivel: "Flex", fipe: "R$ 85.000,00",
+      },
     },
     historico: [
       { data: "28/03/2026 14:30", tipo: "pagamento", descricao: "Parcela 10 confirmada como paga", autor: "Sistema" },
