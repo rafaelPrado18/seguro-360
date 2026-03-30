@@ -565,47 +565,17 @@ const Financeiro = () => {
                   </div>
                 </TabsContent>
 
-                {/* Histórico */}
                 <TabsContent value="historico">
-                  <div className="space-y-0 mt-2">
-                    {selectedClient.historico.map((entry, i) => {
-                      const iconMap: Record<HistoricoEntry["tipo"], { icon: React.ReactNode; color: string }> = {
-                        nota: { icon: <MessageSquare className="h-3.5 w-3.5" />, color: "bg-primary/10 text-primary" },
-                        ligacao: { icon: <Phone className="h-3.5 w-3.5" />, color: "bg-info/10 text-info" },
-                        email: { icon: <Mail className="h-3.5 w-3.5" />, color: "bg-accent/10 text-accent" },
-                        whatsapp: { icon: <MessageSquare className="h-3.5 w-3.5" />, color: "bg-success/10 text-success" },
-                        documento: { icon: <FileUp className="h-3.5 w-3.5" />, color: "bg-warning/10 text-warning" },
-                        pagamento: { icon: <CheckCircle2 className="h-3.5 w-3.5" />, color: "bg-success/10 text-success" },
-                        apolice: { icon: <ShieldCheck className="h-3.5 w-3.5" />, color: "bg-primary/10 text-primary" },
-                      };
-                      const { icon, color } = iconMap[entry.tipo];
-
-                      return (
-                        <div key={i} className="flex items-start gap-3">
-                          <div className="flex flex-col items-center">
-                            {i > 0 && <div className="w-0.5 h-3 bg-border" />}
-                            <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 ${color}`}>
-                              {icon}
-                            </div>
-                            {i < selectedClient.historico.length - 1 && <div className="w-0.5 h-3 bg-border" />}
-                          </div>
-                          <div className="flex-1 py-1.5">
-                            <p className="text-sm text-foreground">{entry.descricao}</p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-[10px] text-muted-foreground">{entry.data}</span>
-                              <span className="text-[10px] text-muted-foreground">·</span>
-                              <span className="text-[10px] font-medium text-muted-foreground">{entry.autor}</span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {selectedClient.historico.length === 0 && (
-                      <div className="flex items-center justify-center h-20 text-sm text-muted-foreground">
-                        Nenhum registro no histórico.
-                      </div>
-                    )}
+                  <div className="mt-2">
+                    <HistorySection
+                      referenceId={String(selectedClient.id)}
+                      staticEvents={selectedClient.historico.map((entry) => ({
+                        date: entry.data,
+                        type: entry.tipo,
+                        description: `${entry.descricao} — ${entry.autor}`,
+                        icon: entry.tipo,
+                      }))}
+                    />
                   </div>
                 </TabsContent>
               </Tabs>
