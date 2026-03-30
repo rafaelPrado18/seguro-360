@@ -9,11 +9,12 @@ import { useRole, ROLE_LABELS, ROLE_EMOJI } from "@/contexts/RoleContext";
 import { useNavigate } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
 import { useApolices } from "@/hooks/useApolices";
+import { useFinanceiro } from "@/hooks/useFinanceiro";
 import { sinistroService, type SinistroCreatePayload } from "@/services/sinistroService";
 import {
   Users, FileText, DollarSign, AlertTriangle, RefreshCw, TrendingUp, Target, MessageSquare, Bell, Zap,
   Calendar, Settings, BarChart3, ArrowRight, Clock, UserPlus, FileCheck, PhoneCall, Loader2,
-  ShieldAlert, Wrench, TimerOff, MessageCircle,
+  ShieldAlert, Wrench, TimerOff, MessageCircle, Wallet, CheckCircle2, XCircle, AlertCircle,
 } from "lucide-react";
 
 // --- Shortcuts ---
@@ -89,6 +90,22 @@ const Dashboard = () => {
   );
 
   const { data: apolices, isLoading: apolicesLoading } = useApolices();
+
+  // Fetch financeiro
+  const { data: financeiroClients = [], isLoading: financeiroLoading } = useFinanceiro();
+
+  const financeiroSummary = useMemo(() => {
+    const total = financeiroClients.length;
+    const comPendencias = financeiroClients.filter(c => c.parcelas?.some(p => p.status === "pendente")).length;
+    const totalPendentes = financeiroClients.reduce((acc, c) => acc + (c.parcelas?.filter(p => p.status === "pendente").length || 0), 0);
+    const criticos = financeiroClients.filter(c => (c.parcelas?.filter(p => p.status === "pendente").length || 0) >= 3).length;
+    return [
+      { label: "Total de Clientes", value: total, icon: Users, color: "text-primary" },
+      { label: "Com Pendências", value: comPendencias, icon: AlertCircle, color: "text-warning" },
+      { label: "Parcelas Pendentes", value: totalPendentes, icon: XCircle, color: "text-destructive" },
+      { label: "Situação Crítica", value: criticos, icon: AlertTriangle, color: "text-destructive" },
+    ];
+  }, [financeiroClients]);
 
   // Fetch sinistros
   const [sinistros, setSinistros] = useState<SinistroCreatePayload[]>([]);
@@ -179,16 +196,24 @@ const Dashboard = () => {
         changeType: sinistros.length > 0 ? "neutral" as const : "positive" as const, icon: AlertTriangle,
       });
     }
+    if (hasScope("comissoes")) {
+      const pendencias = financeiroSummary[1]?.value || 0;
+      kpis.push({
+        title: "Financeiro", value: String(financeiroClients.length), change: `${pendencias} com pendências`,
+        changeType: pendencias > 0 ? "neutral" as const : "positive" as const, icon: Wallet,
+      });
+    }
     return kpis;
-  }, [totalLeads, newLeadsCount, apolices, upcomingRenewals, sinistros, sinistroSummary, hasScope]);
+  }, [totalLeads, newLeadsCount, apolices, upcomingRenewals, sinistros, sinistroSummary, financeiroClients, financeiroSummary, hasScope]);
 
   const visibleShortcuts = allShortcuts.filter(s => s.scopes.length === 0 || s.scopes.some(sc => hasScope(sc)));
   const showRenewals = hasScope("renovacoes");
   const showLeadSummary = hasScope("leads");
   const showNewLeadsAlert = !isAdmin && hasScope("leads") && newLeadsCount > 0;
   const showSinistros = hasScope("sinistros");
+  const showFinanceiro = hasScope("comissoes");
 
-  const isLoadingData = leadsLoading || apolicesLoading || sinistrosLoading;
+  const isLoadingData = leadsLoading || apolicesLoading || sinistrosLoading || financeiroLoading;
 
   return (
     <AppLayout>
@@ -365,6 +390,33 @@ const Dashboard = () => {
                   Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)
                 ) : (
                   sinistroSummary.map((item, i) => (
+                    <div key={i} className="flex items-center justify-between rounded-lg border border-border p-3 animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
+                      <div className="flex items-center gap-3">
+                        <item.icon className={`h-4 w-4 ${item.color}`} />
+                        <span className="text-sm text-foreground">{item.label}</span>
+                      </div>
+                      <span className={`text-lg font-bold ${item.color}`}>{item.value}</span>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Financeiro Summary */}
+          {showFinanceiro && (
+            <Card>
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                <CardTitle className="text-sm font-semibold">Resumo Financeiro</CardTitle>
+                <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => navigate("/financeiro")}>
+                  Ver detalhes <ArrowRight className="h-3 w-3" />
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {financeiroLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)
+                ) : (
+                  financeiroSummary.map((item, i) => (
                     <div key={i} className="flex items-center justify-between rounded-lg border border-border p-3 animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
                       <div className="flex items-center gap-3">
                         <item.icon className={`h-4 w-4 ${item.color}`} />

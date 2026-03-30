@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,73 +7,17 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertCircle, Search, CheckCircle2, XCircle, User, FileText, Car,
-  GripVertical, Clock,
+  GripVertical, Clock, Loader2,
 } from "lucide-react";
 import { HistorySection } from "@/components/shared/HistorySection";
+import { useFinanceiro } from "@/hooks/useFinanceiro";
+import { financeiroService, type FinanceiroClient } from "@/services/financeiroService";
+import { toast } from "@/hooks/use-toast";
 
 // ── Types ──────────────────────────────────────────────────
-
-interface Parcela {
-  mes: string;
-  status: "pago" | "pendente";
-}
-
-interface DadosCliente {
-  cpfCnpj: string;
-  email: string;
-  telefone: string;
-  celular: string;
-  endereco: string;
-  bairro: string;
-  cidade: string;
-  uf: string;
-  cep: string;
-}
-
-interface DadosApolice {
-  numeroApolice: string;
-  numeroProposta: string;
-  seguradora: string;
-  ramo: string;
-  vigenciaInicio: string;
-  vigenciaFim: string;
-  premioTotal: string;
-  premioLiquido: string;
-  iof: string;
-  comissao: string;
-  formaPagamento: string;
-  franquia: string;
-  classeBonus: string;
-  veiculo?: {
-    fabricante: string;
-    modelo: string;
-    ano: string;
-    placa: string;
-    chassi: string;
-    combustivel: string;
-    fipe: string;
-  };
-}
-
-interface HistoricoEntry {
-  data: string;
-  tipo: "nota" | "ligacao" | "email" | "whatsapp" | "documento" | "pagamento" | "apolice";
-  descricao: string;
-  autor: string;
-}
-
-interface ClientePendencia {
-  id: number;
-  nome: string;
-  apolice: string;
-  totalParcelas: number;
-  parcelas: Parcela[];
-  dadosCliente: DadosCliente;
-  dadosApolice: DadosApolice;
-  historico: HistoricoEntry[];
-}
 
 interface KanbanColumn {
   id: string;
@@ -90,142 +34,17 @@ const COLUMNS: KanbanColumn[] = [
   { id: "critico", label: "Crítico (3+ pendentes)", color: "text-destructive", bgColor: "bg-destructive" },
 ];
 
-const getColumnId = (c: ClientePendencia): string => {
+const getColumnId = (c: FinanceiroClient): string => {
   const pendentes = c.parcelas.filter((p) => p.status === "pendente").length;
   if (pendentes === 0) return "em_dia";
   if (pendentes <= 2) return "atencao";
   return "critico";
 };
 
-// ── Mock Data ──────────────────────────────────────────────
-
-const clientesMock: ClientePendencia[] = [
-  {
-    id: 1, nome: "João Silva", apolice: "#4521", totalParcelas: 12,
-    parcelas: [
-      { mes: "Abr/25", status: "pago" }, { mes: "Mai/25", status: "pago" },
-      { mes: "Jun/25", status: "pago" }, { mes: "Jul/25", status: "pago" },
-      { mes: "Ago/25", status: "pago" }, { mes: "Set/25", status: "pago" },
-      { mes: "Out/25", status: "pago" }, { mes: "Nov/25", status: "pago" },
-      { mes: "Dez/25", status: "pago" }, { mes: "Jan/26", status: "pago" },
-      { mes: "Fev/26", status: "pendente" }, { mes: "Mar/26", status: "pendente" },
-    ],
-    dadosCliente: {
-      cpfCnpj: "123.456.789-00", email: "joao.silva@email.com", telefone: "(11) 3456-7890",
-      celular: "(11) 99876-5432", endereco: "Rua das Flores, 123", bairro: "Centro",
-      cidade: "São Paulo", uf: "SP", cep: "01001-000",
-    },
-    dadosApolice: {
-      numeroApolice: "4521", numeroProposta: "P-8890", seguradora: "Porto Seguro",
-      ramo: "Automóvel", vigenciaInicio: "01/04/2025", vigenciaFim: "01/04/2026",
-      premioTotal: "R$ 3.200,00", premioLiquido: "R$ 2.800,00", iof: "R$ 220,00",
-      comissao: "20%", formaPagamento: "12x cartão", franquia: "R$ 2.500,00", classeBonus: "5",
-      veiculo: {
-        fabricante: "Volkswagen", modelo: "Polo 1.0 TSI", ano: "2023",
-        placa: "ABC-1D23", chassi: "9BWAA05U5LT000001", combustivel: "Flex", fipe: "R$ 85.000,00",
-      },
-    },
-    historico: [
-      { data: "28/03/2026 14:30", tipo: "pagamento", descricao: "Parcela 10 confirmada como paga", autor: "Sistema" },
-      { data: "25/03/2026 10:15", tipo: "ligacao", descricao: "Ligação de cobrança realizada - cliente informou que pagará até dia 28", autor: "Ana Paula" },
-      { data: "20/03/2026 09:00", tipo: "whatsapp", descricao: "Lembrete de parcela enviado via WhatsApp", autor: "Sistema" },
-      { data: "01/03/2026 08:00", tipo: "nota", descricao: "Cliente solicitou revisão do valor do prêmio", autor: "Carlos" },
-      { data: "15/01/2026 11:30", tipo: "documento", descricao: "Apólice atualizada enviada ao cliente", autor: "Ana Paula" },
-      { data: "01/04/2025 10:00", tipo: "apolice", descricao: "Apólice #4521 emitida - Porto Seguro Automóvel", autor: "Sistema" },
-    ],
-  },
-  {
-    id: 2, nome: "Empresa ABC Ltda", apolice: "#4520", totalParcelas: 12,
-    parcelas: [
-      { mes: "Jun/25", status: "pago" }, { mes: "Jul/25", status: "pago" },
-      { mes: "Ago/25", status: "pago" }, { mes: "Set/25", status: "pago" },
-      { mes: "Out/25", status: "pago" }, { mes: "Nov/25", status: "pendente" },
-      { mes: "Dez/25", status: "pago" }, { mes: "Jan/26", status: "pago" },
-      { mes: "Fev/26", status: "pendente" }, { mes: "Mar/26", status: "pendente" },
-      { mes: "Abr/26", status: "pendente" }, { mes: "Mai/26", status: "pendente" },
-    ],
-    dadosCliente: {
-      cpfCnpj: "12.345.678/0001-90", email: "contato@abc.com.br", telefone: "(11) 2222-3333",
-      celular: "(11) 98765-4321", endereco: "Av. Paulista, 1000, Sala 501", bairro: "Bela Vista",
-      cidade: "São Paulo", uf: "SP", cep: "01310-100",
-    },
-    dadosApolice: {
-      numeroApolice: "4520", numeroProposta: "P-8875", seguradora: "Tokio Marine",
-      ramo: "Empresarial", vigenciaInicio: "01/06/2025", vigenciaFim: "01/06/2026",
-      premioTotal: "R$ 8.500,00", premioLiquido: "R$ 7.200,00", iof: "R$ 540,00",
-      comissao: "15%", formaPagamento: "12x boleto", franquia: "R$ 5.000,00", classeBonus: "-",
-    },
-    historico: [
-      { data: "27/03/2026 16:00", tipo: "email", descricao: "E-mail de cobrança enviado para parcelas em atraso", autor: "Ana Paula" },
-      { data: "10/03/2026 09:30", tipo: "ligacao", descricao: "Tentativa de contato sem sucesso", autor: "Carlos" },
-      { data: "01/06/2025 10:00", tipo: "apolice", descricao: "Apólice #4520 emitida - Tokio Marine Empresarial", autor: "Sistema" },
-    ],
-  },
-  {
-    id: 3, nome: "Maria Santos", apolice: "#4519", totalParcelas: 6,
-    parcelas: [
-      { mes: "Out/25", status: "pago" }, { mes: "Nov/25", status: "pago" },
-      { mes: "Dez/25", status: "pendente" }, { mes: "Jan/26", status: "pendente" },
-      { mes: "Fev/26", status: "pendente" }, { mes: "Mar/26", status: "pendente" },
-    ],
-    dadosCliente: {
-      cpfCnpj: "987.654.321-00", email: "maria.santos@email.com", telefone: "(21) 3333-4444",
-      celular: "(21) 97654-3210", endereco: "Rua Copacabana, 456", bairro: "Copacabana",
-      cidade: "Rio de Janeiro", uf: "RJ", cep: "22050-002",
-    },
-    dadosApolice: {
-      numeroApolice: "4519", numeroProposta: "P-8860", seguradora: "Bradesco Seguros",
-      ramo: "Automóvel", vigenciaInicio: "01/10/2025", vigenciaFim: "01/04/2026",
-      premioTotal: "R$ 1.800,00", premioLiquido: "R$ 1.550,00", iof: "R$ 120,00",
-      comissao: "18%", formaPagamento: "6x cartão", franquia: "R$ 3.000,00", classeBonus: "3",
-      veiculo: {
-        fabricante: "Honda", modelo: "Civic EXL", ano: "2022",
-        placa: "DEF-5G67", chassi: "93HFC6830PZ000002", combustivel: "Flex", fipe: "R$ 130.000,00",
-      },
-    },
-    historico: [
-      { data: "26/03/2026 11:00", tipo: "whatsapp", descricao: "Cobrança enviada via WhatsApp para 4 parcelas pendentes", autor: "Ana Paula" },
-      { data: "15/02/2026 14:00", tipo: "ligacao", descricao: "Cliente não atendeu - 3ª tentativa", autor: "Carlos" },
-      { data: "01/10/2025 10:00", tipo: "apolice", descricao: "Apólice #4519 emitida - Bradesco Seguros Automóvel", autor: "Sistema" },
-    ],
-  },
-  {
-    id: 4, nome: "Carlos Mendes", apolice: "#4518", totalParcelas: 12,
-    parcelas: [
-      { mes: "Abr/25", status: "pago" }, { mes: "Mai/25", status: "pago" },
-      { mes: "Jun/25", status: "pago" }, { mes: "Jul/25", status: "pago" },
-      { mes: "Ago/25", status: "pago" }, { mes: "Set/25", status: "pago" },
-      { mes: "Out/25", status: "pago" }, { mes: "Nov/25", status: "pago" },
-      { mes: "Dez/25", status: "pago" }, { mes: "Jan/26", status: "pago" },
-      { mes: "Fev/26", status: "pago" }, { mes: "Mar/26", status: "pendente" },
-    ],
-    dadosCliente: {
-      cpfCnpj: "456.789.123-00", email: "carlos.mendes@email.com", telefone: "(31) 3555-6666",
-      celular: "(31) 96543-2109", endereco: "Rua Savassi, 789", bairro: "Savassi",
-      cidade: "Belo Horizonte", uf: "MG", cep: "30130-000",
-    },
-    dadosApolice: {
-      numeroApolice: "4518", numeroProposta: "P-8845", seguradora: "SulAmérica",
-      ramo: "Automóvel", vigenciaInicio: "01/04/2025", vigenciaFim: "01/04/2026",
-      premioTotal: "R$ 4.100,00", premioLiquido: "R$ 3.600,00", iof: "R$ 280,00",
-      comissao: "22%", formaPagamento: "12x débito", franquia: "R$ 2.000,00", classeBonus: "7",
-      veiculo: {
-        fabricante: "Toyota", modelo: "Corolla XEi", ano: "2024",
-        placa: "GHI-8J01", chassi: "9BR53ZEC5R0000003", combustivel: "Flex", fipe: "R$ 155.000,00",
-      },
-    },
-    historico: [
-      { data: "29/03/2026 09:45", tipo: "pagamento", descricao: "Parcela 11 confirmada como paga", autor: "Sistema" },
-      { data: "20/03/2026 15:30", tipo: "nota", descricao: "Cliente perguntou sobre renovação antecipada", autor: "Ana Paula" },
-      { data: "01/04/2025 10:00", tipo: "apolice", descricao: "Apólice #4518 emitida - SulAmérica Automóvel", autor: "Sistema" },
-    ],
-  },
-];
-
 // ── Helpers ────────────────────────────────────────────────
 
-const getPendentesCount = (c: ClientePendencia) => c.parcelas.filter((p) => p.status === "pendente").length;
-const getPagosCount = (c: ClientePendencia) => c.parcelas.filter((p) => p.status === "pago").length;
+const getPendentesCount = (c: FinanceiroClient) => c.parcelas.filter((p) => p.status === "pendente").length;
+const getPagosCount = (c: FinanceiroClient) => c.parcelas.filter((p) => p.status === "pago").length;
 
 const DetailField = ({ label, value }: { label: string; value: string }) => (
   <div className="space-y-1">
@@ -238,43 +57,54 @@ const DetailField = ({ label, value }: { label: string; value: string }) => (
 
 const Financeiro = () => {
   const [search, setSearch] = useState("");
-  const [clientes, setClientes] = useState<ClientePendencia[]>(clientesMock);
-  const [selectedClient, setSelectedClient] = useState<ClientePendencia | null>(null);
+  const [selectedClient, setSelectedClient] = useState<FinanceiroClient | null>(null);
+  const [updatingParcela, setUpdatingParcela] = useState<string | null>(null);
 
-  const updateParcelaStatus = (clienteId: number, parcelaIndex: number, newStatus: "pago" | "pendente") => {
-    setClientes((prev) =>
-      prev.map((c) => {
-        if (c.id !== clienteId) return c;
-        const updatedParcelas = c.parcelas.map((p, i) =>
-          i === parcelaIndex ? { ...p, status: newStatus } : p
-        );
-        return { ...c, parcelas: updatedParcelas };
-      })
-    );
-    setSelectedClient((prev) => {
-      if (!prev || prev.id !== clienteId) return prev;
-      const updatedParcelas = prev.parcelas.map((p, i) =>
-        i === parcelaIndex ? { ...p, status: newStatus } : p
-      );
-      return { ...prev, parcelas: updatedParcelas };
-    });
+  const { data: clientes = [], isLoading, refetch } = useFinanceiro();
+
+  // Sync selected client when data refreshes
+  useEffect(() => {
+    if (selectedClient) {
+      const updated = clientes.find((c) => c.id === selectedClient.id);
+      if (updated) setSelectedClient(updated);
+    }
+  }, [clientes]);
+
+  const updateParcelaStatus = async (clienteId: string, parcelaIndex: number, newStatus: "pago" | "pendente") => {
+    const key = `${clienteId}-${parcelaIndex}`;
+    setUpdatingParcela(key);
+    try {
+      await financeiroService.updateParcela(clienteId, parcelaIndex, newStatus);
+      refetch();
+      toast({ title: newStatus === "pago" ? "Parcela confirmada" : "Parcela revertida" });
+    } catch {
+      toast({ title: "Erro ao atualizar parcela", variant: "destructive" });
+    } finally {
+      setUpdatingParcela(null);
+    }
   };
 
   const filtered = clientes.filter((c) =>
-    c.nome.toLowerCase().includes(search.toLowerCase()) ||
-    c.apolice.toLowerCase().includes(search.toLowerCase())
+    c.nome?.toLowerCase().includes(search.toLowerCase()) ||
+    c.apolice?.toLowerCase().includes(search.toLowerCase())
   );
 
   const getColumnItems = (colId: string) => filtered.filter((c) => getColumnId(c) === colId);
 
+  // Summary stats
+  const totalClientes = clientes.length;
+  const comPendencias = clientes.filter((c) => getPendentesCount(c) > 0).length;
+  const totalPendentes = clientes.reduce((acc, c) => acc + getPendentesCount(c), 0);
+
   return (
     <AppLayout>
       <div className="space-y-4">
+        {/* Header with summary */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-foreground">Financeiro</h2>
             <p className="text-sm text-muted-foreground">
-              {clientes.length} clientes · {clientes.filter((c) => getPendentesCount(c) > 0).length} com pendências
+              {isLoading ? "Carregando..." : `${totalClientes} clientes · ${comPendencias} com pendências · ${totalPendentes} parcelas pendentes`}
             </p>
           </div>
           <div className="relative w-64">
@@ -288,105 +118,158 @@ const Financeiro = () => {
           </div>
         </div>
 
-        {/* Kanban */}
-        <div className="flex gap-4 overflow-x-auto pb-4" style={{ height: "calc(100vh - 12rem)" }}>
-          {COLUMNS.map((col) => {
-            const items = getColumnItems(col.id);
-            return (
-              <div
-                key={col.id}
-                className="flex-shrink-0 w-80 flex flex-col rounded-lg border border-border bg-muted/30"
-              >
-                {/* Column header */}
-                <div className="px-3 py-2.5 border-b border-border">
-                  <div className="flex items-center gap-2">
-                    <div className={`h-2.5 w-2.5 rounded-full ${col.bgColor}`} />
-                    <span className="text-[10px] font-semibold text-foreground uppercase tracking-wider">
-                      {col.label}
-                    </span>
-                    <Badge variant="secondary" className="text-[10px] h-5 min-w-[20px] justify-center">
-                      {items.length}
-                    </Badge>
-                  </div>
+        {/* Summary KPIs */}
+        {!isLoading && (
+          <div className="grid grid-cols-3 gap-3">
+            <Card>
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-success/15 flex items-center justify-center">
+                  <CheckCircle2 className="h-5 w-5 text-success" />
                 </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{getColumnItems("em_dia").length}</p>
+                  <p className="text-xs text-muted-foreground">Em Dia</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-warning/15 flex items-center justify-center">
+                  <AlertCircle className="h-5 w-5 text-warning" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{getColumnItems("atencao").length}</p>
+                  <p className="text-xs text-muted-foreground">Atenção</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-destructive/15 flex items-center justify-center">
+                  <XCircle className="h-5 w-5 text-destructive" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{getColumnItems("critico").length}</p>
+                  <p className="text-xs text-muted-foreground">Crítico</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-                {/* Cards */}
-                <ScrollArea className="flex-1">
-                  <div className="p-1.5 space-y-1.5">
-                    {items.map((cliente) => {
-                      const pendentes = getPendentesCount(cliente);
-                      const pagos = getPagosCount(cliente);
-                      const pct = Math.round((pagos / cliente.totalParcelas) * 100);
+        {/* Kanban */}
+        {isLoading ? (
+          <div className="flex gap-4">
+            {COLUMNS.map((col) => (
+              <div key={col.id} className="flex-shrink-0 w-80 space-y-2">
+                <Skeleton className="h-10 rounded-lg" />
+                <Skeleton className="h-32 rounded-lg" />
+                <Skeleton className="h-32 rounded-lg" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex gap-4 overflow-x-auto pb-4" style={{ height: "calc(100vh - 18rem)" }}>
+            {COLUMNS.map((col) => {
+              const items = getColumnItems(col.id);
+              return (
+                <div
+                  key={col.id}
+                  className="flex-shrink-0 w-80 flex flex-col rounded-lg border border-border bg-muted/30"
+                >
+                  {/* Column header */}
+                  <div className="px-3 py-2.5 border-b border-border">
+                    <div className="flex items-center gap-2">
+                      <div className={`h-2.5 w-2.5 rounded-full ${col.bgColor}`} />
+                      <span className="text-[10px] font-semibold text-foreground uppercase tracking-wider">
+                        {col.label}
+                      </span>
+                      <Badge variant="secondary" className="text-[10px] h-5 min-w-[20px] justify-center">
+                        {items.length}
+                      </Badge>
+                    </div>
+                  </div>
 
-                      return (
-                        <Card
-                          key={cliente.id}
-                          onClick={() => setSelectedClient(cliente)}
-                          className="cursor-pointer hover:shadow-md transition-all duration-150"
-                        >
-                          <CardContent className="p-3">
-                            <div className="flex items-start justify-between mb-2">
-                              <div className="flex items-center gap-1.5">
-                                <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40" />
-                                <div className="h-7 w-7 rounded-full bg-accent/15 flex items-center justify-center text-[10px] font-bold text-accent">
-                                  {cliente.nome.split(" ").filter(Boolean).map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                  {/* Cards */}
+                  <ScrollArea className="flex-1">
+                    <div className="p-1.5 space-y-1.5">
+                      {items.map((cliente) => {
+                        const pendentes = getPendentesCount(cliente);
+                        const pagos = getPagosCount(cliente);
+                        const pct = cliente.totalParcelas > 0 ? Math.round((pagos / cliente.totalParcelas) * 100) : 0;
+
+                        return (
+                          <Card
+                            key={cliente.id}
+                            onClick={() => setSelectedClient(cliente)}
+                            className="cursor-pointer hover:shadow-md transition-all duration-150"
+                          >
+                            <CardContent className="p-3">
+                              <div className="flex items-start justify-between mb-2">
+                                <div className="flex items-center gap-1.5">
+                                  <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40" />
+                                  <div className="h-7 w-7 rounded-full bg-accent/15 flex items-center justify-center text-[10px] font-bold text-accent">
+                                    {(cliente.nome || "").split(" ").filter(Boolean).map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                                  </div>
+                                </div>
+                                {pendentes > 0 ? (
+                                  <Badge variant="outline" className="text-[9px] border-destructive text-destructive">
+                                    {pendentes} pendente{pendentes > 1 ? "s" : ""}
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="text-[9px] border-success text-success">
+                                    Em dia
+                                  </Badge>
+                                )}
+                              </div>
+
+                              <p className="text-sm font-medium text-foreground truncate">{cliente.nome}</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[11px] text-muted-foreground font-mono">{cliente.apolice}</span>
+                                {cliente.dadosApolice?.seguradora && (
+                                  <Badge variant="secondary" className="text-[9px]">
+                                    {cliente.dadosApolice.seguradora}
+                                  </Badge>
+                                )}
+                              </div>
+
+                              {/* Mini progress */}
+                              <div className="mt-2.5">
+                                <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+                                  <span>{pagos}/{cliente.totalParcelas} pagas</span>
+                                  <span>{pct}%</span>
+                                </div>
+                                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full transition-all ${
+                                      pendentes === 0 ? "bg-success" : pendentes <= 2 ? "bg-warning" : "bg-destructive"
+                                    }`}
+                                    style={{ width: `${pct}%` }}
+                                  />
                                 </div>
                               </div>
-                              {pendentes > 0 ? (
-                                <Badge variant="outline" className="text-[9px] border-destructive text-destructive">
-                                  {pendentes} pendente{pendentes > 1 ? "s" : ""}
-                                </Badge>
-                              ) : (
-                                <Badge variant="outline" className="text-[9px] border-success text-success">
-                                  Em dia
-                                </Badge>
-                              )}
-                            </div>
 
-                            <p className="text-sm font-medium text-foreground truncate">{cliente.nome}</p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-[11px] text-muted-foreground font-mono">{cliente.apolice}</span>
-                              <Badge variant="secondary" className="text-[9px]">
-                                {cliente.dadosApolice.seguradora}
-                              </Badge>
-                            </div>
-
-                            {/* Mini progress */}
-                            <div className="mt-2.5">
-                              <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-                                <span>{pagos}/{cliente.totalParcelas} pagas</span>
-                                <span>{pct}%</span>
+                              <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
+                                <span className="text-xs font-bold text-foreground">{cliente.dadosApolice?.premioTotal || "—"}</span>
+                                <span className="text-[10px] text-muted-foreground">{cliente.totalParcelas}x</span>
                               </div>
-                              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div
-                                  className={`h-full rounded-full transition-all ${
-                                    pendentes === 0 ? "bg-success" : pendentes <= 2 ? "bg-warning" : "bg-destructive"
-                                  }`}
-                                  style={{ width: `${pct}%` }}
-                                />
-                              </div>
-                            </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
 
-                            <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
-                              <span className="text-xs font-bold text-foreground">{cliente.dadosApolice.premioTotal}</span>
-                              <span className="text-[10px] text-muted-foreground">{cliente.totalParcelas}x</span>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-
-                    {items.length === 0 && (
-                      <div className="flex items-center justify-center h-20 rounded-lg border-2 border-dashed border-border/50">
-                        <p className="text-[11px] text-muted-foreground">Nenhum cliente</p>
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
-              </div>
-            );
-          })}
-        </div>
+                      {items.length === 0 && (
+                        <div className="flex items-center justify-center h-20 rounded-lg border-2 border-dashed border-border/50">
+                          <p className="text-[11px] text-muted-foreground">Nenhum cliente</p>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Detail Sheet */}
@@ -424,152 +307,175 @@ const Financeiro = () => {
                   <div className="mb-4 mt-2">
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
                       <span>Progresso de pagamento</span>
-                      <span>{Math.round((getPagosCount(selectedClient) / selectedClient.totalParcelas) * 100)}%</span>
+                      <span>{selectedClient.totalParcelas > 0 ? Math.round((getPagosCount(selectedClient) / selectedClient.totalParcelas) * 100) : 0}%</span>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full bg-success rounded-full transition-all"
-                        style={{ width: `${(getPagosCount(selectedClient) / selectedClient.totalParcelas) * 100}%` }}
+                        style={{ width: `${selectedClient.totalParcelas > 0 ? (getPagosCount(selectedClient) / selectedClient.totalParcelas) * 100 : 0}%` }}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-0">
-                    {selectedClient.parcelas.map((p, i) => (
-                      <div key={i} className="flex items-center gap-4 group">
-                        <div className="flex flex-col items-center">
-                          {i > 0 && (
-                            <div className={`w-0.5 h-4 ${
-                              selectedClient.parcelas[i - 1].status === "pago" ? "bg-success/30" : "bg-destructive/30"
-                            }`} />
-                          )}
-                          <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
-                            p.status === "pago" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-                          }`}>
-                            {p.status === "pago" ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                          </div>
-                          {i < selectedClient.parcelas.length - 1 && (
-                            <div className={`w-0.5 h-4 ${
-                              p.status === "pago" ? "bg-success/30" : "bg-destructive/30"
-                            }`} />
-                          )}
-                        </div>
-                        <div className={`flex-1 flex items-center justify-between py-2 px-3 rounded-lg transition-colors ${
-                          p.status === "pago" ? "group-hover:bg-success/5" : "group-hover:bg-destructive/5"
-                        }`}>
-                          <div>
-                            <p className="text-sm font-medium">Parcela {i + 1}/{selectedClient.totalParcelas}</p>
-                            <p className="text-xs text-muted-foreground">{p.mes}</p>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Badge
-                              variant="outline"
-                              className={`text-[10px] ${
-                                p.status === "pago"
-                                  ? "border-success text-success bg-success/5"
-                                  : "border-destructive text-destructive bg-destructive/5"
-                              }`}
-                            >
-                              {p.status === "pago" ? "Pago" : "Não pago"}
-                            </Badge>
-                            {p.status === "pendente" ? (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-[10px] px-2 border-success text-success hover:bg-success hover:text-success-foreground"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updateParcelaStatus(selectedClient.id, i, "pago");
-                                }}
-                              >
-                                <CheckCircle2 className="h-3 w-3 mr-1" /> Confirmar
-                              </Button>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-[10px] px-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updateParcelaStatus(selectedClient.id, i, "pendente");
-                                }}
-                              >
-                                <XCircle className="h-3 w-3 mr-1" /> Não pago
-                              </Button>
+                    {(selectedClient.parcelas || []).map((p, i) => {
+                      const isUpdating = updatingParcela === `${selectedClient.id}-${i}`;
+                      return (
+                        <div key={i} className="flex items-center gap-4 group">
+                          <div className="flex flex-col items-center">
+                            {i > 0 && (
+                              <div className={`w-0.5 h-4 ${
+                                selectedClient.parcelas[i - 1].status === "pago" ? "bg-success/30" : "bg-destructive/30"
+                              }`} />
+                            )}
+                            <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
+                              p.status === "pago" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
+                            }`}>
+                              {isUpdating ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : p.status === "pago" ? (
+                                <CheckCircle2 className="h-4 w-4" />
+                              ) : (
+                                <XCircle className="h-4 w-4" />
+                              )}
+                            </div>
+                            {i < selectedClient.parcelas.length - 1 && (
+                              <div className={`w-0.5 h-4 ${
+                                p.status === "pago" ? "bg-success/30" : "bg-destructive/30"
+                              }`} />
                             )}
                           </div>
+                          <div className={`flex-1 flex items-center justify-between py-2 px-3 rounded-lg transition-colors ${
+                            p.status === "pago" ? "group-hover:bg-success/5" : "group-hover:bg-destructive/5"
+                          }`}>
+                            <div>
+                              <p className="text-sm font-medium">Parcela {i + 1}/{selectedClient.totalParcelas}</p>
+                              <p className="text-xs text-muted-foreground">{p.mes}</p>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Badge
+                                variant="outline"
+                                className={`text-[10px] ${
+                                  p.status === "pago"
+                                    ? "border-success text-success bg-success/5"
+                                    : "border-destructive text-destructive bg-destructive/5"
+                                }`}
+                              >
+                                {p.status === "pago" ? "Pago" : "Não pago"}
+                              </Badge>
+                              {p.status === "pendente" ? (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 text-[10px] px-2 border-success text-success hover:bg-success hover:text-success-foreground"
+                                  disabled={isUpdating}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateParcelaStatus(selectedClient.id, i, "pago");
+                                  }}
+                                >
+                                  <CheckCircle2 className="h-3 w-3 mr-1" /> Confirmar
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 text-[10px] px-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                  disabled={isUpdating}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateParcelaStatus(selectedClient.id, i, "pendente");
+                                  }}
+                                >
+                                  <XCircle className="h-3 w-3 mr-1" /> Não pago
+                                </Button>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </TabsContent>
 
                 {/* Cliente */}
                 <TabsContent value="cliente">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
-                    <DetailField label="CPF / CNPJ" value={selectedClient.dadosCliente.cpfCnpj} />
-                    <DetailField label="E-mail" value={selectedClient.dadosCliente.email} />
-                    <DetailField label="Telefone" value={selectedClient.dadosCliente.telefone} />
-                    <DetailField label="Celular" value={selectedClient.dadosCliente.celular} />
-                    <div className="sm:col-span-2">
-                      <DetailField
-                        label="Endereço"
-                        value={`${selectedClient.dadosCliente.endereco}, ${selectedClient.dadosCliente.bairro}`}
-                      />
+                  {selectedClient.dadosCliente ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
+                      <DetailField label="CPF / CNPJ" value={selectedClient.dadosCliente.cpfCnpj || "—"} />
+                      <DetailField label="E-mail" value={selectedClient.dadosCliente.email || "—"} />
+                      <DetailField label="Telefone" value={selectedClient.dadosCliente.telefone || "—"} />
+                      <DetailField label="Celular" value={selectedClient.dadosCliente.celular || "—"} />
+                      <div className="sm:col-span-2">
+                        <DetailField
+                          label="Endereço"
+                          value={`${selectedClient.dadosCliente.endereco || "—"}, ${selectedClient.dadosCliente.bairro || ""}`}
+                        />
+                      </div>
+                      <DetailField label="Cidade / UF" value={`${selectedClient.dadosCliente.cidade || "—"} - ${selectedClient.dadosCliente.uf || ""}`} />
+                      <DetailField label="CEP" value={selectedClient.dadosCliente.cep || "—"} />
                     </div>
-                    <DetailField label="Cidade / UF" value={`${selectedClient.dadosCliente.cidade} - ${selectedClient.dadosCliente.uf}`} />
-                    <DetailField label="CEP" value={selectedClient.dadosCliente.cep} />
-                  </div>
+                  ) : (
+                    <div className="text-center py-8 text-sm text-muted-foreground">
+                      Dados do cliente não disponíveis.
+                    </div>
+                  )}
                 </TabsContent>
 
                 {/* Apólice */}
                 <TabsContent value="apolice">
-                  <div className="space-y-6 mt-2">
-                    <div>
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                        <FileText className="h-3.5 w-3.5" /> Dados da Apólice
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <DetailField label="Nº Apólice" value={selectedClient.dadosApolice.numeroApolice} />
-                        <DetailField label="Nº Proposta" value={selectedClient.dadosApolice.numeroProposta} />
-                        <DetailField label="Seguradora" value={selectedClient.dadosApolice.seguradora} />
-                        <DetailField label="Ramo" value={selectedClient.dadosApolice.ramo} />
-                        <DetailField label="Vigência Início" value={selectedClient.dadosApolice.vigenciaInicio} />
-                        <DetailField label="Vigência Fim" value={selectedClient.dadosApolice.vigenciaFim} />
-                        <DetailField label="Prêmio Total" value={selectedClient.dadosApolice.premioTotal} />
-                        <DetailField label="Prêmio Líquido" value={selectedClient.dadosApolice.premioLiquido} />
-                        <DetailField label="IOF" value={selectedClient.dadosApolice.iof} />
-                        <DetailField label="Comissão" value={selectedClient.dadosApolice.comissao} />
-                        <DetailField label="Forma de Pagamento" value={selectedClient.dadosApolice.formaPagamento} />
-                        <DetailField label="Franquia" value={selectedClient.dadosApolice.franquia} />
-                        <DetailField label="Classe de Bônus" value={selectedClient.dadosApolice.classeBonus} />
-                      </div>
-                    </div>
-
-                    {selectedClient.dadosApolice.veiculo && (
+                  {selectedClient.dadosApolice ? (
+                    <div className="space-y-6 mt-2">
                       <div>
                         <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                          <Car className="h-3.5 w-3.5" /> Veículo
+                          <FileText className="h-3.5 w-3.5" /> Dados da Apólice
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                          <DetailField label="Fabricante" value={selectedClient.dadosApolice.veiculo.fabricante} />
-                          <DetailField label="Modelo" value={selectedClient.dadosApolice.veiculo.modelo} />
-                          <DetailField label="Ano" value={selectedClient.dadosApolice.veiculo.ano} />
-                          <DetailField label="Placa" value={selectedClient.dadosApolice.veiculo.placa} />
-                          <DetailField label="Chassi" value={selectedClient.dadosApolice.veiculo.chassi} />
-                          <DetailField label="Combustível" value={selectedClient.dadosApolice.veiculo.combustivel} />
-                          <DetailField label="Valor FIPE" value={selectedClient.dadosApolice.veiculo.fipe} />
+                          <DetailField label="Nº Apólice" value={selectedClient.dadosApolice.numeroApolice || "—"} />
+                          <DetailField label="Nº Proposta" value={selectedClient.dadosApolice.numeroProposta || "—"} />
+                          <DetailField label="Seguradora" value={selectedClient.dadosApolice.seguradora || "—"} />
+                          <DetailField label="Ramo" value={selectedClient.dadosApolice.ramo || "—"} />
+                          <DetailField label="Vigência Início" value={selectedClient.dadosApolice.vigenciaInicio || "—"} />
+                          <DetailField label="Vigência Fim" value={selectedClient.dadosApolice.vigenciaFim || "—"} />
+                          <DetailField label="Prêmio Total" value={selectedClient.dadosApolice.premioTotal || "—"} />
+                          <DetailField label="Prêmio Líquido" value={selectedClient.dadosApolice.premioLiquido || "—"} />
+                          <DetailField label="IOF" value={selectedClient.dadosApolice.iof || "—"} />
+                          <DetailField label="Comissão" value={selectedClient.dadosApolice.comissao || "—"} />
+                          <DetailField label="Forma de Pagamento" value={selectedClient.dadosApolice.formaPagamento || "—"} />
+                          <DetailField label="Franquia" value={selectedClient.dadosApolice.franquia || "—"} />
+                          <DetailField label="Classe de Bônus" value={selectedClient.dadosApolice.classeBonus || "—"} />
                         </div>
                       </div>
-                    )}
-                  </div>
+
+                      {selectedClient.dadosApolice.veiculo && (
+                        <div>
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <Car className="h-3.5 w-3.5" /> Veículo
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <DetailField label="Fabricante" value={selectedClient.dadosApolice.veiculo.fabricante || "—"} />
+                            <DetailField label="Modelo" value={selectedClient.dadosApolice.veiculo.modelo || "—"} />
+                            <DetailField label="Ano" value={selectedClient.dadosApolice.veiculo.ano || "—"} />
+                            <DetailField label="Placa" value={selectedClient.dadosApolice.veiculo.placa || "—"} />
+                            <DetailField label="Chassi" value={selectedClient.dadosApolice.veiculo.chassi || "—"} />
+                            <DetailField label="Combustível" value={selectedClient.dadosApolice.veiculo.combustivel || "—"} />
+                            <DetailField label="Valor FIPE" value={selectedClient.dadosApolice.veiculo.fipe || "—"} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-sm text-muted-foreground">
+                      Dados da apólice não disponíveis.
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="historico">
                   <div className="mt-2">
                     <HistorySection
                       referenceId={String(selectedClient.id)}
-                      staticEvents={selectedClient.historico.map((entry) => ({
+                      staticEvents={(selectedClient.historico || []).map((entry) => ({
                         date: entry.data,
                         type: entry.tipo,
                         description: `${entry.descricao} — ${entry.autor}`,
