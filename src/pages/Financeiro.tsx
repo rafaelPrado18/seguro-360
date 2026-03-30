@@ -228,7 +228,7 @@ const Financeiro = () => {
     });
   };
 
-  const filtered = clientesMock.filter((c) =>
+  const filtered = clientes.filter((c) =>
     c.nome.toLowerCase().includes(search.toLowerCase()) ||
     c.apolice.toLowerCase().includes(search.toLowerCase())
   );
