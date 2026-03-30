@@ -242,7 +242,7 @@ const Financeiro = () => {
           <div>
             <h2 className="text-2xl font-bold text-foreground">Financeiro</h2>
             <p className="text-sm text-muted-foreground">
-              {clientesMock.length} clientes · {clientesMock.filter((c) => getPendentesCount(c) > 0).length} com pendências
+              {clientes.length} clientes · {clientes.filter((c) => getPendentesCount(c) > 0).length} com pendências
             </p>
           </div>
           <div className="relative w-64">
