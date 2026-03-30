@@ -182,6 +182,11 @@ const clientesMock: ClientePendencia[] = [
         placa: "DEF-5G67", chassi: "93HFC6830PZ000002", combustivel: "Flex", fipe: "R$ 130.000,00",
       },
     },
+    historico: [
+      { data: "26/03/2026 11:00", tipo: "whatsapp", descricao: "Cobrança enviada via WhatsApp para 4 parcelas pendentes", autor: "Ana Paula" },
+      { data: "15/02/2026 14:00", tipo: "ligacao", descricao: "Cliente não atendeu - 3ª tentativa", autor: "Carlos" },
+      { data: "01/10/2025 10:00", tipo: "apolice", descricao: "Apólice #4519 emitida - Bradesco Seguros Automóvel", autor: "Sistema" },
+    ],
   },
   {
     id: 4, nome: "Carlos Mendes", apolice: "#4518", totalParcelas: 12,
