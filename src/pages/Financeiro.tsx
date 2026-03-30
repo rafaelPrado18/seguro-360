@@ -9,8 +9,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   AlertCircle, Search, CheckCircle2, XCircle, User, FileText, Car,
-  GripVertical, Clock, MessageSquare, Phone, Mail, FileUp, ShieldCheck,
+  GripVertical, Clock,
 } from "lucide-react";
+import { HistorySection } from "@/components/shared/HistorySection";
 
 // ── Types ──────────────────────────────────────────────────
 
