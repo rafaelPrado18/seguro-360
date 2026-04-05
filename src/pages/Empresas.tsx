@@ -12,8 +12,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Separator } from "@/components/ui/separator";
 import {
   Building2, Plus, Search, Users, FileText, Target, TrendingUp,
-  Edit, Trash2, Eye, BarChart3, Shield, Calendar, DollarSign,
+  Edit, Trash2, Eye, BarChart3, Shield, Calendar, DollarSign, Smartphone,
 } from "lucide-react";
+import { EmpresaWhatsAppDialog } from "@/components/empresas/EmpresaWhatsAppDialog";
 import { toast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
 
@@ -97,6 +98,7 @@ const Empresas = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Empresa | null>(null);
   const [formData, setFormData] = useState(emptyForm());
+  const [whatsappEmpresa, setWhatsappEmpresa] = useState<Empresa | null>(null);
 
   const filtered = empresas.filter(e =>
     e.nome.toLowerCase().includes(search.toLowerCase()) ||
@@ -250,6 +252,9 @@ const Empresas = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Instâncias WhatsApp" onClick={() => setWhatsappEmpresa(emp)}>
+                          <Smartphone className="h-4 w-4 text-success" />
+                        </Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(emp)}>
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -349,6 +354,14 @@ const Empresas = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* WhatsApp Instances Dialog */}
+      <EmpresaWhatsAppDialog
+        open={!!whatsappEmpresa}
+        onOpenChange={(o) => { if (!o) setWhatsappEmpresa(null); }}
+        empresaId={whatsappEmpresa?.id || ""}
+        empresaNome={whatsappEmpresa?.nome || ""}
+      />
     </AppLayout>
   );
 };
