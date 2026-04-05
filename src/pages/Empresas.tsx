@@ -98,6 +98,7 @@ const Empresas = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Empresa | null>(null);
   const [formData, setFormData] = useState(emptyForm());
+  const [whatsappEmpresa, setWhatsappEmpresa] = useState<Empresa | null>(null);
 
   const filtered = empresas.filter(e =>
     e.nome.toLowerCase().includes(search.toLowerCase()) ||
