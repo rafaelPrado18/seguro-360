@@ -243,9 +243,20 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
                 />
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={newForm.autoReply}
+                onCheckedChange={c => setNewForm(p => ({ ...p, autoReply: c }))}
+                className="scale-[0.75]"
+              />
+              <Label className="text-xs">Resposta automática</Label>
+            </div>
             <div className="flex gap-2">
-              <Button size="sm" onClick={handleCreate} className="h-8 text-xs">Criar Instância</Button>
-              <Button size="sm" variant="ghost" onClick={() => setShowNewForm(false)} className="h-8 text-xs">Cancelar</Button>
+              <Button size="sm" onClick={handleCreate} disabled={creating} className="h-8 text-xs">
+                {creating ? <RefreshCw className="h-3 w-3 animate-spin mr-1" /> : null}
+                Criar Instância
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setShowNewForm(false)} disabled={creating} className="h-8 text-xs">Cancelar</Button>
             </div>
           </div>
         ) : (
