@@ -44,72 +44,70 @@ const BASE_URL = "https://crm-hataseg.com.br";
 export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNome }: EmpresaWhatsAppDialogProps) {
   const [instances, setInstances] = useState<WhatsAppInstance[]>([]);
   const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
-  const [newForm, setNewForm] = useState({ nome: "", telefone: "" });
+  const [newForm, setNewForm] = useState({ nome: "", telefone: "", autoReply: false });
 
-  // Fetch instances for this company
-  useEffect(() => {
-    if (!open) return;
-    const fetchInstances = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`${BASE_URL}/v1/whatsapp/instances?empresaId=${empresaId}`, {
-          headers: { orchestrator: "crm-hatanaka" },
-        });
-        if (!res.ok) throw new Error("Erro");
-        const result = await res.json();
-        if (result?.status === "success" && Array.isArray(result.data)) {
-          setInstances(result.data.map((item: any) => ({
-            id: item.id,
-            nome: item.nome,
-            telefone: item.telefone || "—",
-            corretores: item.corretores || [],
-            status: item.status === "conectado" ? "conectado" as const : "desconectado" as const,
-            ultimaConexao: item.ultimaConexao || "",
-            mensagensHoje: item.mensagensHoje || 0,
-            autoReply: item.autoReply ?? false,
-          })));
-        }
-      } catch {
-        // Mock data for demonstration
-        setInstances([
-          {
-            id: `${empresaId}-inst-1`,
-            nome: `${empresaNome} - Principal`,
-            telefone: "(11) 99999-0001",
-            corretores: ["Corretor 1", "Corretor 2"],
-            status: "conectado",
-            ultimaConexao: new Date().toISOString(),
-            mensagensHoje: 42,
-            autoReply: true,
-          },
-        ]);
-      } finally {
-        setLoading(false);
+  const fetchInstances = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/v1/whatsapp/instances?id=${empresaId}`, {
+        headers: { orchestrator: "crm-hatanaka" },
+      });
+      if (!res.ok) throw new Error("Erro");
+      const result = await res.json();
+      const data = result?.data || result?.success || result;
+      if (Array.isArray(data)) {
+        setInstances(data.map((item: any) => ({
+          id: item.id,
+          nome: item.nome,
+          telefone: item.telefone || "—",
+          corretores: item.corretores || [],
+          status: item.status === "conectado" ? "conectado" as const : "desconectado" as const,
+          ultimaConexao: item.ultimaConexao || "",
+          mensagensHoje: item.mensagensHoje || 0,
+          autoReply: item.autoReply ?? false,
+        })));
       }
-    };
-    fetchInstances();
+    } catch {
+      setInstances([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (open) fetchInstances();
   }, [open, empresaId]);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!newForm.nome.trim()) {
       toast({ title: "Informe o nome da instância", variant: "destructive" });
       return;
     }
-    const inst: WhatsAppInstance = {
-      id: uuidv4(),
-      nome: newForm.nome,
-      telefone: newForm.telefone || "—",
-      corretores: [],
-      status: "desconectado",
-      ultimaConexao: "",
-      mensagensHoje: 0,
-      autoReply: false,
-    };
-    setInstances(prev => [...prev, inst]);
-    setShowNewForm(false);
-    setNewForm({ nome: "", telefone: "" });
-    toast({ title: "Instância criada! A conexão será feita pela área administrativa." });
+    setCreating(true);
+    try {
+      const payload = {
+        id: empresaId,
+        nome: newForm.nome,
+        telefone: newForm.telefone || "",
+        autoReply: newForm.autoReply,
+      };
+      const res = await fetch(`${BASE_URL}/v1/create/whatsapp/instance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Erro ao criar instância");
+      toast({ title: "Instância criada! A conexão será feita pela área administrativa." });
+      setShowNewForm(false);
+      setNewForm({ nome: "", telefone: "", autoReply: false });
+      await fetchInstances();
+    } catch (err: any) {
+      toast({ title: err.message || "Erro ao criar instância", variant: "destructive" });
+    } finally {
+      setCreating(false);
+    }
   };
 
   const handleDelete = (id: string) => {
