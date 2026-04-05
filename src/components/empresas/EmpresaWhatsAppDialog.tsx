@@ -9,8 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import {
-  Smartphone, Wifi, WifiOff, QrCode, Plus, Trash2, RefreshCw,
-  CheckCircle2, XCircle, Clock, Users, Settings2,
+  Smartphone, Wifi, WifiOff, Plus, Trash2, RefreshCw,
+  CheckCircle2, XCircle, Clock, Users, Info,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
@@ -46,9 +46,6 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
   const [loading, setLoading] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
   const [newForm, setNewForm] = useState({ nome: "", telefone: "" });
-  const [qrInstanceId, setQrInstanceId] = useState<string | null>(null);
-  const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
-  const [qrLoading, setQrLoading] = useState(false);
 
   // Fetch instances for this company
   useEffect(() => {
@@ -94,53 +91,6 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
     fetchInstances();
   }, [open, empresaId]);
 
-  const fetchQrCode = async (instanceId: string) => {
-    setQrLoading(true);
-    setQrImageUrl(null);
-    setQrInstanceId(instanceId);
-    try {
-      const res = await fetch(`${BASE_URL}/v1/generate/qrcode`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", messageid: "B54138D599A320CB2102D10C" },
-        body: JSON.stringify({ instanceId }),
-      });
-      if (!res.ok) throw new Error("Falha ao gerar QR Code");
-      const blob = await res.blob();
-      setQrImageUrl(URL.createObjectURL(blob));
-    } catch {
-      toast({ title: "Erro ao gerar QR Code", variant: "destructive" });
-    } finally {
-      setQrLoading(false);
-    }
-  };
-
-  // Poll status while QR is open
-  useEffect(() => {
-    if (!qrInstanceId) return;
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(`${BASE_URL}/v1/get/whatsapp/instance/status`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ instanceId: qrInstanceId }),
-        });
-        if (!res.ok) return;
-        const result = await res.json();
-        if (result?.success?.connected) {
-          setInstances(prev => prev.map(i => i.id === qrInstanceId
-            ? { ...i, status: "conectado", ultimaConexao: new Date().toISOString() }
-            : i
-          ));
-          setQrInstanceId(null);
-          if (qrImageUrl) URL.revokeObjectURL(qrImageUrl);
-          setQrImageUrl(null);
-          toast({ title: "WhatsApp conectado com sucesso!" });
-        }
-      } catch {}
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [qrInstanceId]);
-
   const handleCreate = () => {
     if (!newForm.nome.trim()) {
       toast({ title: "Informe o nome da instância", variant: "destructive" });
@@ -151,7 +101,7 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
       nome: newForm.nome,
       telefone: newForm.telefone || "—",
       corretores: [],
-      status: "aguardando_qr",
+      status: "desconectado",
       ultimaConexao: "",
       mensagensHoje: 0,
       autoReply: false,
@@ -159,8 +109,7 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
     setInstances(prev => [...prev, inst]);
     setShowNewForm(false);
     setNewForm({ nome: "", telefone: "" });
-    fetchQrCode(inst.id);
-    toast({ title: "Instância criada! Escaneie o QR Code." });
+    toast({ title: "Instância criada! A conexão será feita pela área administrativa." });
   };
 
   const handleDelete = (id: string) => {
@@ -175,11 +124,7 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
   const connectedCount = instances.filter(i => i.status === "conectado").length;
 
   return (
-    <Dialog open={open} onOpenChange={(o) => {
-      if (!o && qrImageUrl) URL.revokeObjectURL(qrImageUrl);
-      if (!o) { setQrInstanceId(null); setQrImageUrl(null); }
-      onOpenChange(o);
-    }}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
@@ -200,27 +145,15 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
           </div>
         </div>
 
-        <Separator />
+        {/* Info banner */}
+        <div className="flex items-start gap-3 p-3 rounded-lg border border-primary/20 bg-primary/5">
+          <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+          <p className="text-xs text-muted-foreground">
+            Crie as instâncias aqui. A <strong>conexão via QR Code</strong> será feita pelo administrador na página de <strong>Instâncias WhatsApp</strong>.
+          </p>
+        </div>
 
-        {/* QR Code viewer */}
-        {qrInstanceId && (
-          <div className="flex flex-col items-center gap-3 py-4 bg-muted/30 rounded-lg border border-border">
-            <p className="text-sm font-medium">Escaneie o QR Code para conectar</p>
-            <div className="w-48 h-48 bg-background rounded-lg border-2 border-dashed border-border flex items-center justify-center overflow-hidden">
-              {qrLoading ? (
-                <RefreshCw className="h-8 w-8 text-muted-foreground animate-spin" />
-              ) : qrImageUrl ? (
-                <img src={qrImageUrl} alt="QR Code" className="w-full h-full object-contain" />
-              ) : (
-                <p className="text-xs text-muted-foreground">Erro ao carregar</p>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">Aguardando conexão...</p>
-            <Button variant="ghost" size="sm" onClick={() => { setQrInstanceId(null); if (qrImageUrl) URL.revokeObjectURL(qrImageUrl); setQrImageUrl(null); }}>
-              Cancelar
-            </Button>
-          </div>
-        )}
+        <Separator />
 
         {/* Instance list */}
         {loading ? (
@@ -278,11 +211,6 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
                         className="scale-[0.65]"
                       />
                     </div>
-                    {inst.status !== "conectado" && (
-                      <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => fetchQrCode(inst.id)}>
-                        <QrCode className="h-3.5 w-3.5 text-success" />
-                      </Button>
-                    )}
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(inst.id)}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -318,7 +246,7 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
               </div>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" onClick={handleCreate} className="h-8 text-xs">Criar e Conectar</Button>
+              <Button size="sm" onClick={handleCreate} className="h-8 text-xs">Criar Instância</Button>
               <Button size="sm" variant="ghost" onClick={() => setShowNewForm(false)} className="h-8 text-xs">Cancelar</Button>
             </div>
           </div>

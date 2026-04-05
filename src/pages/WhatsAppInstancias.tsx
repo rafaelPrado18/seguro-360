@@ -15,11 +15,10 @@ import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Smartphone, Wifi, WifiOff, Plus, Trash2, RefreshCw,
-  CheckCircle2, XCircle, Clock, Settings2, Users, ChevronDown, Info,
+  Smartphone, Wifi, WifiOff, Trash2, RefreshCw,
+  CheckCircle2, XCircle, Clock, Settings2, Users, ChevronDown, Info, QrCode,
 } from "lucide-react";
 import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
 import { useAgents } from "@/hooks/useAgents";
 
 interface WhatsAppInstance {
@@ -38,6 +37,8 @@ const statusConfig = {
   desconectado: { label: "Desconectado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
   aguardando_qr: { label: "Aguardando QR", color: "border-warning text-warning", icon: Clock, iconColor: "text-warning" },
 };
+
+const BASE_URL = "https://crm-hataseg.com.br";
 
 function CorretorMultiSelect({
   selected,
@@ -104,35 +105,11 @@ const WhatsAppInstancias = () => {
   const [instances, setInstances] = useState<WhatsAppInstance[]>([]);
   const [loadingInstances, setLoadingInstances] = useState(true);
   const [selectedInstance, setSelectedInstance] = useState<WhatsAppInstance | null>(null);
-  const [newDialogOpen, setNewDialogOpen] = useState(false);
-  const [newForm, setNewForm] = useState({ nome: "", telefone: "", corretores: [] as string[] });
 
-  const handleCreate = () => {
-    if (!newForm.nome.trim() || newForm.corretores.length === 0) {
-      toast.error("Preencha o nome e selecione ao menos um corretor");
-      return;
-    }
-    const inst: WhatsAppInstance = {
-      id: uuidv4(),
-      nome: newForm.nome,
-      telefone: newForm.telefone || "—",
-      corretores: newForm.corretores,
-      status: "desconectado",
-      ultimaConexao: "",
-      mensagensHoje: 0,
-      autoReply: false,
-    };
-    setInstances(prev => [...prev, inst]);
-    setNewDialogOpen(false);
-    setNewForm({ nome: "", telefone: "", corretores: [] });
-    toast.success("Instância criada! A conexão será feita pela área administrativa.");
-  };
-
-  const handleDelete = (id: string) => {
-    setInstances(prev => prev.filter(i => i.id !== id));
-    if (selectedInstance?.id === id) setSelectedInstance(null);
-    toast.success("Instância removida");
-  };
+  // QR Code state
+  const [qrInstanceId, setQrInstanceId] = useState<string | null>(null);
+  const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
 
   // Fetch instances from API on mount
   React.useEffect(() => {
@@ -167,6 +144,53 @@ const WhatsAppInstancias = () => {
     fetchInstances();
   }, []);
 
+  const fetchQrCode = async (instanceId: string) => {
+    setQrLoading(true);
+    setQrImageUrl(null);
+    setQrInstanceId(instanceId);
+    try {
+      const res = await fetch(`${BASE_URL}/v1/generate/qrcode`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", messageid: "B54138D599A320CB2102D10C" },
+        body: JSON.stringify({ instanceId }),
+      });
+      if (!res.ok) throw new Error("Falha ao gerar QR Code");
+      const blob = await res.blob();
+      setQrImageUrl(URL.createObjectURL(blob));
+    } catch {
+      toast.error("Erro ao gerar QR Code");
+    } finally {
+      setQrLoading(false);
+    }
+  };
+
+  // Poll status while QR is open
+  React.useEffect(() => {
+    if (!qrInstanceId) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/v1/get/whatsapp/instance/status`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ instanceId: qrInstanceId }),
+        });
+        if (!res.ok) return;
+        const result = await res.json();
+        if (result?.success?.connected) {
+          setInstances(prev => prev.map(i => i.id === qrInstanceId
+            ? { ...i, status: "conectado", ultimaConexao: new Date().toISOString() }
+            : i
+          ));
+          setQrInstanceId(null);
+          if (qrImageUrl) URL.revokeObjectURL(qrImageUrl);
+          setQrImageUrl(null);
+          toast.success("WhatsApp conectado com sucesso!");
+        }
+      } catch {}
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [qrInstanceId]);
+
   const handleToggleAutoReply = (id: string, checked: boolean) => {
     setInstances(prev => prev.map(i => i.id === id ? { ...i, autoReply: checked } : i));
   };
@@ -193,18 +217,41 @@ const WhatsAppInstancias = () => {
               {instances.filter(i => i.status === "conectado").length} de {instances.length} instâncias conectadas
             </p>
           </div>
-          <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 self-start sm:self-auto" onClick={() => setNewDialogOpen(true)}>
-            <Plus className="h-4 w-4" /> Nova Instância
-          </Button>
         </div>
 
         {/* Info banner */}
         <div className="flex items-start gap-3 p-3 rounded-lg border border-primary/20 bg-primary/5">
           <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground">
-            As instâncias são criadas aqui e a <strong>conexão via QR Code</strong> é realizada pela <strong>área administrativa (Super Admin)</strong> no módulo de Empresas.
+            As instâncias são criadas pelo <strong>Super Admin</strong> no módulo de Empresas. Aqui você pode <strong>conectar via QR Code</strong> e gerenciar as configurações.
           </p>
         </div>
+
+        {/* QR Code viewer */}
+        {qrInstanceId && (
+          <Card>
+            <CardContent className="flex flex-col items-center gap-3 py-6">
+              <p className="text-sm font-medium">Escaneie o QR Code para conectar</p>
+              <div className="w-48 h-48 bg-background rounded-lg border-2 border-dashed border-border flex items-center justify-center overflow-hidden">
+                {qrLoading ? (
+                  <RefreshCw className="h-8 w-8 text-muted-foreground animate-spin" />
+                ) : qrImageUrl ? (
+                  <img src={qrImageUrl} alt="QR Code" className="w-full h-full object-contain" />
+                ) : (
+                  <p className="text-xs text-muted-foreground">Erro ao carregar</p>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">Aguardando conexão...</p>
+              <Button variant="ghost" size="sm" onClick={() => {
+                setQrInstanceId(null);
+                if (qrImageUrl) URL.revokeObjectURL(qrImageUrl);
+                setQrImageUrl(null);
+              }}>
+                Cancelar
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -322,13 +369,15 @@ const WhatsAppInstancias = () => {
 
                   <Separator />
 
-                  {/* Actions — no connect button, only config and delete */}
+                  {/* Actions — connect + config */}
                   <div className="flex items-center gap-2">
+                    {inst.status !== "conectado" && (
+                      <Button variant="outline" size="sm" className="flex-1 h-8 text-xs gap-1.5 border-success/30 text-success hover:bg-success/10" onClick={() => fetchQrCode(inst.id)}>
+                        <QrCode className="h-3 w-3" /> Conectar
+                      </Button>
+                    )}
                     <Button variant="outline" size="sm" className="flex-1 h-8 text-xs gap-1.5" onClick={() => setSelectedInstance({ ...inst })}>
                       <Settings2 className="h-3 w-3" /> Configurar
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(inst.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 </CardContent>
@@ -391,7 +440,7 @@ const WhatsAppInstancias = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium">Status</p>
-                    <p className="text-xs text-muted-foreground">Conexão gerenciada pela área administrativa</p>
+                    <p className="text-xs text-muted-foreground">Use o botão "Conectar" no card da instância</p>
                   </div>
                   <Badge variant="outline" className={`text-[10px] ${statusConfig[selectedInstance.status].color}`}>
                     {statusConfig[selectedInstance.status].label}
@@ -412,58 +461,6 @@ const WhatsAppInstancias = () => {
                 }}
               >
                 Salvar
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* New Instance Dialog */}
-        <Dialog open={newDialogOpen} onOpenChange={setNewDialogOpen}>
-          <DialogContent className="sm:max-w-sm">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-base">
-                <Plus className="h-5 w-5 text-accent" /> Nova Instância
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-2">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Nome da Instância *</Label>
-                <Input
-                  value={newForm.nome}
-                  onChange={e => setNewForm(f => ({ ...f, nome: e.target.value }))}
-                  placeholder="Ex: Linha Comercial"
-                  className="h-9 text-sm"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Telefone</Label>
-                <Input
-                  value={newForm.telefone}
-                  onChange={e => setNewForm(f => ({ ...f, telefone: e.target.value }))}
-                  placeholder="(11) 99900-0000"
-                  className="h-9 text-sm"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Corretores Designados *</Label>
-                <CorretorMultiSelect
-                  selected={newForm.corretores}
-                  onChange={ids => setNewForm(f => ({ ...f, corretores: ids }))}
-                  size="md"
-                  corretores={corretores}
-                />
-              </div>
-              <div className="flex items-start gap-2 p-2 rounded bg-muted/50">
-                <Info className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
-                <p className="text-[11px] text-muted-foreground">
-                  Após criar, a conexão via QR Code será feita pelo Super Admin na área de Empresas.
-                </p>
-              </div>
-            </div>
-            <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => setNewDialogOpen(false)}>Cancelar</Button>
-              <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleCreate}>
-                Criar Instância
               </Button>
             </DialogFooter>
           </DialogContent>
