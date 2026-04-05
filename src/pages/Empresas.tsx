@@ -12,8 +12,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Separator } from "@/components/ui/separator";
 import {
   Building2, Plus, Search, Users, FileText, Target, TrendingUp,
-  Edit, Trash2, Eye, BarChart3, Shield, Calendar, DollarSign,
+  Edit, Trash2, Eye, BarChart3, Shield, Calendar, DollarSign, Smartphone,
 } from "lucide-react";
+import { EmpresaWhatsAppDialog } from "@/components/empresas/EmpresaWhatsAppDialog";
 import { toast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
 
