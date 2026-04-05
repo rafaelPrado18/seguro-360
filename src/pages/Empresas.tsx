@@ -354,6 +354,14 @@ const Empresas = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* WhatsApp Instances Dialog */}
+      <EmpresaWhatsAppDialog
+        open={!!whatsappEmpresa}
+        onOpenChange={(o) => { if (!o) setWhatsappEmpresa(null); }}
+        empresaId={whatsappEmpresa?.id || ""}
+        empresaNome={whatsappEmpresa?.nome || ""}
+      />
     </AppLayout>
   );
 };
