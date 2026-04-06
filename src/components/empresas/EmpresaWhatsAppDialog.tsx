@@ -3,17 +3,14 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import {
-  Smartphone, Wifi, WifiOff, Plus, Trash2, RefreshCw,
+  Smartphone, Wifi, WifiOff, Trash2, RefreshCw,
   CheckCircle2, XCircle, Clock, Users, Info,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { v4 as uuidv4 } from "uuid";
 
 interface WhatsAppInstance {
   id: string;
@@ -44,9 +41,6 @@ const BASE_URL = "https://crm-hataseg.com.br";
 export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNome }: EmpresaWhatsAppDialogProps) {
   const [instances, setInstances] = useState<WhatsAppInstance[]>([]);
   const [loading, setLoading] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [showNewForm, setShowNewForm] = useState(false);
-  const [newForm, setNewForm] = useState({ nome: "", telefone: "", autoReply: false });
 
   const fetchInstances = async () => {
     setLoading(true);
@@ -79,36 +73,6 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
   useEffect(() => {
     if (open) fetchInstances();
   }, [open, empresaId]);
-
-  const handleCreate = async () => {
-    if (!newForm.nome.trim()) {
-      toast({ title: "Informe o nome da instância", variant: "destructive" });
-      return;
-    }
-    setCreating(true);
-    try {
-      const payload = {
-        id: empresaId,
-        nome: newForm.nome,
-        telefone: newForm.telefone || "",
-        autoReply: newForm.autoReply,
-      };
-      const res = await fetch(`${BASE_URL}/v1/create/whatsapp/instance`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Erro ao criar instância");
-      toast({ title: "Instância criada! A conexão será feita pela área administrativa." });
-      setShowNewForm(false);
-      setNewForm({ nome: "", telefone: "", autoReply: false });
-      await fetchInstances();
-    } catch (err: any) {
-      toast({ title: err.message || "Erro ao criar instância", variant: "destructive" });
-    } finally {
-      setCreating(false);
-    }
-  };
 
   const handleDelete = (id: string) => {
     setInstances(prev => prev.filter(i => i.id !== id));
@@ -147,7 +111,7 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
         <div className="flex items-start gap-3 p-3 rounded-lg border border-primary/20 bg-primary/5">
           <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground">
-            Crie as instâncias aqui. A <strong>conexão via QR Code</strong> será feita pelo administrador na página de <strong>Instâncias WhatsApp</strong>.
+            As instâncias são cadastradas diretamente no banco de dados. A <strong>conexão via QR Code</strong> será feita pelo administrador na página de <strong>Instâncias WhatsApp</strong>.
           </p>
         </div>
 
@@ -158,7 +122,7 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
           <div className="flex justify-center py-8">
             <RefreshCw className="h-6 w-6 text-muted-foreground animate-spin" />
           </div>
-        ) : instances.length === 0 && !showNewForm ? (
+        ) : instances.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Smartphone className="h-10 w-10 mx-auto mb-2 opacity-40" />
             <p className="text-sm">Nenhuma instância configurada para esta empresa</p>
@@ -217,52 +181,6 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
               );
             })}
           </div>
-        )}
-
-        {/* New instance form */}
-        {showNewForm ? (
-          <div className="space-y-3 p-3 rounded-lg border border-dashed border-primary/30 bg-primary/5">
-            <p className="text-sm font-medium">Nova Instância</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs">Nome *</Label>
-                <Input
-                  value={newForm.nome}
-                  onChange={e => setNewForm(p => ({ ...p, nome: e.target.value }))}
-                  placeholder="Ex: Atendimento Principal"
-                  className="h-8 text-sm"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Telefone</Label>
-                <Input
-                  value={newForm.telefone}
-                  onChange={e => setNewForm(p => ({ ...p, telefone: e.target.value }))}
-                  placeholder="(11) 99999-0000"
-                  className="h-8 text-sm"
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={newForm.autoReply}
-                onCheckedChange={c => setNewForm(p => ({ ...p, autoReply: c }))}
-                className="scale-[0.75]"
-              />
-              <Label className="text-xs">Resposta automática</Label>
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" onClick={handleCreate} disabled={creating} className="h-8 text-xs">
-                {creating ? <RefreshCw className="h-3 w-3 animate-spin mr-1" /> : null}
-                Criar Instância
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setShowNewForm(false)} disabled={creating} className="h-8 text-xs">Cancelar</Button>
-            </div>
-          </div>
-        ) : (
-          <Button variant="outline" className="w-full gap-2" onClick={() => setShowNewForm(true)}>
-            <Plus className="h-4 w-4" /> Adicionar Instância
-          </Button>
         )}
       </DialogContent>
     </Dialog>
