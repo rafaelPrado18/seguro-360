@@ -398,26 +398,12 @@ const WhatsAppInstancias = () => {
             {selectedInstance && (
               <div className="space-y-4 py-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Nome da Instância</Label>
-                  <Input
-                    value={selectedInstance.nome}
-                    onChange={e => {
-                      const val = e.target.value;
-                      setSelectedInstance(prev => prev ? { ...prev, nome: val } : prev);
-                    }}
-                    className="h-9 text-sm"
-                  />
+                  <Label className="text-xs text-muted-foreground">Nome da Instância</Label>
+                  <Input value={selectedInstance.nome} disabled className="h-9 text-sm bg-muted/50" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Telefone</Label>
-                  <Input
-                    value={selectedInstance.telefone}
-                    onChange={e => {
-                      const val = e.target.value;
-                      setSelectedInstance(prev => prev ? { ...prev, telefone: val } : prev);
-                    }}
-                    className="h-9 text-sm"
-                  />
+                  <Label className="text-xs text-muted-foreground">Telefone</Label>
+                  <Input value={selectedInstance.telefone} disabled className="h-9 text-sm bg-muted/50" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Corretores Designados</Label>
@@ -430,18 +416,15 @@ const WhatsAppInstancias = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">Resposta Automática</p>
-                    <p className="text-xs text-muted-foreground">Responder leads fora do horário</p>
+                    <p className="text-sm font-medium text-muted-foreground">Resposta Automática</p>
+                    <p className="text-xs text-muted-foreground">Gerenciado pelo Super Admin</p>
                   </div>
-                  <Switch
-                    checked={selectedInstance.autoReply}
-                    onCheckedChange={c => setSelectedInstance(prev => prev ? { ...prev, autoReply: c } : prev)}
-                  />
+                  <Switch checked={selectedInstance.autoReply} disabled className="opacity-50" />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">Status</p>
-                    <p className="text-xs text-muted-foreground">Use o botão "Conectar" no card da instância</p>
+                    <p className="text-sm font-medium text-muted-foreground">Status</p>
+                    <p className="text-xs text-muted-foreground">Use o botão "Conectar" no card</p>
                   </div>
                   <Badge variant="outline" className={`text-[10px] ${statusConfig[selectedInstance.status].color}`}>
                     {statusConfig[selectedInstance.status].label}
