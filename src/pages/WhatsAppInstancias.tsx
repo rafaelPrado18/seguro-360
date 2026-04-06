@@ -116,15 +116,16 @@ const WhatsAppInstancias = () => {
     const fetchInstances = async () => {
       try {
         setLoadingInstances(true);
-        const res = await fetch("http://173.249.50.11/v1/whatsapp/instances", {
+        const res = await fetch(`${BASE_URL}/v1/whatsapp/instances`, {
           method: "GET",
-          headers: { "orchestrator": "minha-orquestradora" },
+          headers: { "orchestrator": "crm-hatanaka" },
         });
         if (!res.ok) throw new Error("Erro ao buscar instâncias");
         const result = await res.json();
+        console.log("Instâncias API response:", result);
         if (result?.status === "success" && Array.isArray(result.data)) {
           setInstances(result.data.map((item: any) => ({
-            id: item.id,
+            id: item.instanceId || item.id,
             nome: item.nome,
             telefone: item.telefone,
             corretores: item.corretores || [],
