@@ -104,7 +104,7 @@ const WhatsAppInstancias = () => {
   }, [agents]);
   const [instances, setInstances] = useState<WhatsAppInstance[]>([]);
   const [loadingInstances, setLoadingInstances] = useState(true);
-  const [selectedInstance, setSelectedInstance] = useState<WhatsAppInstance | null>(null);
+  
 
   // QR Code state
   const [qrInstanceId, setQrInstanceId] = useState<string | null>(null);
@@ -192,13 +192,6 @@ const WhatsAppInstancias = () => {
     return () => clearInterval(interval);
   }, [qrInstanceId]);
 
-  const handleToggleAutoReply = (id: string, checked: boolean) => {
-    setInstances(prev => prev.map(i => i.id === id ? { ...i, autoReply: checked } : i));
-  };
-
-  const handleUpdateCorretores = (id: string, corretorIds: string[]) => {
-    setInstances(prev => prev.map(i => i.id === id ? { ...i, corretores: corretorIds } : i));
-  };
 
   const getCorretorNomes = (values: string[]) =>
     values.map(v => {
@@ -361,94 +354,25 @@ const WhatsAppInstancias = () => {
                   {/* Auto-reply */}
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">Resposta automática</span>
-                    <Switch
-                      checked={inst.autoReply}
-                      onCheckedChange={c => handleToggleAutoReply(inst.id, c)}
-                      className="scale-75"
-                    />
+                    <Badge variant={inst.autoReply ? "default" : "secondary"} className="text-[10px]">
+                      {inst.autoReply ? "Ativada" : "Desativada"}
+                    </Badge>
                   </div>
 
                   <Separator />
 
-                  {/* Actions — connect + config */}
-                  <div className="flex items-center gap-2">
-                    {inst.status !== "connected" && (
-                      <Button variant="outline" size="sm" className="flex-1 h-8 text-xs gap-1.5 border-success/30 text-success hover:bg-success/10" onClick={() => fetchQrCode(inst.id)}>
-                        <QrCode className="h-3 w-3" /> Conectar
-                      </Button>
-                    )}
-                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs gap-1.5" onClick={() => setSelectedInstance({ ...inst })}>
-                      <Settings2 className="h-3 w-3" /> Configurar
+                  {/* Actions — connect only */}
+                  {inst.status !== "connected" && (
+                    <Button variant="outline" size="sm" className="w-full h-8 text-xs gap-1.5 border-success/30 text-success hover:bg-success/10" onClick={() => fetchQrCode(inst.id)}>
+                      <QrCode className="h-3 w-3" /> Conectar
                     </Button>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             );
           })}
         </div>
 
-        {/* Detail / Config Dialog */}
-        <Dialog open={!!selectedInstance} onOpenChange={o => { if (!o) setSelectedInstance(null); }}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-base">
-                <Settings2 className="h-5 w-5 text-primary" /> Configuração — {selectedInstance?.nome}
-              </DialogTitle>
-            </DialogHeader>
-            {selectedInstance && (
-              <div className="space-y-4 py-2">
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Nome da Instância</Label>
-                  <Input value={selectedInstance.nome} disabled className="h-9 text-sm bg-muted/50" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Telefone</Label>
-                  <Input value={selectedInstance.telefone} disabled className="h-9 text-sm bg-muted/50" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Corretores Designados</Label>
-                  <CorretorMultiSelect
-                    selected={selectedInstance.corretores}
-                    onChange={ids => setSelectedInstance(prev => prev ? { ...prev, corretores: ids } : prev)}
-                    size="md"
-                    corretores={corretores}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Resposta Automática</p>
-                    <p className="text-xs text-muted-foreground">Gerenciado pelo Super Admin</p>
-                  </div>
-                  <Switch checked={selectedInstance.autoReply} disabled className="opacity-50" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Status</p>
-                    <p className="text-xs text-muted-foreground">Use o botão "Conectar" no card</p>
-                  </div>
-                  <Badge variant="outline" className={`text-[10px] ${statusConfig[selectedInstance.status].color}`}>
-                    {statusConfig[selectedInstance.status].label}
-                  </Badge>
-                </div>
-              </div>
-            )}
-            <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => setSelectedInstance(null)}>Cancelar</Button>
-              <Button
-                className="bg-accent text-accent-foreground hover:bg-accent/90"
-                onClick={() => {
-                  if (selectedInstance) {
-                    setInstances(prev => prev.map(i => i.id === selectedInstance.id ? selectedInstance : i));
-                    setSelectedInstance(null);
-                    toast.success("Configuração salva!");
-                  }
-                }}
-              >
-                Salvar
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </AppLayout>
   );
