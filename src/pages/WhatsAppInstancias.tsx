@@ -26,17 +26,16 @@ interface WhatsAppInstance {
   nome: string;
   telefone: string;
   corretores: string[];
-  status: "open" | "close" | "connecting" | "refused";
+  status: "connected" | "disconnected" | "connecting";
   ultimaConexao: string;
   mensagensHoje: number;
   autoReply: boolean;
 }
 
 const statusConfig = {
-  open: { label: "Conectado", color: "border-success text-success", icon: CheckCircle2, iconColor: "text-success" },
-  close: { label: "Desconectado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
+  connected: { label: "Conectado", color: "border-success text-success", icon: CheckCircle2, iconColor: "text-success" },
+  disconnected: { label: "Desconectado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
   connecting: { label: "Conectando", color: "border-warning text-warning", icon: Clock, iconColor: "text-warning" },
-  refused: { label: "Recusado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
 };
 
 const BASE_URL = "https://crm-hataseg.com.br";
@@ -126,12 +125,12 @@ const WhatsAppInstancias = () => {
         console.log("Instâncias API response:", result);
         if (result?.status === "success" && Array.isArray(result.data)) {
           setInstances(result.data.map((item: any) => ({
-            id: item.instanceId || item.id,
-            nome: item.nome,
-            telefone: item.telefone,
+            id: item.instanceId || item._id || item.id,
+            nome: item.name || item.nome,
+            telefone: item.telefone || "—",
             corretores: item.corretores || [],
-            status: (["open", "close", "connecting", "refused"].includes(item.status) ? item.status : "close") as WhatsAppInstance["status"],
-            ultimaConexao: item.ultimaConexao || "",
+            status: (["connected", "disconnected", "connecting"].includes(item.status) ? item.status : "disconnected") as WhatsAppInstance["status"],
+            ultimaConexao: item.updatedAt || item.ultimaConexao || "",
             mensagensHoje: item.mensagensHoje || 0,
             autoReply: item.autoReply ?? false,
           })));
