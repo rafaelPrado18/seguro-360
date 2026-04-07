@@ -17,7 +17,7 @@ interface WhatsAppInstance {
   nome: string;
   telefone: string;
   corretores: string[];
-  status: "conectado" | "desconectado" | "aguardando_qr";
+  status: "open" | "close" | "connecting" | "refused";
   ultimaConexao: string;
   mensagensHoje: number;
   autoReply: boolean;
@@ -31,9 +31,10 @@ interface EmpresaWhatsAppDialogProps {
 }
 
 const statusConfig = {
-  conectado: { label: "Conectado", color: "border-success text-success", icon: CheckCircle2, iconColor: "text-success" },
-  desconectado: { label: "Desconectado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
-  aguardando_qr: { label: "Aguardando QR", color: "border-warning text-warning", icon: Clock, iconColor: "text-warning" },
+  open: { label: "Conectado", color: "border-success text-success", icon: CheckCircle2, iconColor: "text-success" },
+  close: { label: "Desconectado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
+  connecting: { label: "Conectando", color: "border-warning text-warning", icon: Clock, iconColor: "text-warning" },
+  refused: { label: "Recusado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
 };
 
 const BASE_URL = "https://crm-hataseg.com.br";
@@ -57,7 +58,7 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
           nome: item.nome,
           telefone: item.telefone || "—",
           corretores: item.corretores || [],
-          status: item.status === "conectado" ? "conectado" as const : "desconectado" as const,
+          status: (["open", "close", "connecting", "refused"].includes(item.status) ? item.status : "close") as WhatsAppInstance["status"],
           ultimaConexao: item.ultimaConexao || "",
           mensagensHoje: item.mensagensHoje || 0,
           autoReply: item.autoReply ?? false,
@@ -83,7 +84,7 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
     setInstances(prev => prev.map(i => i.id === id ? { ...i, autoReply: checked } : i));
   };
 
-  const connectedCount = instances.filter(i => i.status === "conectado").length;
+  const connectedCount = instances.filter(i => i.status === "open").length;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -135,8 +136,8 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
               return (
                 <div key={inst.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card">
                   <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
-                    inst.status === "conectado" ? "bg-success/10" :
-                    inst.status === "desconectado" ? "bg-destructive/10" : "bg-warning/10"
+                    inst.status === "open" ? "bg-success/10" :
+                    inst.status === "close" || inst.status === "refused" ? "bg-destructive/10" : "bg-warning/10"
                   }`}>
                     <Smartphone className={`h-4 w-4 ${sc.iconColor}`} />
                   </div>

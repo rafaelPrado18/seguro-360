@@ -26,16 +26,17 @@ interface WhatsAppInstance {
   nome: string;
   telefone: string;
   corretores: string[];
-  status: "conectado" | "desconectado" | "aguardando_qr";
+  status: "open" | "close" | "connecting" | "refused";
   ultimaConexao: string;
   mensagensHoje: number;
   autoReply: boolean;
 }
 
 const statusConfig = {
-  conectado: { label: "Conectado", color: "border-success text-success", icon: CheckCircle2, iconColor: "text-success" },
-  desconectado: { label: "Desconectado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
-  aguardando_qr: { label: "Aguardando QR", color: "border-warning text-warning", icon: Clock, iconColor: "text-warning" },
+  open: { label: "Conectado", color: "border-success text-success", icon: CheckCircle2, iconColor: "text-success" },
+  close: { label: "Desconectado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
+  connecting: { label: "Conectando", color: "border-warning text-warning", icon: Clock, iconColor: "text-warning" },
+  refused: { label: "Recusado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
 };
 
 const BASE_URL = "https://crm-hataseg.com.br";
@@ -129,7 +130,7 @@ const WhatsAppInstancias = () => {
             nome: item.nome,
             telefone: item.telefone,
             corretores: item.corretores || [],
-            status: item.status === "conectado" ? "conectado" as const : "desconectado" as const,
+            status: (["open", "close", "connecting", "refused"].includes(item.status) ? item.status : "close") as WhatsAppInstance["status"],
             ultimaConexao: item.ultimaConexao || "",
             mensagensHoje: item.mensagensHoje || 0,
             autoReply: item.autoReply ?? false,
@@ -179,7 +180,7 @@ const WhatsAppInstancias = () => {
         const result = await res.json();
         if (result?.success?.connected) {
           setInstances(prev => prev.map(i => i.id === qrInstanceId
-            ? { ...i, status: "conectado", ultimaConexao: new Date().toISOString() }
+            ? { ...i, status: "open" as const, ultimaConexao: new Date().toISOString() }
             : i
           ));
           setQrInstanceId(null);
@@ -215,7 +216,7 @@ const WhatsAppInstancias = () => {
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-foreground">Instâncias WhatsApp</h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              {instances.filter(i => i.status === "conectado").length} de {instances.length} instâncias conectadas
+              {instances.filter(i => i.status === "open").length} de {instances.length} instâncias conectadas
             </p>
           </div>
         </div>
@@ -262,7 +263,7 @@ const WhatsAppInstancias = () => {
                 <Wifi className="h-5 w-5 text-success" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{instances.filter(i => i.status === "conectado").length}</p>
+                <p className="text-2xl font-bold text-foreground">{instances.filter(i => i.status === "open").length}</p>
                 <p className="text-xs text-muted-foreground">Conectadas</p>
               </div>
             </CardContent>
@@ -273,7 +274,7 @@ const WhatsAppInstancias = () => {
                 <WifiOff className="h-5 w-5 text-destructive" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{instances.filter(i => i.status === "desconectado").length}</p>
+                <p className="text-2xl font-bold text-foreground">{instances.filter(i => i.status === "close").length}</p>
                 <p className="text-xs text-muted-foreground">Desconectadas</p>
               </div>
             </CardContent>
@@ -300,16 +301,16 @@ const WhatsAppInstancias = () => {
             return (
               <Card key={inst.id} className="relative overflow-hidden">
                 <div className={`absolute top-0 left-0 right-0 h-1 ${
-                  inst.status === "conectado" ? "bg-success" :
-                  inst.status === "desconectado" ? "bg-destructive" : "bg-warning"
+                  inst.status === "open" ? "bg-success" :
+                  inst.status === "close" || inst.status === "refused" ? "bg-destructive" : "bg-warning"
                 }`} />
 
                 <CardHeader className="pb-3 pt-5">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-                        inst.status === "conectado" ? "bg-success/10" :
-                        inst.status === "desconectado" ? "bg-destructive/10" : "bg-warning/10"
+                        inst.status === "open" ? "bg-success/10" :
+                        inst.status === "close" || inst.status === "refused" ? "bg-destructive/10" : "bg-warning/10"
                       }`}>
                         <Smartphone className={`h-5 w-5 ${sc.iconColor}`} />
                       </div>
@@ -372,7 +373,7 @@ const WhatsAppInstancias = () => {
 
                   {/* Actions — connect + config */}
                   <div className="flex items-center gap-2">
-                    {inst.status !== "conectado" && (
+                    {inst.status !== "open" && (
                       <Button variant="outline" size="sm" className="flex-1 h-8 text-xs gap-1.5 border-success/30 text-success hover:bg-success/10" onClick={() => fetchQrCode(inst.id)}>
                         <QrCode className="h-3 w-3" /> Conectar
                       </Button>
