@@ -53,12 +53,12 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
       const data = result?.data || result?.success || result;
       if (Array.isArray(data)) {
         setInstances(data.map((item: any) => ({
-          id: item.id,
-          nome: item.nome,
+          id: item.instanceId || item._id || item.id,
+          nome: item.name || item.nome,
           telefone: item.telefone || "—",
           corretores: item.corretores || [],
-          status: (["open", "close", "connecting", "refused"].includes(item.status) ? item.status : "close") as WhatsAppInstance["status"],
-          ultimaConexao: item.ultimaConexao || "",
+          status: (["connected", "disconnected", "connecting"].includes(item.status) ? item.status : "disconnected") as WhatsAppInstance["status"],
+          ultimaConexao: item.updatedAt || item.ultimaConexao || "",
           mensagensHoje: item.mensagensHoje || 0,
           autoReply: item.autoReply ?? false,
         })));
