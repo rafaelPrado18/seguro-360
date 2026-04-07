@@ -17,7 +17,7 @@ interface WhatsAppInstance {
   nome: string;
   telefone: string;
   corretores: string[];
-  status: "open" | "close" | "connecting" | "refused";
+  status: "connected" | "disconnected" | "connecting";
   ultimaConexao: string;
   mensagensHoje: number;
   autoReply: boolean;
@@ -31,10 +31,9 @@ interface EmpresaWhatsAppDialogProps {
 }
 
 const statusConfig = {
-  open: { label: "Conectado", color: "border-success text-success", icon: CheckCircle2, iconColor: "text-success" },
-  close: { label: "Desconectado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
+  connected: { label: "Conectado", color: "border-success text-success", icon: CheckCircle2, iconColor: "text-success" },
+  disconnected: { label: "Desconectado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
   connecting: { label: "Conectando", color: "border-warning text-warning", icon: Clock, iconColor: "text-warning" },
-  refused: { label: "Recusado", color: "border-destructive text-destructive", icon: XCircle, iconColor: "text-destructive" },
 };
 
 const BASE_URL = "https://crm-hataseg.com.br";
@@ -84,7 +83,7 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
     setInstances(prev => prev.map(i => i.id === id ? { ...i, autoReply: checked } : i));
   };
 
-  const connectedCount = instances.filter(i => i.status === "open").length;
+  const connectedCount = instances.filter(i => i.status === "connected").length;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -136,8 +135,8 @@ export function EmpresaWhatsAppDialog({ open, onOpenChange, empresaId, empresaNo
               return (
                 <div key={inst.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card">
                   <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
-                    inst.status === "open" ? "bg-success/10" :
-                    inst.status === "close" || inst.status === "refused" ? "bg-destructive/10" : "bg-warning/10"
+                    inst.status === "connected" ? "bg-success/10" :
+                    inst.status === "disconnected" ? "bg-destructive/10" : "bg-warning/10"
                   }`}>
                     <Smartphone className={`h-4 w-4 ${sc.iconColor}`} />
                   </div>
