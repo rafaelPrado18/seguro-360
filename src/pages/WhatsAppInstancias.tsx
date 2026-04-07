@@ -31,62 +31,6 @@ const statusConfig = {
 
 const BASE_URL = "https://crm-hataseg.com.br";
 
-function CorretorMultiSelect({
-  selected,
-  onChange,
-  size = "sm",
-  corretores,
-}: {
-  selected: string[];
-  onChange: (ids: string[]) => void;
-  size?: "sm" | "md";
-  corretores: { id: string; nome: string }[];
-}) {
-  const toggle = (id: string) => {
-    onChange(
-      selected.includes(id)
-        ? selected.filter(s => s !== id)
-        : [...selected, id]
-    );
-  };
-
-  const label = selected.length === 0
-    ? "Selecione corretores"
-    : selected.length === 1
-    ? corretores.find(c => c.id === selected[0])?.nome || "1 corretor"
-    : `${selected.length} corretores`;
-
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={`w-full justify-between font-normal ${size === "sm" ? "h-8 text-xs" : "h-9 text-sm"}`}
-        >
-          <span className="truncate">{label}</span>
-          <ChevronDown className="h-3.5 w-3.5 ml-1 shrink-0 text-muted-foreground" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-56 p-2" align="start">
-        <div className="space-y-1">
-          {corretores.map(c => (
-            <label
-              key={c.id}
-              className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/60 cursor-pointer transition-colors"
-            >
-              <Checkbox
-                checked={selected.includes(c.id)}
-                onCheckedChange={() => toggle(c.id)}
-              />
-              <span className="text-sm">{c.nome}</span>
-            </label>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
 const WhatsAppInstancias = () => {
   const { data: agents } = useAgents();
   const corretores = useMemo(() => {
