@@ -39,6 +39,7 @@ export interface SinistroData {
   oficina?: string;
   observacoes?: string;
   leadId?: string;
+  terceiros?: { nome: string; telefone: string; cnh: string }[];
 }
 
 interface SinistroDetailSheetProps {
@@ -90,6 +91,12 @@ export function SinistroDetailSheet({ open, onOpenChange, sinistro, onSinistroUp
     if (sinistro) {
       setEditForm({ ...sinistro });
       setIsEditing(false);
+      // Load terceiros from sinistro data
+      if (sinistro.terceiros?.length) {
+        setTerceiros(sinistro.terceiros.map(t => ({ id: crypto.randomUUID(), ...t })));
+      } else {
+        setTerceiros([]);
+      }
     }
   }, [sinistro]);
 
@@ -117,7 +124,7 @@ export function SinistroDetailSheet({ open, onOpenChange, sinistro, onSinistroUp
     if (!editForm) return;
     setSaving(true);
     try {
-      const dados: Record<string, string> = {};
+      const dados: Record<string, unknown> = {};
       const fields: (keyof SinistroData)[] = [
         "cliente", "tipo", "dataAbertura", "valor", "status",
         "prioridade", "telefone", "apolice", "seguradora", "oficina",
@@ -128,9 +135,10 @@ export function SinistroDetailSheet({ open, onOpenChange, sinistro, onSinistroUp
           dados[f] = editForm[f] || "";
         }
       }
-      if (Object.keys(dados).length > 0) {
-        await sinistroService.updateSinistro({ id: sinistro.id }, dados);
-      }
+      // Always send terceiros
+      dados.terceiros = terceiros.map(({ nome, telefone, cnh }) => ({ nome, telefone, cnh }));
+
+      await sinistroService.updateSinistro({ id: sinistro.id }, dados);
       toast({ title: "Sinistro atualizado!", description: "Informações salvas com sucesso." });
       setIsEditing(false);
       onSinistroUpdated?.();
