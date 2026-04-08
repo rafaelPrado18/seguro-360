@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, Clock, Users, Plus, Trash2, Pencil, Check, Save } from "lucide-react";
+import { FileText, Clock, Users, Plus, Trash2, Pencil, Check, Save, Loader2 } from "lucide-react";
 import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
 import { HistorySection } from "@/components/shared/HistorySection";
 import { sinistroService } from "@/services/sinistroService";
@@ -85,6 +85,7 @@ export function SinistroDetailSheet({ open, onOpenChange, sinistro, onSinistroUp
   const [terceiros, setTerceiros] = useState<Terceiro[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingTerceiros, setSavingTerceiros] = useState(false);
   const [editForm, setEditForm] = useState<SinistroData | null>(null);
 
   useEffect(() => {
@@ -385,6 +386,30 @@ export function SinistroDetailSheet({ open, onOpenChange, sinistro, onSinistroUp
                       </div>
                     </div>
                   ))}
+
+                  {terceiros.length > 0 && (
+                    <Button
+                      className="w-full gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90"
+                      size="sm"
+                      disabled={savingTerceiros}
+                      onClick={async () => {
+                        setSavingTerceiros(true);
+                        try {
+                          const payload = terceiros.map(({ nome, telefone, cnh }) => ({ nome, telefone, cnh }));
+                          await sinistroService.updateSinistro({ id: sinistro.id }, { terceiros: payload });
+                          toast({ title: "Terceiros atualizados!", description: "Dados salvos com sucesso." });
+                          onSinistroUpdated?.();
+                        } catch {
+                          toast({ title: "Erro ao salvar terceiros", variant: "destructive" });
+                        } finally {
+                          setSavingTerceiros(false);
+                        }
+                      }}
+                    >
+                      {savingTerceiros ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                      Salvar Terceiros
+                    </Button>
+                  )}
                 </div>
               </TabsContent>
 
