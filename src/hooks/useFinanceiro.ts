@@ -4,6 +4,7 @@ import { financeiroService, type FinanceiroClient } from "@/services/financeiroS
 const MOCK_FINANCEIRO: FinanceiroClient[] = [
   {
     id: "mock-1",
+    leadId: "LEAD-MOCK-1",
     nome: "João Silva",
     apolice: "#4521",
     totalParcelas: 12,
@@ -39,6 +40,7 @@ const MOCK_FINANCEIRO: FinanceiroClient[] = [
   },
   {
     id: "mock-2",
+    leadId: "LEAD-MOCK-2",
     nome: "Empresa ABC Ltda",
     apolice: "#4520",
     totalParcelas: 12,
@@ -68,6 +70,7 @@ const MOCK_FINANCEIRO: FinanceiroClient[] = [
   },
   {
     id: "mock-3",
+    leadId: "LEAD-MOCK-3",
     nome: "Maria Santos",
     apolice: "#4519",
     totalParcelas: 6,
@@ -98,6 +101,7 @@ const MOCK_FINANCEIRO: FinanceiroClient[] = [
   },
   {
     id: "mock-4",
+    leadId: "LEAD-MOCK-4",
     nome: "Carlos Mendes",
     apolice: "#4518",
     totalParcelas: 12,
