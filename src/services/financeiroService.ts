@@ -1,7 +1,5 @@
-import { clientService } from "./clientService";
+import { clientService, type Client } from "./clientService";
 import type { ParcelaStatus } from "./clientService";
-
-const BASE_URL = "https://crm-hataseg.com.br/mango-softwares";
 
 export interface FinanceiroParcela {
   mes: string;
@@ -54,6 +52,7 @@ export interface FinanceiroHistoricoEntry {
 
 export interface FinanceiroClient {
   id: string;
+  leadId: string;
   nome: string;
   apolice: string;
   totalParcelas: number;
@@ -63,17 +62,73 @@ export interface FinanceiroClient {
   historico: FinanceiroHistoricoEntry[];
 }
 
+function mapClientToFinanceiro(client: Client): FinanceiroClient[] {
+  return client.vehicles.map((vp) => {
+    const fin = vp.financial;
+    const totalParcelas = parseInt(fin.parcelas) || 0;
+
+    // Build parcelas from lista_parcelas if available, otherwise generate from total
+    const parcelas: FinanceiroParcela[] = fin.lista_parcelas
+      ? fin.lista_parcelas.map((lp, i) => ({
+          mes: `Parcela ${i + 1}`,
+          status: lp.paga ? "pago" as const : "pendente" as const,
+        }))
+      : Array.from({ length: totalParcelas }, (_, i) => ({
+          mes: `Parcela ${i + 1}`,
+          status: "pendente" as const,
+        }));
+
+    return {
+      id: client.id,
+      leadId: client.lead_id,
+      nome: client.nome,
+      apolice: fin.numero_apolice || "",
+      totalParcelas,
+      parcelas,
+      dadosCliente: {
+        cpfCnpj: client.cpf,
+        email: client.email,
+        telefone: client.telefone,
+        celular: client.celular,
+        endereco: client.endereco,
+        bairro: client.bairro,
+        cidade: client.cidade,
+        uf: client.uf,
+        cep: client.cep,
+      },
+      dadosApolice: {
+        numeroApolice: fin.numero_apolice,
+        numeroProposta: fin.numero_proposta,
+        seguradora: fin.seguradora,
+        ramo: "",
+        vigenciaInicio: fin.vigencia_inicio,
+        vigenciaFim: fin.vigencia_fim,
+        premioTotal: fin.premio_total,
+        premioLiquido: fin.premio_liquido,
+        iof: fin.iof,
+        comissao: fin.comissao,
+        formaPagamento: fin.forma_pagamento,
+        franquia: fin.franquia,
+        classeBonus: fin.classe_bonus,
+        veiculo: {
+          fabricante: vp.vehicle.veiculo_fabricante,
+          modelo: vp.vehicle.veiculo_modelo,
+          ano: vp.vehicle.veiculo_ano,
+          placa: vp.vehicle.veiculo_placa,
+          chassi: vp.vehicle.veiculo_chassi,
+          combustivel: vp.vehicle.veiculo_combustivel,
+          fipe: vp.vehicle.veiculo_codigo_fipe,
+        },
+      },
+      historico: [],
+    };
+  });
+}
+
 export const financeiroService = {
   async getAll(): Promise<FinanceiroClient[]> {
-    const response = await fetch(`${BASE_URL}/v1/read/financeiro/client?searchTag=all`, {
-      headers: {
-        "orchestrator": "crm_hatanaka",
-      },
-    });
-    if (!response.ok) throw new Error("Erro ao buscar dados financeiros");
-    const data = await response.json();
-    // Normalize: API may return array directly or nested
-    return Array.isArray(data) ? data : data?.success || data?.data || [];
+    const clients = await clientService.getClients();
+    return clients.flatMap(mapClientToFinanceiro);
   },
 
   async updateParcela(clientId: string, parcelaIndex: number, status: "pago" | "pendente", allParcelas: FinanceiroParcela[], leadId: string): Promise<void> {
