@@ -170,15 +170,22 @@ const Sinistros = () => {
         onOpenChange={setDetailOpen}
         sinistro={selectedSinistro ? {
           id: selectedSinistro.id,
+          numeroSinistro: (selectedSinistro as any).numeroSinistro || "",
+          dataSinistro: (selectedSinistro as any).dataSinistro || "",
           apolice: selectedSinistro.apolice || "",
           cliente: selectedSinistro.cliente,
+          clienteId: selectedSinistro.clienteId,
           tipo: selectedSinistro.tipo,
           dataAbertura: selectedSinistro.dataAbertura,
           valor: selectedSinistro.valor,
           status: selectedSinistro.status,
           prioridade: selectedSinistro.prioridade,
           telefone: selectedSinistro.telefone,
+          seguradora: (selectedSinistro as any).seguradora || "",
+          oficina: (selectedSinistro as any).oficina || "",
+          observacoes: (selectedSinistro as any).observacoes || "",
         } : null}
+        onSinistroUpdated={() => loadSinistros()}
       />
 
       <NovoSinistroDialog
