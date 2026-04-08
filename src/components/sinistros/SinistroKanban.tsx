@@ -161,7 +161,7 @@ export function SinistroKanban({ sinistros, columns, onStatusChange, onItemClick
                           <span className="text-[10px] text-muted-foreground font-mono">{item.apolice || "—"}</span>
                           <div className="flex gap-0.5">
                             {item.telefone && (
-                              <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); window.open(`tel:${item.telefone}`); }}>
+                              <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); navigate("/whatsapp"); }}>
                                 <Phone className="h-3 w-3 text-muted-foreground" />
                               </Button>
                             )}
@@ -225,7 +225,7 @@ export function SinistroKanban({ sinistros, columns, onStatusChange, onItemClick
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
                     {item.telefone && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); window.open(`tel:${item.telefone}`); }}>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); navigate("/whatsapp"); }}>
                         <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>
                     )}

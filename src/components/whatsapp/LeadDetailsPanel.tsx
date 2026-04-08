@@ -15,8 +15,9 @@ import {
   X, User, Mail, Phone, MapPin, Target, DollarSign,
   FileText, Image, MessageSquare, Upload, Plus, Clock,
   Calendar, Tag, Building, Download, Pencil, Check, Loader2, ArrowRightLeft,
-  Car, ChevronDown, ChevronUp, Trash2,
+  Car, ChevronDown, ChevronUp, Trash2, CalendarDays,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAgents } from "@/hooks/useAgents";
 import { toast } from "@/hooks/use-toast";
 import type { WhatsAppContact } from "@/services/whatsappService";
@@ -88,6 +89,7 @@ const typeColors: Record<HistoryEntry["type"], string> = {
 };
 
 export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("detalhes");
   const [newNote, setNewNote] = useState("");
   const [localHistory, setLocalHistory] = useState<HistoryEntry[]>(INITIAL_HISTORY);
@@ -302,8 +304,13 @@ export function LeadDetailsPanel({ contact, onClose }: LeadDetailsPanelProps) {
               ))}
             </div>
           </div>
+          </div>
+          <div className="flex gap-1 mt-2 px-4">
+            <Button variant="outline" size="sm" className="text-xs gap-1 flex-1" onClick={() => navigate("/agenda")}>
+              <CalendarDays className="h-3 w-3" /> Agenda
+            </Button>
+          </div>
         </div>
-      </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         <TabsList className="mx-4 mt-2 grid grid-cols-2">

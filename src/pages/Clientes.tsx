@@ -183,7 +183,7 @@ const Clientes = () => {
                                 <Pencil className="h-3.5 w-3.5" /> Editar
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-xs gap-2" onClick={() => window.open(`tel:${c.telefone || c.celular}`)}>
+                              <DropdownMenuItem className="text-xs gap-2" onClick={() => navigate("/whatsapp")}>
                                 <Phone className="h-3.5 w-3.5" /> Ligar
                               </DropdownMenuItem>
                               <DropdownMenuItem className="text-xs gap-2" onClick={() => navigate("/whatsapp")}>

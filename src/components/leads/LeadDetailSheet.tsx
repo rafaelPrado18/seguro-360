@@ -211,8 +211,7 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
   };
 
   const handleCall = () => {
-    window.open(`tel:${lead.telefone.replace(/\D/g, "")}`, "_self");
-    toast({ title: "Iniciando chamada", description: formatPhone(lead.telefone) });
+    navigate("/whatsapp");
   };
 
   const handleWhatsApp = () => {
