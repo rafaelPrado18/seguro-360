@@ -672,6 +672,7 @@ const Leads = () => {
         <NewLeadDialog
           open={newLeadOpen}
           onOpenChange={setNewLeadOpen}
+          corretorResponsavel={currentUser.nome}
           onLeadCreated={(lead) => {
             const newLead: Lead = {
               ...lead as Lead,
