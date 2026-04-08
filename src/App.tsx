@@ -46,7 +46,7 @@ const App = () => (
         <Route path="/financeiro" element={<AuthGuard><ScopeGuard scope="comissoes"><Financeiro /></ScopeGuard></AuthGuard>} />
         <Route path="/renovacoes" element={<AuthGuard><ScopeGuard scope="renovacoes"><Renovacoes /></ScopeGuard></AuthGuard>} />
         <Route path="/agenda" element={<AuthGuard><Agenda /></AuthGuard>} />
-        <Route path="/relatorios" element={<AuthGuard><ScopeGuard scope="relatorios"><Relatorios /></ScopeGuard></AuthGuard>} />
+        <Route path="/relatorios" element={<AuthGuard><Relatorios /></AuthGuard>} />
         <Route path="/usuarios" element={<AuthGuard><AdminGuard><Usuarios /></AdminGuard></AuthGuard>} />
         <Route path="/configuracoes" element={<AuthGuard><AdminGuard><Configuracoes /></AdminGuard></AuthGuard>} />
         <Route path="/empresas" element={<Empresas />} />

@@ -27,7 +27,7 @@ const allShortcuts = [
   { title: "Comissões", desc: "Extrato de comissões", icon: DollarSign, path: "/comissoes", color: "bg-success/15 text-success", scopes: ["comissoes"] },
   { title: "WhatsApp", desc: "Mensagens e atendimento", icon: MessageSquare, path: "/whatsapp", color: "bg-accent/15 text-accent", scopes: ["whatsapp"] },
   { title: "Agenda", desc: "Compromissos e tarefas", icon: Calendar, path: "/agenda", color: "bg-primary/15 text-primary", scopes: [] },
-  { title: "Relatórios", desc: "Análises e relatórios", icon: BarChart3, path: "/relatorios", color: "bg-muted-foreground/15 text-muted-foreground", scopes: ["relatorios"] },
+  { title: "Relatórios", desc: "Análises e relatórios", icon: BarChart3, path: "/relatorios", color: "bg-muted-foreground/15 text-muted-foreground", scopes: [] },
 ];
 
 function parseDateBR(dateStr: string): Date | null {
