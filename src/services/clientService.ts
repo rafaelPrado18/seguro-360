@@ -34,6 +34,11 @@ export type VehicleDataSingle = {
   numero_apolice?: string;
 };
 
+export type ParcelaStatus = {
+  parcela: string;
+  paga: boolean;
+};
+
 export type FinancialDataSingle = {
   premio_total: string;
   premio_liquido: string;
@@ -51,6 +56,7 @@ export type FinancialDataSingle = {
   forma_pagamento: string;
   franquia: string;
   coberturas: Array<{ descricao: string; limite: string; premio: string }>;
+  lista_parcelas?: ParcelaStatus[];
 };
 
 export type VehicleData = VehicleDataSingle;
@@ -164,28 +170,22 @@ export function buildClientPayload(
 }
 
 export interface ClientUpdatePayload {
-  customer_data: {
-    lead_id: string;
-    lead_status: string;
-    nome: string;
-    cpf: string;
-    endereco: string;
-    bairro: string;
-    cidade: string;
-    uf: string;
-    cep: string;
-    telefone: string;
-    celular: string;
-    email: string;
-  };
-  vehicle_data: VehicleDataSingle[];
-  financial_data: FinancialDataSingle[];
+  customer_data: Partial<ClientCreatePayload["customer_data"]> & { lead_id: string };
+  vehicle_data?: Partial<VehicleDataSingle>[];
+  financial_data?: (Partial<FinancialDataSingle> & { lista_parcelas?: ParcelaStatus[] })[];
 }
 
-const HEADERS = {
+const HEADERS: Record<string, string> = {
   "Content-Type": "application/json",
   "orchestrator": "crm-hatanaka",
 };
+
+function buildHeaders(): Record<string, string> {
+  return {
+    ...HEADERS,
+    messageid: `MSG-CLIENT-${Date.now()}`,
+  };
+}
 
 export const clientService = {
   async getClients(): Promise<Client[]> {
@@ -212,22 +212,25 @@ export const clientService = {
     };
     const response = await fetch(`${BASE_URL}/v1/create/client`, {
       method: "POST",
-      headers: HEADERS,
+      headers: buildHeaders(),
       body: JSON.stringify(body),
     });
     if (!response.ok) throw new Error("Erro ao criar cliente");
   },
 
-  async updateClient(clienteId: string, payload: ClientUpdatePayload): Promise<void> {
-    const body = {
-      id: clienteId,
+  async updateClient(_clienteId: string, payload: ClientUpdatePayload): Promise<void> {
+    const body: Record<string, unknown> = {
       customer_data: payload.customer_data,
-      vehicle_data: Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data],
-      financial_data: Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data],
     };
+    if (payload.vehicle_data) {
+      body.vehicle_data = Array.isArray(payload.vehicle_data) ? payload.vehicle_data : [payload.vehicle_data];
+    }
+    if (payload.financial_data) {
+      body.financial_data = Array.isArray(payload.financial_data) ? payload.financial_data : [payload.financial_data];
+    }
     const response = await fetch(`${BASE_URL}/v1/update/client`, {
       method: "PATCH",
-      headers: HEADERS,
+      headers: buildHeaders(),
       body: JSON.stringify(body),
     });
     if (!response.ok) throw new Error("Erro ao atualizar cliente");
