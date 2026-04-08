@@ -170,7 +170,7 @@ export function buildClientPayload(
 }
 
 export interface ClientUpdatePayload {
-  customer_data: Partial<ClientCreatePayload["customer_data"]> & { lead_id: string };
+  customer_data: Partial<ClientCreatePayload["customer_data"]>;
   vehicle_data?: Partial<VehicleDataSingle>[];
   financial_data?: (Partial<FinancialDataSingle> & { lista_parcelas?: ParcelaStatus[] })[];
 }
