@@ -139,7 +139,7 @@ export const financeiroService = {
     }));
 
     await clientService.updateClient(clientId, {
-      customer_data: { lead_id: email },
+      customer_data: { email },
       financial_data: [{
         lista_parcelas: listaParcelas,
       }],
