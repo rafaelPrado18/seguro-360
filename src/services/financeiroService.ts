@@ -1,3 +1,6 @@
+import { clientService } from "./clientService";
+import type { ParcelaStatus } from "./clientService";
+
 const BASE_URL = "https://crm-hataseg.com.br/mango-softwares";
 
 export interface FinanceiroParcela {
@@ -73,20 +76,18 @@ export const financeiroService = {
     return Array.isArray(data) ? data : data?.success || data?.data || [];
   },
 
-  async updateParcela(clientId: string, parcelaIndex: number, status: "pago" | "pendente"): Promise<void> {
-    const response = await fetch(`${BASE_URL}/v1/update/financeiro/client`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "orchestrator": "crm_hatanaka",
-      },
-      body: JSON.stringify({
-        id: clientId,
-        updates: {
-          [`parcelas.${parcelaIndex}.status`]: status,
-        },
-      }),
+  async updateParcela(clientId: string, parcelaIndex: number, status: "pago" | "pendente", allParcelas: FinanceiroParcela[], leadId: string): Promise<void> {
+    // Build lista_parcelas from current state with the updated parcela
+    const listaParcelas: ParcelaStatus[] = allParcelas.map((p, i) => ({
+      parcela: `${i + 1}/${allParcelas.length}`,
+      paga: i === parcelaIndex ? status === "pago" : p.status === "pago",
+    }));
+
+    await clientService.updateClient(clientId, {
+      customer_data: { lead_id: leadId },
+      financial_data: [{
+        lista_parcelas: listaParcelas,
+      }],
     });
-    if (!response.ok) throw new Error("Erro ao atualizar parcela");
   },
 };
