@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { GripVertical, Phone, MessageSquare, MoreHorizontal, Maximize2 } from "lucide-react";
+import { GripVertical, Phone, MessageSquare, MoreHorizontal, Maximize2, Plus } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
 
 export interface KanbanColumn {
@@ -21,6 +21,7 @@ interface LeadKanbanProps {
   onStatusChange: (leadId: string, newStatus: string) => void;
   corretorFilter?: string | null;
   onLeadClick?: (lead: Lead) => void;
+  onNewLead?: () => void;
 }
 
 const origemLabels: Record<string, string> = {
@@ -28,7 +29,7 @@ const origemLabels: Record<string, string> = {
   facebook: "Facebook", instagram: "Instagram", google_ads: "Google Ads", meta_ads: "Meta Ads", outro: "Outro",
 };
 
-export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onLeadClick }: LeadKanbanProps) {
+export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onLeadClick, onNewLead }: LeadKanbanProps) {
   const navigate = useNavigate();
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
@@ -70,7 +71,15 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
 
   return (
     <>
-      <div className="flex gap-4 overflow-x-auto pb-4" style={{ height: "calc(100vh - 14rem)" }}>
+      <div className="flex items-center justify-between mb-3">
+        <div />
+        {onNewLead && (
+          <Button size="sm" className="gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90" onClick={onNewLead}>
+            <Plus className="h-3.5 w-3.5" /> Novo Lead
+          </Button>
+        )}
+      </div>
+      <div className="flex gap-4 overflow-x-auto pb-4" style={{ height: "calc(100vh - 17rem)" }}>
         {columns.map((col) => {
           const colLeads = getColumnLeads(col.id);
           const isOver = dragOverColumn === col.id;
@@ -199,7 +208,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
                     {lead.telefone && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); window.open(`tel:${lead.telefone}`); }}>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); navigate("/whatsapp"); }}>
                         <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>
                     )}

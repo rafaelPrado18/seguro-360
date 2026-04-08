@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
 import { clientService, buildClientPayload, type ClientUpdatePayload } from "@/services/clientService";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -108,6 +109,7 @@ interface LeadDetailSheetProps {
 }
 
 export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLeadDelete }: LeadDetailSheetProps) {
+  const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<Lead>>({});
   const [notes, setNotes] = useState<NoteEntry[]>([]);
@@ -211,8 +213,7 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
   };
 
   const handleCall = () => {
-    window.open(`tel:${lead.telefone.replace(/\D/g, "")}`, "_self");
-    toast({ title: "Iniciando chamada", description: formatPhone(lead.telefone) });
+    navigate("/whatsapp");
   };
 
   const handleWhatsApp = () => {
