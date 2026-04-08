@@ -609,6 +609,7 @@ const Leads = () => {
             onStatusChange={handleStatusChange}
             corretorFilter={isAdmin ? (corretorFilter.length > 0 ? corretorFilter[0] : null) : currentUser.nome}
             onLeadClick={(lead) => setSelectedLead(lead)}
+            onNewLead={() => setNewLeadOpen(true)}
           />
         ) : (
           <Card>
