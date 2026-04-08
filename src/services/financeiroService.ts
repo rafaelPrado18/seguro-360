@@ -131,7 +131,7 @@ export const financeiroService = {
     return clients.flatMap(mapClientToFinanceiro);
   },
 
-  async updateParcela(clientId: string, parcelaIndex: number, status: "pago" | "pendente", allParcelas: FinanceiroParcela[], leadId: string): Promise<void> {
+  async updateParcela(clientId: string, parcelaIndex: number, status: "pago" | "pendente", allParcelas: FinanceiroParcela[], email: string): Promise<void> {
     // Build lista_parcelas from current state with the updated parcela
     const listaParcelas: ParcelaStatus[] = allParcelas.map((p, i) => ({
       parcela: `${i + 1}/${allParcelas.length}`,
@@ -139,7 +139,7 @@ export const financeiroService = {
     }));
 
     await clientService.updateClient(clientId, {
-      customer_data: { lead_id: leadId },
+      customer_data: { lead_id: email },
       financial_data: [{
         lista_parcelas: listaParcelas,
       }],

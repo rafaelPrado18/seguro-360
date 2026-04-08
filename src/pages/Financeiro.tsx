@@ -76,7 +76,7 @@ const Financeiro = () => {
     try {
       const cliente = clientes.find(c => c.id === clienteId);
       if (!cliente) throw new Error("Cliente não encontrado");
-      await financeiroService.updateParcela(clienteId, parcelaIndex, newStatus, cliente.parcelas, cliente.leadId);
+      await financeiroService.updateParcela(clienteId, parcelaIndex, newStatus, cliente.parcelas, cliente.dadosCliente.email);
       refetch();
       toast({ title: newStatus === "pago" ? "Parcela confirmada" : "Parcela revertida" });
     } catch {
