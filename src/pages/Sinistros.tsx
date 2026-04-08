@@ -171,8 +171,8 @@ const Sinistros = () => {
         onOpenChange={setDetailOpen}
         sinistro={selectedSinistro ? {
           id: selectedSinistro.id,
-          numeroSinistro: (selectedSinistro as any).numeroSinistro || "",
-          dataSinistro: (selectedSinistro as any).dataSinistro || "",
+          numeroSinistro: selectedSinistro.id,
+          dataSinistro: selectedSinistro.dataAbertura,
           apolice: selectedSinistro.apolice || "",
           cliente: selectedSinistro.cliente,
           clienteId: selectedSinistro.clienteId,
