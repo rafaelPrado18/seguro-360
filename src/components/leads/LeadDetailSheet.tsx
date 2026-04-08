@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
 import { clientService, buildClientPayload, type ClientUpdatePayload } from "@/services/clientService";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
