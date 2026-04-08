@@ -27,13 +27,9 @@ export interface LeadStatus {
   template_id: string | null;
 }
 
-const COLOR_OPTIONS = [
-  { label: "Azul", value: "bg-info", text: "text-info" },
-  { label: "Amarelo", value: "bg-warning", text: "text-warning" },
-  { label: "Primário", value: "bg-primary", text: "text-primary" },
-  { label: "Destaque", value: "bg-accent", text: "text-accent" },
-  { label: "Verde", value: "bg-success", text: "text-success" },
-  { label: "Vermelho", value: "bg-destructive", text: "text-destructive" },
+const PRESET_COLORS = [
+  "#3b82f6", "#ef4444", "#f59e0b", "#10b981", "#8b5cf6",
+  "#ec4899", "#06b6d4", "#f97316", "#6366f1", "#14b8a6",
 ];
 
 const GerenciarStatus = () => {
@@ -54,8 +50,8 @@ const GerenciarStatus = () => {
   const [formData, setFormData] = useState({
     label: "",
     key: "",
-    bgColor: "bg-info",
-    color: "text-info",
+    bgColor: "#3b82f6",
+    color: "#3b82f6",
     tipo: "ativo" as "ativo" | "ganho" | "perdido",
     template_id: null as string | null,
     ordem: 1,
@@ -63,7 +59,7 @@ const GerenciarStatus = () => {
 
   const openCreate = () => {
     setEditingStatus(null);
-    setFormData({ label: "", key: "", bgColor: "bg-info", color: "text-info", tipo: "ativo", template_id: null, ordem: statuses.length + 1 });
+    setFormData({ label: "", key: "", bgColor: "#3b82f6", color: "#3b82f6", tipo: "ativo", template_id: null, ordem: statuses.length + 1 });
     setIsDialogOpen(true);
   };
 
@@ -283,18 +279,38 @@ const GerenciarStatus = () => {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Cor</Label>
-                <div className="flex gap-2 flex-wrap">
-                  {COLOR_OPTIONS.map((c) => (
-                    <button
-                      key={c.value}
-                      onClick={() => setFormData(prev => ({ ...prev, bgColor: c.value, color: c.text }))}
-                      className={`h-8 w-8 rounded-full ${c.value} transition-all ${
-                        formData.bgColor === c.value ? "ring-2 ring-ring ring-offset-2" : ""
-                      }`}
-                      title={c.label}
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <input
+                      type="color"
+                      value={formData.bgColor}
+                      onChange={(e) => setFormData(prev => ({ ...prev, bgColor: e.target.value, color: e.target.value }))}
+                      className="absolute inset-0 w-10 h-10 opacity-0 cursor-pointer"
                     />
-                  ))}
+                    <div
+                      className="h-10 w-10 rounded-full border-2 border-border shadow-sm cursor-pointer"
+                      style={{ backgroundColor: formData.bgColor }}
+                    />
+                  </div>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {PRESET_COLORS.map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => setFormData(prev => ({ ...prev, bgColor: c, color: c }))}
+                        className={`h-6 w-6 rounded-full transition-all border ${
+                          formData.bgColor === c ? "ring-2 ring-ring ring-offset-2 border-transparent" : "border-border"
+                        }`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
                 </div>
+                <Input
+                  value={formData.bgColor}
+                  onChange={(e) => setFormData(prev => ({ ...prev, bgColor: e.target.value, color: e.target.value }))}
+                  placeholder="#3b82f6"
+                  className="h-8 text-xs font-mono w-28 mt-1"
+                />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Tipo</Label>
