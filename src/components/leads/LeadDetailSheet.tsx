@@ -109,6 +109,7 @@ interface LeadDetailSheetProps {
 }
 
 export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLeadDelete }: LeadDetailSheetProps) {
+  const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<Lead>>({});
   const [notes, setNotes] = useState<NoteEntry[]>([]);
