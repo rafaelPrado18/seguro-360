@@ -5,6 +5,12 @@ const HEADERS = {
   orchestrator: "crm-hatanaka",
 };
 
+export interface SinistroTerceiro {
+  nome: string;
+  telefone: string;
+  cnh: string;
+}
+
 export interface SinistroCreatePayload {
   id: string;
   cliente: string;
@@ -26,6 +32,7 @@ export interface SinistroCreatePayload {
     placa: string;
     chassi: string;
   };
+  terceiros?: SinistroTerceiro[];
 }
 
 export interface SinistroReadResponse {
@@ -54,11 +61,11 @@ export const sinistroService = {
     return res.json();
   },
 
-  async updateSinistro(filtros: Record<string, string>, dados: Record<string, string>): Promise<{ matched_count: number; modified_count: number }> {
+  async updateSinistro(filtros: Record<string, string>, dados: Record<string, unknown>, atualizarTodos = false): Promise<{ matched_count: number; modified_count: number }> {
     const res = await fetch(`${BASE_URL}/v1/update/sinistro`, {
       method: "PATCH",
       headers: HEADERS,
-      body: JSON.stringify({ filtros, dados }),
+      body: JSON.stringify({ filtros, dados, atualizarTodos }),
     });
     if (!res.ok) throw new Error("Erro ao atualizar sinistro");
     return res.json();

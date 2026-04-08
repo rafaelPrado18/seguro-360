@@ -57,6 +57,7 @@ const Sinistros = () => {
         oficina: s.oficina,
         observacoes: s.observacoes,
         veiculo: s.veiculo,
+        terceiros: s.terceiros,
       })));
     } catch (err) {
       console.error("Erro ao carregar sinistros:", err);
@@ -181,9 +182,10 @@ const Sinistros = () => {
           status: selectedSinistro.status,
           prioridade: selectedSinistro.prioridade,
           telefone: selectedSinistro.telefone,
-          seguradora: (selectedSinistro as any).seguradora || "",
-          oficina: (selectedSinistro as any).oficina || "",
-          observacoes: (selectedSinistro as any).observacoes || "",
+          seguradora: selectedSinistro.seguradora || "",
+          oficina: selectedSinistro.oficina || "",
+          observacoes: selectedSinistro.observacoes || "",
+          terceiros: selectedSinistro.terceiros || [],
         } : null}
         onSinistroUpdated={() => loadSinistros()}
       />

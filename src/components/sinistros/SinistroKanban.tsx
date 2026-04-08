@@ -22,6 +22,12 @@ export interface SinistroVeiculo {
   chassi: string;
 }
 
+export interface SinistroTerceiroItem {
+  nome: string;
+  telefone: string;
+  cnh: string;
+}
+
 export interface SinistroItem {
   id: string;
   cliente: string;
@@ -37,6 +43,7 @@ export interface SinistroItem {
   oficina?: string;
   observacoes?: string;
   veiculo?: SinistroVeiculo;
+  terceiros?: SinistroTerceiroItem[];
 }
 
 interface SinistroKanbanProps {
