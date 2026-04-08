@@ -185,7 +185,7 @@ const Sinistros = () => {
           oficina: (selectedSinistro as any).oficina || "",
           observacoes: (selectedSinistro as any).observacoes || "",
         } : null}
-        onSinistroUpdated={() => refetch()}
+        onSinistroUpdated={() => loadSinistros()}
       />
 
       <NovoSinistroDialog
