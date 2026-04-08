@@ -101,7 +101,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className={`h-2.5 w-2.5 rounded-full ${col.bgColor}`} />
+                    <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: col.bgColor }} />
                     <span className="text-xs font-semibold text-foreground uppercase tracking-wider">{col.label}</span>
                     <Badge variant="secondary" className="text-[10px] h-5 min-w-[20px] justify-center">{colLeads.length}</Badge>
                   </div>
@@ -174,7 +174,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
         <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {expandedColumn && <div className={`h-3 w-3 rounded-full ${expandedColumn.bgColor}`} />}
+              {expandedColumn && <div className="h-3 w-3 rounded-full" style={{ backgroundColor: expandedColumn.bgColor }} />}
               {expandedColumn?.label}
               <Badge variant="secondary" className="ml-1">{expandedLeads.length} leads</Badge>
             </DialogTitle>
