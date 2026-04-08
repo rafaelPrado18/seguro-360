@@ -4,9 +4,19 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Clock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { FileText, Clock, Users, Plus, Trash2 } from "lucide-react";
 import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
 import { HistorySection } from "@/components/shared/HistorySection";
+
+interface Terceiro {
+  id: string;
+  nome: string;
+  telefone: string;
+  cnh: string;
+}
 
 interface SinistroData {
   id: string;
@@ -50,6 +60,19 @@ const prioridadeColor = (p: string) => {
 export function SinistroDetailSheet({ open, onOpenChange, sinistro }: SinistroDetailSheetProps) {
   const [arquivoApolice, setArquivoApolice] = useState<File | null>(null);
   const [arquivoProposta, setArquivoProposta] = useState<File | null>(null);
+  const [terceiros, setTerceiros] = useState<Terceiro[]>([]);
+
+  const addTerceiro = () => {
+    setTerceiros(prev => [...prev, { id: crypto.randomUUID(), nome: "", telefone: "", cnh: "" }]);
+  };
+
+  const updateTerceiro = (id: string, field: keyof Terceiro, value: string) => {
+    setTerceiros(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t));
+  };
+
+  const removeTerceiro = (id: string) => {
+    setTerceiros(prev => prev.filter(t => t.id !== id));
+  };
 
   if (!sinistro) return null;
 
@@ -71,12 +94,15 @@ export function SinistroDetailSheet({ open, onOpenChange, sinistro }: SinistroDe
         <ScrollArea className="h-[calc(100vh-120px)]">
           <div className="px-6 pb-6">
             <Tabs defaultValue="info">
-              <TabsList className="w-full grid grid-cols-3">
+              <TabsList className="w-full grid grid-cols-4">
                 <TabsTrigger value="info" className="text-xs gap-1.5">
                   <FileText className="h-3.5 w-3.5" /> Info
                 </TabsTrigger>
+                <TabsTrigger value="terceiros" className="text-xs gap-1.5">
+                  <Users className="h-3.5 w-3.5" /> Terceiros
+                </TabsTrigger>
                 <TabsTrigger value="documentos" className="text-xs gap-1.5">
-                  <FileText className="h-3.5 w-3.5" /> Documentos
+                  <FileText className="h-3.5 w-3.5" /> Docs
                 </TabsTrigger>
                 <TabsTrigger value="historico" className="text-xs gap-1.5">
                   <Clock className="h-3.5 w-3.5" /> Histórico
@@ -120,6 +146,50 @@ export function SinistroDetailSheet({ open, onOpenChange, sinistro }: SinistroDe
                       <p className="text-xs text-muted-foreground">Valor Estimado</p>
                     </div>
                   </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="terceiros">
+                <div className="space-y-3 mt-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold text-foreground">Terceiros Envolvidos ({terceiros.length})</h4>
+                    <Button variant="outline" size="sm" className="gap-1.5 h-7 text-xs" onClick={addTerceiro}>
+                      <Plus className="h-3 w-3" /> Adicionar
+                    </Button>
+                  </div>
+
+                  {terceiros.length === 0 && (
+                    <div className="text-center py-8 border-2 border-dashed border-border rounded-lg">
+                      <Users className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+                      <p className="text-xs text-muted-foreground">Nenhum terceiro registrado</p>
+                      <Button variant="link" size="sm" className="text-xs mt-1" onClick={addTerceiro}>Adicionar terceiro</Button>
+                    </div>
+                  )}
+
+                  {terceiros.map((t, idx) => (
+                    <div key={t.id} className="border border-border rounded-lg p-3 space-y-2 bg-muted/20">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-muted-foreground">Terceiro {idx + 1}</span>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeTerceiro(t.id)}>
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="space-y-1">
+                          <Label className="text-[10px] text-muted-foreground">Nome</Label>
+                          <Input className="h-8 text-xs" placeholder="Nome do terceiro" value={t.nome} onChange={(e) => updateTerceiro(t.id, "nome", e.target.value)} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[10px] text-muted-foreground">Telefone</Label>
+                          <Input className="h-8 text-xs" placeholder="(11) 99999-9999" value={t.telefone} onChange={(e) => updateTerceiro(t.id, "telefone", e.target.value)} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[10px] text-muted-foreground">CNH</Label>
+                          <Input className="h-8 text-xs" placeholder="Número da CNH" value={t.cnh} onChange={(e) => updateTerceiro(t.id, "cnh", e.target.value)} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </TabsContent>
 
