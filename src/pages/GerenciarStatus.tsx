@@ -171,9 +171,9 @@ const GerenciarStatus = () => {
             <div className="flex items-center gap-1 flex-wrap">
               {statuses.map((s, i) => (
                 <div key={s.id} className="flex items-center gap-1">
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md ${s.bgColor}/15`}>
-                    <div className={`h-2 w-2 rounded-full ${s.bgColor}`} />
-                    <span className={`text-xs font-semibold ${s.color}`}>{s.label}</span>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md" style={{ backgroundColor: `${s.bgColor}22` }}>
+                    <div className="h-2 w-2 rounded-full" style={{ backgroundColor: s.bgColor }} />
+                    <span className="text-xs font-semibold" style={{ color: s.color }}>{s.label}</span>
                   </div>
                   {i < statuses.length - 1 && <ArrowRight className="h-3 w-3 text-muted-foreground" />}
                 </div>
@@ -195,7 +195,7 @@ const GerenciarStatus = () => {
                 style={{ animationDelay: `${i * 40}ms` }}
               >
                 <GripVertical className="h-4 w-4 text-muted-foreground/40 cursor-grab" />
-                <div className={`h-3 w-3 rounded-full ${status.bgColor} flex-shrink-0`} />
+                <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ backgroundColor: status.bgColor }} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-foreground">{status.label}</span>
