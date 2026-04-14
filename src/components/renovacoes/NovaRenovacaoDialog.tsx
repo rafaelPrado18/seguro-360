@@ -87,7 +87,7 @@ export function NovaRenovacaoDialog({ open, onOpenChange }: NovaRenovacaoDialogP
       const dias = vencDate ? Math.max(0, Math.ceil((vencDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))) : 0;
 
       await renovacaoClientService.create({
-        id: Date.now(),
+        id: String(Date.now()),
         apolice: selectedApolice.id,
         cliente: selectedClient.nome,
         ramo: selectedApolice.veiculo?.modelo ? "auto" : "outros",
