@@ -143,6 +143,7 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
       status: lead.status,
       origem: lead.origem,
       corretor_responsavel: lead.corretor_responsavel,
+      substatus: lead.substatus,
     });
     setEditing(true);
   };
