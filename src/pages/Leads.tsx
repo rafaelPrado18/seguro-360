@@ -99,6 +99,7 @@ const Leads = () => {
           label: s.label,
           color: s.color,
           bgColor: s.bgColor,
+          substatus: s.substatus,
         }));
     }
     return KANBAN_COLUMNS_FALLBACK;
