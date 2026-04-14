@@ -86,6 +86,13 @@ const Renovacoes = () => {
           </div>
           <div className="flex items-center gap-2">
             <Button
+              size="sm"
+              className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
+              onClick={() => setNovaRenovacaoOpen(true)}
+            >
+              <Plus className="h-3.5 w-3.5" /> Nova Renovação
+            </Button>
+            <Button
               variant={viewMode === "kanban" ? "default" : "outline"}
               size="sm"
               className="gap-2"
