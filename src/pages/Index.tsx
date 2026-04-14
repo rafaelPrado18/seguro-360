@@ -276,28 +276,6 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Shortcuts Grid */}
-        <div>
-          <h3 className="text-sm font-semibold text-foreground mb-3">Acesso Rápido</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {visibleShortcuts.map((shortcut) => (
-              <button
-                key={shortcut.path}
-                onClick={() => navigate(shortcut.path)}
-                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-all hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5"
-              >
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${shortcut.color} shrink-0`}>
-                  <shortcut.icon className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-foreground truncate">{shortcut.title}</p>
-                  <p className="text-[11px] text-muted-foreground truncate">{shortcut.desc}</p>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Lead Summary + Sinistros + Renewals */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
