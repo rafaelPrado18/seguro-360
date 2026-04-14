@@ -42,7 +42,7 @@ const Sinistros = () => {
     try {
       setLoading(true);
       const data = await sinistroService.fetchSinistros();
-      setSinistros(data.map(s => ({
+      const mapped = data.map(s => ({
         id: s.id,
         cliente: s.cliente,
         clienteId: s.clienteId,
@@ -58,7 +58,13 @@ const Sinistros = () => {
         observacoes: s.observacoes,
         veiculo: s.veiculo,
         terceiros: s.terceiros,
-      })));
+      }));
+      setSinistros(mapped);
+      // Update selected sinistro if open
+      if (selectedSinistro) {
+        const updated = mapped.find(s => s.id === selectedSinistro.id);
+        if (updated) setSelectedSinistro(updated);
+      }
     } catch (err) {
       console.error("Erro ao carregar sinistros:", err);
       toast({ title: "Erro", description: "Não foi possível carregar os sinistros", variant: "destructive" });
