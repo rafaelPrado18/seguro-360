@@ -230,13 +230,13 @@ const Leads = () => {
     }
   };
 
-  const applyStatusChange = (leadId: string, newStatus: string, shouldSend: boolean) => {
+  const applyStatusChange = (leadId: string, newStatus: string, shouldSend: boolean, substatus?: string) => {
     // Optimistic update local
-    setLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus as Lead["status"] } : l));
+    setLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus as Lead["status"], substatus: substatus || undefined } : l));
 
     // Call API to persist status change
     updateLeadStatus.mutate(
-      { id: leadId, status: newStatus as Lead["status"] },
+      { id: leadId, status: newStatus as Lead["status"], observacao: substatus ? `substatus:${substatus}` : undefined },
       {
         onError: (error) => {
           // Revert on error
