@@ -61,7 +61,7 @@ export const renovacaoClientService = {
   },
 
   async create(data: {
-    id: number;
+    id: string;
     apolice: string;
     cliente: string;
     ramo: string;
