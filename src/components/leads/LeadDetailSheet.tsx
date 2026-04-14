@@ -377,7 +377,40 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
                       </SelectContent>
                     </Select>
                   </div>
-                  <EditField label="Corretor Responsável" value={editData.corretor_responsavel || ""} onChange={(v) => setEditData(p => ({ ...p, corretor_responsavel: v || null }))} />
+                  <div>
+                    <label className="text-[11px] text-muted-foreground">Corretor Responsável</label>
+                    <Popover open={corretorOpen} onOpenChange={setCorretorOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" aria-expanded={corretorOpen} className="w-full justify-between h-8 text-sm mt-1 font-normal">
+                          {editData.corretor_responsavel || "Selecionar corretor..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Buscar corretor..." />
+                          <CommandList>
+                            <CommandEmpty>Nenhum corretor encontrado.</CommandEmpty>
+                            <CommandGroup>
+                              {comerciais.map((agent) => (
+                                <CommandItem
+                                  key={agent.userId}
+                                  value={agent.name}
+                                  onSelect={() => {
+                                    setEditData(p => ({ ...p, corretor_responsavel: agent.name }));
+                                    setCorretorOpen(false);
+                                  }}
+                                >
+                                  <Check className={cn("mr-2 h-4 w-4", editData.corretor_responsavel === agent.name ? "opacity-100" : "opacity-0")} />
+                                  {agent.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                   <div>
                     <label className="text-[11px] text-muted-foreground">Observações</label>
                     <Textarea
