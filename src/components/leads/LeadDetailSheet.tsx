@@ -390,6 +390,22 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
                       </SelectContent>
                     </Select>
                   </div>
+                  {/* Substatus selector - only show if selected status has substatus */}
+                  {(() => {
+                    const selectedStatus = realStatuses.find(s => s.key === editData.status);
+                    if (!selectedStatus?.substatus?.length) return null;
+                    return (
+                      <div>
+                        <label className="text-[11px] text-muted-foreground">Substatus</label>
+                        <Select value={editData.substatus || ""} onValueChange={(v) => setEditData(p => ({ ...p, substatus: v }))}>
+                          <SelectTrigger className="h-8 text-sm mt-1"><SelectValue placeholder="Selecionar substatus..." /></SelectTrigger>
+                          <SelectContent>
+                            {selectedStatus.substatus.map(ss => <SelectItem key={ss.key} value={ss.key}>{ss.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    );
+                  })()}
                   <div>
                     <label className="text-[11px] text-muted-foreground">Origem</label>
                     <Select value={editData.origem} onValueChange={(v) => setEditData(p => ({ ...p, origem: v as Lead["origem"] }))}>
