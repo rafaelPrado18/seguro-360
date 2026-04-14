@@ -143,6 +143,7 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
       status: lead.status,
       origem: lead.origem,
       corretor_responsavel: lead.corretor_responsavel,
+      substatus: lead.substatus,
     });
     setEditing(true);
   };
@@ -318,10 +319,22 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <Badge variant={lead.status === "novo" ? "default" : "outline"} className={`text-[10px] ${statusColors[lead.status]}`}>
-                  {statusLabels[lead.status]}
+                  {(() => {
+                    const matched = realStatuses.find(s => s.key === lead.status);
+                    return matched ? matched.label : (statusLabels[lead.status] || lead.status);
+                  })()}
                 </Badge>
+                {lead.substatus && (() => {
+                  const matched = realStatuses.find(s => s.key === lead.status);
+                  const subLabel = matched?.substatus?.find(ss => ss.key === lead.substatus)?.label || lead.substatus;
+                  return (
+                    <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                      {subLabel}
+                    </Badge>
+                  );
+                })()}
                 <Badge variant="secondary" className="text-[10px]">
                   {origemLabels[lead.origem] || lead.origem}
                 </Badge>
@@ -378,6 +391,22 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
                       </SelectContent>
                     </Select>
                   </div>
+                  {/* Substatus selector - only show if selected status has substatus */}
+                  {(() => {
+                    const selectedStatus = realStatuses.find(s => s.key === editData.status);
+                    if (!selectedStatus?.substatus?.length) return null;
+                    return (
+                      <div>
+                        <label className="text-[11px] text-muted-foreground">Substatus</label>
+                        <Select value={editData.substatus || ""} onValueChange={(v) => setEditData(p => ({ ...p, substatus: v }))}>
+                          <SelectTrigger className="h-8 text-sm mt-1"><SelectValue placeholder="Selecionar substatus..." /></SelectTrigger>
+                          <SelectContent>
+                            {selectedStatus.substatus.map(ss => <SelectItem key={ss.key} value={ss.key}>{ss.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    );
+                  })()}
                   <div>
                     <label className="text-[11px] text-muted-foreground">Origem</label>
                     <Select value={editData.origem} onValueChange={(v) => setEditData(p => ({ ...p, origem: v as Lead["origem"] }))}>
