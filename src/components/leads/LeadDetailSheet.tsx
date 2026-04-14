@@ -150,20 +150,25 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
     setEditData({});
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editData.nome?.trim()) {
       toast({ title: "Nome é obrigatório", variant: "destructive" });
       return;
     }
-    const updated: Lead = {
-      ...lead,
-      ...editData,
-      updated_at: new Date().toISOString(),
-    } as Lead;
-    onLeadUpdate?.(updated);
-    setEditing(false);
-    setEditData({});
-    toast({ title: "Lead atualizado!", description: `${updated.nome} salvo com sucesso.` });
+    try {
+      await leadsService.updateLead(lead.id, editData);
+      const updated: Lead = {
+        ...lead,
+        ...editData,
+        updated_at: new Date().toISOString(),
+      } as Lead;
+      onLeadUpdate?.(updated);
+      setEditing(false);
+      setEditData({});
+      toast({ title: "Lead atualizado!", description: `${updated.nome} salvo com sucesso.` });
+    } catch {
+      toast({ title: "Erro ao salvar", description: "Não foi possível atualizar o lead.", variant: "destructive" });
+    }
   };
 
   const addNote = async () => {
