@@ -76,7 +76,7 @@ const emptyVehicle: z.infer<typeof vehiclePolicySchema> = {
   veiculo_zero_km: "Não", veiculo_utilizacao: "",
   seguradora: "", premio_total: "", premio_liquido: "", parcelas: "1", valor_parcela: "",
   numero_proposta: "", numero_apolice: "", ci: "", vigencia_inicio: "", vigencia_fim: "",
-  comissao: "", classe_bonus: "", iof: "", forma_pagamento: "", franquia: "",
+  comissao: "", classe_bonus: "", iof: "", forma_pagamento: "", franquia: "", responsavel: "",
 };
 
 export function NewClientDialog({ open, onOpenChange, editClient, onClientCreated }: NewClientDialogProps) {
@@ -621,6 +621,13 @@ export function NewClientDialog({ open, onOpenChange, editClient, onClientCreate
                             <FormItem>
                               <FormLabel>IOF</FormLabel>
                               <FormControl><Input placeholder="R$ 0,00" {...f} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name={`vehicles.${index}.responsavel`} render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>Responsável</FormLabel>
+                              <FormControl><Input placeholder="Nome do responsável" {...f} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )} />
