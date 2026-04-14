@@ -99,6 +99,7 @@ const Leads = () => {
           label: s.label,
           color: s.color,
           bgColor: s.bgColor,
+          substatus: s.substatus,
         }));
     }
     return KANBAN_COLUMNS_FALLBACK;
@@ -216,7 +217,7 @@ const Leads = () => {
     return templates.find(t => t.categoria === category && t.status === "aprovado") || null;
   };
 
-  const handleStatusChange = (leadId: string, newStatus: string) => {
+  const handleStatusChange = (leadId: string, newStatus: string, substatus?: string) => {
     const lead = leads.find(l => l.id === leadId);
     if (!lead) return;
     const template = getTemplateForStatus(newStatus);
@@ -225,17 +226,17 @@ const Leads = () => {
       setSelectedTemplate(template);
       setSendMessage(true);
     } else {
-      applyStatusChange(leadId, newStatus, false);
+      applyStatusChange(leadId, newStatus, false, substatus);
     }
   };
 
-  const applyStatusChange = (leadId: string, newStatus: string, shouldSend: boolean) => {
+  const applyStatusChange = (leadId: string, newStatus: string, shouldSend: boolean, substatus?: string) => {
     // Optimistic update local
-    setLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus as Lead["status"] } : l));
+    setLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus as Lead["status"], substatus: substatus || undefined } : l));
 
     // Call API to persist status change
     updateLeadStatus.mutate(
-      { id: leadId, status: newStatus as Lead["status"] },
+      { id: leadId, status: newStatus as Lead["status"], observacao: substatus ? `substatus:${substatus}` : undefined },
       {
         onError: (error) => {
           // Revert on error

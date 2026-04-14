@@ -4,21 +4,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { GripVertical, Phone, MessageSquare, MoreHorizontal, Maximize2, Plus } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
+import type { LeadSubStatus } from "@/services/statusService";
 
 export interface KanbanColumn {
   id: string;
   label: string;
   color: string;
   bgColor: string;
+  substatus?: LeadSubStatus[];
 }
 
 interface LeadKanbanProps {
   leads: Lead[];
   columns: KanbanColumn[];
-  onStatusChange: (leadId: string, newStatus: string) => void;
+  onStatusChange: (leadId: string, newStatus: string, substatus?: string) => void;
   corretorFilter?: string | null;
   onLeadClick?: (lead: Lead) => void;
   onNewLead?: () => void;
@@ -29,11 +31,18 @@ const origemLabels: Record<string, string> = {
   facebook: "Facebook", instagram: "Instagram", google_ads: "Google Ads", meta_ads: "Meta Ads", outro: "Outro",
 };
 
+interface PendingDrop {
+  lead: Lead;
+  columnId: string;
+  column: KanbanColumn;
+}
+
 export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onLeadClick, onNewLead }: LeadKanbanProps) {
   const navigate = useNavigate();
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const [expandedColumn, setExpandedColumn] = useState<KanbanColumn | null>(null);
+  const [pendingDrop, setPendingDrop] = useState<PendingDrop | null>(null);
 
   const filteredLeads = corretorFilter
     ? leads.filter(l => (l.corretor_responsavel || "").toLowerCase() === corretorFilter.toLowerCase())
@@ -62,9 +71,21 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
     e.preventDefault();
     setDragOverColumn(null);
     if (draggedLead && draggedLead.status !== columnId) {
-      onStatusChange(draggedLead.id, columnId);
+      const targetColumn = columns.find(c => c.id === columnId);
+      if (targetColumn?.substatus && targetColumn.substatus.length > 0) {
+        setPendingDrop({ lead: draggedLead, columnId, column: targetColumn });
+      } else {
+        onStatusChange(draggedLead.id, columnId);
+      }
     }
     setDraggedLead(null);
+  };
+
+  const handleSubstatusSelect = (substatusKey: string) => {
+    if (pendingDrop) {
+      onStatusChange(pendingDrop.lead.id, pendingDrop.columnId, substatusKey);
+      setPendingDrop(null);
+    }
   };
 
   const expandedLeads = expandedColumn ? getColumnLeads(expandedColumn.id) : [];
@@ -168,6 +189,46 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
           );
         })}
       </div>
+
+      {/* Substatus selection dialog */}
+      <Dialog open={!!pendingDrop} onOpenChange={(open) => !open && setPendingDrop(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {pendingDrop && <div className="h-3 w-3 rounded-full" style={{ backgroundColor: pendingDrop.column.bgColor }} />}
+              {pendingDrop?.column.label}
+            </DialogTitle>
+            <DialogDescription>
+              Selecione a subcategoria para <strong>{pendingDrop?.lead.nome}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 pt-2">
+            {pendingDrop?.column.substatus?.map((sub) => (
+              <Button
+                key={sub.key}
+                variant="outline"
+                className="w-full justify-start text-sm h-10"
+                onClick={() => handleSubstatusSelect(sub.key)}
+              >
+                <div className="h-2 w-2 rounded-full bg-accent mr-2" />
+                {sub.label}
+              </Button>
+            ))}
+            <Button
+              variant="ghost"
+              className="w-full text-sm text-muted-foreground"
+              onClick={() => {
+                if (pendingDrop) {
+                  onStatusChange(pendingDrop.lead.id, pendingDrop.columnId);
+                  setPendingDrop(null);
+                }
+              }}
+            >
+              Mover sem subcategoria
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Expanded column dialog */}
       <Dialog open={!!expandedColumn} onOpenChange={(open) => !open && setExpandedColumn(null)}>
