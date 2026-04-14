@@ -2,7 +2,12 @@
 // Replace BASE_URL and implement your API endpoints
 
 export interface LeadSubStatus {
-  id: string;
+  id?: string;
+  label: string;
+  key: string;
+}
+
+export interface LeadSubStatusPayload {
   label: string;
   key: string;
 }
@@ -22,9 +27,22 @@ export interface LeadStatus {
 
 const BASE_URL = "https://crm-hataseg.com.br";
 
+const ORCHESTRATOR = "crm_hatanaka";
+
+function stripSubstatusIds(data: any) {
+  if (!data) return data;
+  const { substatus, ...rest } = data;
+  return {
+    ...rest,
+    substatus: substatus?.map(({ label, key }: LeadSubStatusPayload) => ({ label, key })) || [],
+  };
+}
+
 export const statusService = {
   async getLeadStatuses(): Promise<LeadStatus[]> {
-    const response = await fetch(`${BASE_URL}/v1/read/lead/status`);
+    const response = await fetch(`${BASE_URL}/v1/read/lead/status`, {
+      headers: { orchestrator: ORCHESTRATOR },
+    });
     if (!response.ok) throw new Error("Erro ao buscar status");
     return response.json();
   },
@@ -32,8 +50,8 @@ export const statusService = {
   async createLeadStatus(data: Omit<LeadStatus, "id">): Promise<LeadStatus> {
     const response = await fetch(`${BASE_URL}/v1/create/lead/status`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      headers: { "Content-Type": "application/json", orchestrator: ORCHESTRATOR },
+      body: JSON.stringify(stripSubstatusIds(data)),
     });
     if (!response.ok) throw new Error("Erro ao criar status");
     return;
@@ -42,8 +60,8 @@ export const statusService = {
   async updateLeadStatus(id: string, data: Partial<LeadStatus>): Promise<void> {
     const response = await fetch(`${BASE_URL}/v1/update/lead/status`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ statusId: id, ...data }),
+      headers: { "Content-Type": "application/json", orchestrator: ORCHESTRATOR },
+      body: JSON.stringify(stripSubstatusIds({ statusId: id, ...data })),
     });
     if (!response.ok) throw new Error("Erro ao atualizar status");
   },
@@ -51,8 +69,8 @@ export const statusService = {
   async deleteLeadStatus(id: string): Promise<void> {
     const response = await fetch(`${BASE_URL}/v1/delete/lead/status`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({id}),
+      headers: { "Content-Type": "application/json", orchestrator: ORCHESTRATOR },
+      body: JSON.stringify({ id }),
     });
     if (!response.ok) throw new Error("Erro ao excluir status");
   },
