@@ -8,7 +8,11 @@ const HEADERS = {
 export interface SinistroTerceiro {
   nome: string;
   telefone: string;
-  cnh: string;
+  cpf: string;
+  cep: string;
+  endereco: string;
+  email: string;
+  numero_sinistro: string;
 }
 
 export interface SinistroCreatePayload {
