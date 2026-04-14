@@ -1,6 +1,12 @@
 // Service layer for Leads API integration
 // Replace BASE_URL and implement your API endpoints
 
+export interface LeadSubStatus {
+  id: string;
+  label: string;
+  key: string;
+}
+
 export interface LeadStatus {
   id: string;
   label: string;
@@ -11,6 +17,7 @@ export interface LeadStatus {
   is_final: boolean;
   tipo: "ativo" | "ganho" | "perdido";
   template_id: string | null;
+  substatus?: LeadSubStatus[];
 }
 
 const BASE_URL = "https://crm-hataseg.com.br";

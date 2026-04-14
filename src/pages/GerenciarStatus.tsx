@@ -9,11 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, GripVertical, ArrowRight, MessageSquare } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, ArrowRight, MessageSquare, ChevronDown, ChevronRight, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import type { WhatsAppTemplate } from "@/services/whatsappService";
+import type { LeadSubStatus } from "@/services/statusService";
 
 export interface LeadStatus {
   id: string;
@@ -25,12 +26,20 @@ export interface LeadStatus {
   is_final: boolean;
   tipo: "ativo" | "ganho" | "perdido";
   template_id: string | null;
+  substatus?: LeadSubStatus[];
 }
 
 const PRESET_COLORS = [
   "#3b82f6", "#ef4444", "#f59e0b", "#10b981", "#8b5cf6",
   "#ec4899", "#06b6d4", "#f97316", "#6366f1", "#14b8a6",
 ];
+
+const generateKey = (label: string) => {
+  return label.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9_]/g, "");
+};
 
 const GerenciarStatus = () => {
   const { data: apiStatuses, isLoading } = useLeadStatuses();
@@ -39,12 +48,14 @@ const GerenciarStatus = () => {
   const deleteStatusMutation = useDeleteLeadStatusMutation();
   const { data: templates = [] } = useWhatsAppTemplates();
   const [statuses, setStatuses] = useState<LeadStatus[]>([]);
+  const [expandedStatus, setExpandedStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (apiStatuses && apiStatuses.length > 0) {
       setStatuses([...apiStatuses].sort((a, b) => a.ordem - b.ordem));
     }
   }, [apiStatuses]);
+
   const [editingStatus, setEditingStatus] = useState<LeadStatus | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -55,11 +66,14 @@ const GerenciarStatus = () => {
     tipo: "ativo" as "ativo" | "ganho" | "perdido",
     template_id: null as string | null,
     ordem: 1,
+    substatus: [] as LeadSubStatus[],
   });
+  const [newSubLabel, setNewSubLabel] = useState("");
 
   const openCreate = () => {
     setEditingStatus(null);
-    setFormData({ label: "", key: "", bgColor: "#3b82f6", color: "#3b82f6", tipo: "ativo", template_id: null, ordem: statuses.length + 1 });
+    setFormData({ label: "", key: "", bgColor: "#3b82f6", color: "#3b82f6", tipo: "ativo", template_id: null, ordem: statuses.length + 1, substatus: [] });
+    setNewSubLabel("");
     setIsDialogOpen(true);
   };
 
@@ -73,8 +87,32 @@ const GerenciarStatus = () => {
       tipo: status.tipo,
       template_id: status.template_id,
       ordem: status.ordem,
+      substatus: status.substatus || [],
     });
+    setNewSubLabel("");
     setIsDialogOpen(true);
+  };
+
+  const addSubStatus = () => {
+    const label = newSubLabel.trim();
+    if (!label) return;
+    const key = generateKey(label);
+    if (formData.substatus.some(s => s.key === key)) {
+      toast({ title: "Substatus já existe", variant: "destructive" });
+      return;
+    }
+    setFormData(prev => ({
+      ...prev,
+      substatus: [...prev.substatus, { id: crypto.randomUUID(), label, key }],
+    }));
+    setNewSubLabel("");
+  };
+
+  const removeSubStatus = (id: string) => {
+    setFormData(prev => ({
+      ...prev,
+      substatus: prev.substatus.filter(s => s.id !== id),
+    }));
   };
 
   const handleSave = () => {
@@ -89,6 +127,7 @@ const GerenciarStatus = () => {
       is_final: formData.tipo !== "ativo",
       template_id: formData.template_id,
       ordem: formData.ordem,
+      substatus: formData.substatus,
     };
 
     if (editingStatus) {
@@ -142,20 +181,13 @@ const GerenciarStatus = () => {
     });
   };
 
-  const generateKey = (label: string) => {
-    return label.toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, "_")
-      .replace(/[^a-z0-9_]/g, "");
-  };
-
   return (
     <AppLayout>
       <div className="space-y-6 max-w-3xl">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-foreground">Gerenciar Status</h2>
-            <p className="text-sm text-muted-foreground">Configure os estágios do funil de leads</p>
+            <p className="text-sm text-muted-foreground">Configure os estágios do funil de leads e seus substatus</p>
           </div>
           <Button onClick={openCreate} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
             <Plus className="h-4 w-4" /> Novo Status
@@ -174,6 +206,9 @@ const GerenciarStatus = () => {
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md" style={{ backgroundColor: `${s.bgColor}22` }}>
                     <div className="h-2 w-2 rounded-full" style={{ backgroundColor: s.bgColor }} />
                     <span className="text-xs font-semibold" style={{ color: s.color }}>{s.label}</span>
+                    {s.substatus && s.substatus.length > 0 && (
+                      <span className="text-[9px] text-muted-foreground ml-0.5">({s.substatus.length})</span>
+                    )}
                   </div>
                   {i < statuses.length - 1 && <ArrowRight className="h-3 w-3 text-muted-foreground" />}
                 </div>
@@ -188,56 +223,86 @@ const GerenciarStatus = () => {
             <CardTitle className="text-sm font-semibold">Estágios do Pipeline</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {statuses.map((status, i) => (
-              <div
-                key={status.id}
-                className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors animate-fade-in"
-                style={{ animationDelay: `${i * 40}ms` }}
-              >
-                <GripVertical className="h-4 w-4 text-muted-foreground/40 cursor-grab" />
-                <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ backgroundColor: status.bgColor }} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-foreground">{status.label}</span>
-                    <code className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono">{status.key}</code>
-                  </div>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <Badge variant={status.tipo === "ganho" ? "default" : status.tipo === "perdido" ? "destructive" : "secondary"} className="text-[9px]">
-                      {status.tipo === "ativo" ? "Em Andamento" : status.tipo === "ganho" ? "Ganho" : "Perdido"}
-                    </Badge>
-                    {status.template_id ? (
-                      <Badge variant="outline" className="text-[9px] gap-1 border-accent text-accent">
-                        <MessageSquare className="h-2.5 w-2.5" />
-                        {templates.find(t => t.id === status.template_id)?.nome || "Template"}
-                      </Badge>
+            {statuses.map((status, i) => {
+              const hasSubstatuses = status.substatus && status.substatus.length > 0;
+              const isExpanded = expandedStatus === status.id;
+
+              return (
+                <div key={status.id} className="animate-fade-in" style={{ animationDelay: `${i * 40}ms` }}>
+                  <div className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors">
+                    <GripVertical className="h-4 w-4 text-muted-foreground/40 cursor-grab" />
+
+                    {hasSubstatuses ? (
+                      <button onClick={() => setExpandedStatus(isExpanded ? null : status.id)} className="flex-shrink-0">
+                        {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                      </button>
                     ) : (
-                      <span className="text-[10px] text-muted-foreground italic">Sem template</span>
+                      <div className="w-4" />
                     )}
-                    <span className="text-[10px] text-muted-foreground">Ordem: {status.ordem}</span>
+
+                    <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ backgroundColor: status.bgColor }} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-foreground">{status.label}</span>
+                        <code className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono">{status.key}</code>
+                        {hasSubstatuses && (
+                          <Badge variant="outline" className="text-[9px]">
+                            {status.substatus!.length} substatus
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <Badge variant={status.tipo === "ganho" ? "default" : status.tipo === "perdido" ? "destructive" : "secondary"} className="text-[9px]">
+                          {status.tipo === "ativo" ? "Em Andamento" : status.tipo === "ganho" ? "Ganho" : "Perdido"}
+                        </Badge>
+                        {status.template_id ? (
+                          <Badge variant="outline" className="text-[9px] gap-1 border-accent text-accent">
+                            <MessageSquare className="h-2.5 w-2.5" />
+                            {templates.find(t => t.id === status.template_id)?.nome || "Template"}
+                          </Badge>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground italic">Sem template</span>
+                        )}
+                        <span className="text-[10px] text-muted-foreground">Ordem: {status.ordem}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStatus(status.id, "up")} disabled={i === 0}>
+                        <span className="text-xs">↑</span>
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStatus(status.id, "down")} disabled={i === statuses.length - 1}>
+                        <span className="text-xs">↓</span>
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(status)}>
+                        <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(status.id)}>
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
+                    </div>
                   </div>
+
+                  {/* Expanded substatus list */}
+                  {isExpanded && hasSubstatuses && (
+                    <div className="ml-12 mt-1 space-y-1 pb-1">
+                      {status.substatus!.map((sub) => (
+                        <div key={sub.id} className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted/40 border border-border/50">
+                          <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: status.bgColor }} />
+                          <span className="text-xs text-foreground">{sub.label}</span>
+                          <code className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground font-mono">{sub.key}</code>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStatus(status.id, "up")} disabled={i === 0}>
-                    <span className="text-xs">↑</span>
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStatus(status.id, "down")} disabled={i === statuses.length - 1}>
-                    <span className="text-xs">↓</span>
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(status)}>
-                    <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(status.id)}>
-                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
 
         {/* Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingStatus ? "Editar Status" : "Novo Status"}</DialogTitle>
             </DialogHeader>
@@ -328,6 +393,43 @@ const GerenciarStatus = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Substatus section */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold">Substatus (categorias internas)</Label>
+                <p className="text-[10px] text-muted-foreground">
+                  Adicione subcategorias para organizar leads dentro deste estágio.
+                </p>
+                
+                {formData.substatus.length > 0 && (
+                  <div className="space-y-1.5">
+                    {formData.substatus.map((sub) => (
+                      <div key={sub.id} className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted/50 border border-border/50">
+                        <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: formData.bgColor }} />
+                        <span className="text-xs text-foreground flex-1">{sub.label}</span>
+                        <code className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground font-mono">{sub.key}</code>
+                        <button onClick={() => removeSubStatus(sub.id)} className="text-destructive hover:text-destructive/80">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <Input
+                    value={newSubLabel}
+                    onChange={(e) => setNewSubLabel(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSubStatus(); } }}
+                    placeholder="Nome do substatus"
+                    className="h-8 text-xs flex-1"
+                  />
+                  <Button type="button" variant="outline" size="sm" onClick={addSubStatus} className="h-8 text-xs gap-1">
+                    <Plus className="h-3 w-3" /> Adicionar
+                  </Button>
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <Label className="text-xs flex items-center gap-1.5">
                   <MessageSquare className="h-3.5 w-3.5 text-accent" />
