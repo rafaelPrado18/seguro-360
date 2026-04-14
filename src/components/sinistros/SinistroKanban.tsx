@@ -25,7 +25,11 @@ export interface SinistroVeiculo {
 export interface SinistroTerceiroItem {
   nome: string;
   telefone: string;
-  cnh: string;
+  cpf: string;
+  cep: string;
+  endereco: string;
+  email: string;
+  numero_sinistro: string;
 }
 
 export interface SinistroItem {

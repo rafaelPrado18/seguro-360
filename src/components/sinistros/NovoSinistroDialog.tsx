@@ -141,7 +141,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
           placa: vehicle.vehicle.veiculo_placa,
           chassi: vehicle.vehicle.veiculo_chassi,
         } : undefined,
-        terceiros: [] as { nome: string; telefone: string; cnh: string }[],
+        terceiros: [] as { nome: string; telefone: string; cpf: string; cep: string; endereco: string; email: string; numero_sinistro: string }[],
       };
 
       // Enviar para API

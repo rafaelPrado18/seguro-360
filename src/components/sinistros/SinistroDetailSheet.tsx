@@ -19,7 +19,11 @@ interface Terceiro {
   id: string;
   nome: string;
   telefone: string;
-  cnh: string;
+  cpf: string;
+  cep: string;
+  endereco: string;
+  email: string;
+  numero_sinistro: string;
 }
 
 export interface SinistroData {
@@ -39,7 +43,7 @@ export interface SinistroData {
   oficina?: string;
   observacoes?: string;
   leadId?: string;
-  terceiros?: { nome: string; telefone: string; cnh: string }[];
+  terceiros?: { nome: string; telefone: string; cpf: string; cep: string; endereco: string; email: string; numero_sinistro: string }[];
 }
 
 interface SinistroDetailSheetProps {
@@ -102,7 +106,7 @@ export function SinistroDetailSheet({ open, onOpenChange, sinistro, onSinistroUp
   }, [sinistro]);
 
   const addTerceiro = () => {
-    setTerceiros(prev => [...prev, { id: crypto.randomUUID(), nome: "", telefone: "", cnh: "" }]);
+    setTerceiros(prev => [...prev, { id: crypto.randomUUID(), nome: "", telefone: "", cpf: "", cep: "", endereco: "", email: "", numero_sinistro: "" }]);
   };
 
   const updateTerceiro = (id: string, field: keyof Terceiro, value: string) => {
@@ -137,7 +141,7 @@ export function SinistroDetailSheet({ open, onOpenChange, sinistro, onSinistroUp
         }
       }
       // Always send terceiros
-      dados.terceiros = terceiros.map(({ nome, telefone, cnh }) => ({ nome, telefone, cnh }));
+      dados.terceiros = terceiros.map(({ nome, telefone, cpf, cep, endereco, email, numero_sinistro }) => ({ nome, telefone, cpf, cep, endereco, email, numero_sinistro }));
 
       await sinistroService.updateSinistro({ id: sinistro.id }, dados);
       toast({ title: "Sinistro atualizado!", description: "Informações salvas com sucesso." });
@@ -371,17 +375,39 @@ export function SinistroDetailSheet({ open, onOpenChange, sinistro, onSinistroUp
                         </Button>
                       </div>
                       <div className="space-y-2">
-                        <div className="space-y-1">
-                          <Label className="text-[10px] text-muted-foreground">Nome</Label>
-                          <Input className="h-8 text-xs" placeholder="Nome do terceiro" value={t.nome} onChange={(e) => updateTerceiro(t.id, "nome", e.target.value)} />
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1">
+                            <Label className="text-[10px] text-muted-foreground">Nome</Label>
+                            <Input className="h-8 text-xs" placeholder="Nome do terceiro" value={t.nome} onChange={(e) => updateTerceiro(t.id, "nome", e.target.value)} />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-[10px] text-muted-foreground">Telefone</Label>
+                            <Input className="h-8 text-xs" placeholder="(11) 99999-9999" value={t.telefone} onChange={(e) => updateTerceiro(t.id, "telefone", e.target.value)} />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1">
+                            <Label className="text-[10px] text-muted-foreground">CPF</Label>
+                            <Input className="h-8 text-xs" placeholder="000.000.000-00" value={t.cpf} onChange={(e) => updateTerceiro(t.id, "cpf", e.target.value)} />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-[10px] text-muted-foreground">Email</Label>
+                            <Input className="h-8 text-xs" placeholder="email@exemplo.com" value={t.email} onChange={(e) => updateTerceiro(t.id, "email", e.target.value)} />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1">
+                            <Label className="text-[10px] text-muted-foreground">CEP</Label>
+                            <Input className="h-8 text-xs" placeholder="00000-000" value={t.cep} onChange={(e) => updateTerceiro(t.id, "cep", e.target.value)} />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-[10px] text-muted-foreground">Nº Sinistro</Label>
+                            <Input className="h-8 text-xs" placeholder="Número do sinistro" value={t.numero_sinistro} onChange={(e) => updateTerceiro(t.id, "numero_sinistro", e.target.value)} />
+                          </div>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-[10px] text-muted-foreground">Telefone</Label>
-                          <Input className="h-8 text-xs" placeholder="(11) 99999-9999" value={t.telefone} onChange={(e) => updateTerceiro(t.id, "telefone", e.target.value)} />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-[10px] text-muted-foreground">CNH</Label>
-                          <Input className="h-8 text-xs" placeholder="Número da CNH" value={t.cnh} onChange={(e) => updateTerceiro(t.id, "cnh", e.target.value)} />
+                          <Label className="text-[10px] text-muted-foreground">Endereço</Label>
+                          <Input className="h-8 text-xs" placeholder="Endereço completo" value={t.endereco} onChange={(e) => updateTerceiro(t.id, "endereco", e.target.value)} />
                         </div>
                       </div>
                     </div>
@@ -395,7 +421,7 @@ export function SinistroDetailSheet({ open, onOpenChange, sinistro, onSinistroUp
                       onClick={async () => {
                         setSavingTerceiros(true);
                         try {
-                          const payload = terceiros.map(({ nome, telefone, cnh }) => ({ nome, telefone, cnh }));
+                          const payload = terceiros.map(({ nome, telefone, cpf, cep, endereco, email, numero_sinistro }) => ({ nome, telefone, cpf, cep, endereco, email, numero_sinistro }));
                           await sinistroService.updateSinistro({ id: sinistro.id }, { terceiros: payload });
                           toast({ title: "Terceiros atualizados!", description: "Dados salvos com sucesso." });
                           onSinistroUpdated?.();
