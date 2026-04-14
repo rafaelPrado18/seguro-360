@@ -200,6 +200,11 @@ const Renovacoes = () => {
             toast.success(`Renovação ${updated.apolice} atualizada!`);
           }}
         />
+
+        <NovaRenovacaoDialog
+          open={novaRenovacaoOpen}
+          onOpenChange={setNovaRenovacaoOpen}
+        />
       </div>
     </AppLayout>
   );
