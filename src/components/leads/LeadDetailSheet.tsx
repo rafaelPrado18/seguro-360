@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
 import { clientService, buildClientPayload, type ClientUpdatePayload } from "@/services/clientService";
@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -18,13 +20,14 @@ import { toast } from "@/hooks/use-toast";
 import {
   Phone, Mail, MessageSquare, Calendar, Clock, User,
   Target, DollarSign, FileText, ArrowRight, CheckCircle2,
-  Pencil, Save, X, Send, StickyNote, Trash2, Upload, Loader2, Download
+  Pencil, Save, X, Send, StickyNote, Trash2, Upload, Loader2, Download, ChevronsUpDown, Check
 } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
 import { leadsService } from "@/services/leadsService";
 import type { ExtractedDocumentData } from "@/services/documentAnalysisService";
 import { useLeadHistory } from "@/hooks/useLeads";
-import { formatPhone } from "@/lib/utils";
+import { useAgents } from "@/hooks/useAgents";
+import { formatPhone, cn } from "@/lib/utils";
 import { v4 as uuidv4 } from "uuid";
 
 const statusLabels: Record<Lead["status"], string> = {
@@ -110,6 +113,10 @@ interface LeadDetailSheetProps {
 
 export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLeadDelete }: LeadDetailSheetProps) {
   const navigate = useNavigate();
+  const { data: agents = [] } = useAgents();
+  const [corretorOpen, setCorretorOpen] = useState(false);
+
+  const comerciais = useMemo(() => agents.filter(a => a.isActive), [agents]);
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<Lead>>({});
   const [notes, setNotes] = useState<NoteEntry[]>([]);
@@ -370,7 +377,40 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
                       </SelectContent>
                     </Select>
                   </div>
-                  <EditField label="Corretor Responsável" value={editData.corretor_responsavel || ""} onChange={(v) => setEditData(p => ({ ...p, corretor_responsavel: v || null }))} />
+                  <div>
+                    <label className="text-[11px] text-muted-foreground">Corretor Responsável</label>
+                    <Popover open={corretorOpen} onOpenChange={setCorretorOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" aria-expanded={corretorOpen} className="w-full justify-between h-8 text-sm mt-1 font-normal">
+                          {editData.corretor_responsavel || "Selecionar corretor..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Buscar corretor..." />
+                          <CommandList>
+                            <CommandEmpty>Nenhum corretor encontrado.</CommandEmpty>
+                            <CommandGroup>
+                              {comerciais.map((agent) => (
+                                <CommandItem
+                                  key={agent.userId}
+                                  value={agent.name}
+                                  onSelect={() => {
+                                    setEditData(p => ({ ...p, corretor_responsavel: agent.name }));
+                                    setCorretorOpen(false);
+                                  }}
+                                >
+                                  <Check className={cn("mr-2 h-4 w-4", editData.corretor_responsavel === agent.name ? "opacity-100" : "opacity-0")} />
+                                  {agent.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                   <div>
                     <label className="text-[11px] text-muted-foreground">Observações</label>
                     <Textarea
