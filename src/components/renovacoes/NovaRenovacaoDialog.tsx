@@ -81,28 +81,27 @@ export function NovaRenovacaoDialog({ open, onOpenChange }: NovaRenovacaoDialogP
 
     setSaving(true);
     try {
+      const vencimentoVal = vencimento || selectedApolice.fim || "";
+      const now = new Date();
+      const vencDate = vencimentoVal ? new Date(vencimentoVal) : null;
+      const dias = vencDate ? Math.max(0, Math.ceil((vencDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))) : 0;
+
       await renovacaoClientService.create({
+        id: Date.now(),
         apolice: selectedApolice.id,
         cliente: selectedClient.nome,
-        ramo: selectedApolice.veiculo?.modelo ? "Auto" : "Outros",
+        ramo: selectedApolice.veiculo?.modelo ? "auto" : "outros",
         seguradora: selectedApolice.seguradora || "",
-        vencimento: vencimento || selectedApolice.fim || "",
+        vencimento: vencimentoVal,
         premio: selectedApolice.premio || "",
-        dias: 0,
+        dias,
         status,
         observacoes,
-        veiculos: selectedApolice.veiculo ? [{
-          id: crypto.randomUUID(),
-          marca: selectedApolice.veiculo.fabricante || "",
-          modelo: selectedApolice.veiculo.modelo || "",
-          ano: selectedApolice.veiculo.ano || "",
+        veiculos: selectedApolice.veiculo?.placa && selectedApolice.veiculo.placa !== "—" ? [{
           placa: selectedApolice.veiculo.placa || "",
-          chassi: selectedApolice.veiculo.chassi || "",
+          modelo: selectedApolice.veiculo.modelo || "",
+          ano: Number(selectedApolice.veiculo.ano) || 0,
         }] : [],
-        renovacao_data: {
-          source_apolice_id: selectedApolice.id,
-          client_id: selectedClient.id,
-        },
       });
 
       queryClient.invalidateQueries({ queryKey: ["renovacao-clients"] });
