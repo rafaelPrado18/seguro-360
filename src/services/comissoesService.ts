@@ -35,7 +35,7 @@ export interface ComissoesResponse {
 
 export const comissoesService = {
   async getComissoes(responsavel?: string): Promise<ComissoesResponse> {
-    const url = new URL(`${BASE_URL}/v1/read/comissoes`);
+    const url = new URL(`${BASE_URL}/v1/read/client/commission`);
     if (responsavel) {
       url.searchParams.set("responsavel", responsavel);
     }
