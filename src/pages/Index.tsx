@@ -11,6 +11,7 @@ import { useLeads } from "@/hooks/useLeads";
 import { useApolices } from "@/hooks/useApolices";
 import { useFinanceiro } from "@/hooks/useFinanceiro";
 import { sinistroService, type SinistroCreatePayload } from "@/services/sinistroService";
+import { comissoesService, type ComissoesResponse } from "@/services/comissoesService";
 import {
   Users, FileText, DollarSign, AlertTriangle, RefreshCw, TrendingUp, Target, MessageSquare, Bell, Zap,
   Calendar, Settings, BarChart3, ArrowRight, Clock, UserPlus, FileCheck, PhoneCall, Loader2,
@@ -105,6 +106,17 @@ const Dashboard = () => {
       .finally(() => setSinistrosLoading(false));
   }, []);
 
+  // Fetch comissões do usuário atual
+  const [comissaoData, setComissaoData] = useState<ComissoesResponse | null>(null);
+  const [comissaoLoading, setComissaoLoading] = useState(true);
+  useEffect(() => {
+    const responsavel = isAdmin ? undefined : currentUser?.nome;
+    comissoesService.getComissoes(responsavel)
+      .then(data => setComissaoData(data))
+      .catch(() => setComissaoData(null))
+      .finally(() => setComissaoLoading(false));
+  }, [isAdmin, currentUser?.nome]);
+
   const sinistroSummary = useMemo(() => {
     const count = (status: string) => sinistros.filter(s => s.status === status).length;
     return [
@@ -191,8 +203,17 @@ const Dashboard = () => {
         changeType: pendencias > 0 ? "neutral" as const : "positive" as const, icon: Wallet,
       });
     }
+    // Comissão do mês
+    if (hasScope("leads") || hasScope("comissoes")) {
+      const totalComissao = comissaoData?.resumo_geral?.total_comissao || 0;
+      const formatted = totalComissao.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      kpis.push({
+        title: "Comissão do Mês", value: formatted, change: `${comissaoData?.resumo_geral?.total_registros || 0} apólices`,
+        changeType: totalComissao > 0 ? "positive" as const : "neutral" as const, icon: DollarSign,
+      });
+    }
     return kpis;
-  }, [totalLeads, newLeadsCount, apolices, upcomingRenewals, sinistros, sinistroSummary, financeiroClients, financeiroSummary, hasScope]);
+  }, [totalLeads, newLeadsCount, apolices, upcomingRenewals, sinistros, sinistroSummary, financeiroClients, financeiroSummary, comissaoData, hasScope]);
 
   
   const showRenewals = hasScope("renovacoes");
@@ -201,7 +222,7 @@ const Dashboard = () => {
   const showSinistros = hasScope("sinistros");
   const showFinanceiro = hasScope("comissoes");
 
-  const isLoadingData = leadsLoading || apolicesLoading || sinistrosLoading || financeiroLoading;
+  const isLoadingData = leadsLoading || apolicesLoading || sinistrosLoading || financeiroLoading || comissaoLoading;
 
   return (
     <AppLayout>
