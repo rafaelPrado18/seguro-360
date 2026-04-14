@@ -17,18 +17,6 @@ import {
   ShieldAlert, Wrench, TimerOff, MessageCircle, Wallet, CheckCircle2, XCircle, AlertCircle,
 } from "lucide-react";
 
-// --- Shortcuts ---
-const allShortcuts = [
-  { title: "Leads", desc: "Gerenciar leads e oportunidades", icon: Target, path: "/leads", color: "bg-accent/15 text-accent", scopes: ["leads"] },
-  { title: "Clientes", desc: "Carteira de clientes", icon: Users, path: "/clientes", color: "bg-primary/15 text-primary", scopes: ["clientes"] },
-  { title: "Apólices", desc: "Consultar apólices vigentes", icon: FileText, path: "/apolices", color: "bg-info/15 text-info", scopes: ["apolices"] },
-  { title: "Sinistros", desc: "Acompanhar sinistros", icon: AlertTriangle, path: "/sinistros", color: "bg-destructive/15 text-destructive", scopes: ["sinistros"] },
-  { title: "Renovações", desc: "Renovações pendentes", icon: RefreshCw, path: "/renovacoes", color: "bg-warning/15 text-warning", scopes: ["renovacoes"] },
-  { title: "Comissões", desc: "Extrato de comissões", icon: DollarSign, path: "/comissoes", color: "bg-success/15 text-success", scopes: ["comissoes"] },
-  { title: "WhatsApp", desc: "Mensagens e atendimento", icon: MessageSquare, path: "/whatsapp", color: "bg-accent/15 text-accent", scopes: ["whatsapp"] },
-  { title: "Agenda", desc: "Compromissos e tarefas", icon: Calendar, path: "/agenda", color: "bg-primary/15 text-primary", scopes: [] },
-  { title: "Relatórios", desc: "Análises e relatórios", icon: BarChart3, path: "/relatorios", color: "bg-muted-foreground/15 text-muted-foreground", scopes: [] },
-];
 
 function parseDateBR(dateStr: string): Date | null {
   if (!dateStr) return null;
