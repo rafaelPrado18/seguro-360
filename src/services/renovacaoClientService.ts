@@ -60,12 +60,24 @@ export const renovacaoClientService = {
     if (!response.ok) throw new Error("Erro ao atualizar cliente de renovação");
   },
 
-  async create(data: Omit<RenovacaoClient, "id">): Promise<void> {
+  async create(data: {
+    id: number;
+    apolice: string;
+    cliente: string;
+    ramo: string;
+    seguradora: string;
+    vencimento: string;
+    premio: string;
+    dias: number;
+    status: string;
+    observacoes?: string;
+    veiculos: { placa: string; modelo: string; ano: number }[];
+  }): Promise<void> {
     const response = await fetch(`${BASE_URL}/v1/create/renovacao/client`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "orchestrator": "crm_hatanaka",
+        "orchestrator": "crm",
       },
       body: JSON.stringify(data),
     });
