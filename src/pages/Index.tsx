@@ -194,7 +194,7 @@ const Dashboard = () => {
     return kpis;
   }, [totalLeads, newLeadsCount, apolices, upcomingRenewals, sinistros, sinistroSummary, financeiroClients, financeiroSummary, hasScope]);
 
-  const visibleShortcuts = allShortcuts.filter(s => s.scopes.length === 0 || s.scopes.some(sc => hasScope(sc)));
+  
   const showRenewals = hasScope("renovacoes");
   const showLeadSummary = hasScope("leads");
   const showNewLeadsAlert = !isAdmin && hasScope("leads") && newLeadsCount > 0;
