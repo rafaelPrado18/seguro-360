@@ -113,6 +113,10 @@ interface LeadDetailSheetProps {
 
 export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLeadDelete }: LeadDetailSheetProps) {
   const navigate = useNavigate();
+  const { data: agents = [] } = useAgents();
+  const [corretorOpen, setCorretorOpen] = useState(false);
+
+  const comerciais = useMemo(() => agents.filter(a => a.isActive), [agents]);
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<Lead>>({});
   const [notes, setNotes] = useState<NoteEntry[]>([]);
