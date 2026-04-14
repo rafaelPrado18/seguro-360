@@ -371,7 +371,10 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
                     <Select value={editData.status} onValueChange={(v) => setEditData(p => ({ ...p, status: v as Lead["status"] }))}>
                       <SelectTrigger className="h-8 text-sm mt-1"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {Object.entries(statusLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                        {realStatuses.length > 0
+                          ? realStatuses.sort((a, b) => a.ordem - b.ordem).map(s => <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>)
+                          : Object.entries(statusLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)
+                        }
                       </SelectContent>
                     </Select>
                   </div>
