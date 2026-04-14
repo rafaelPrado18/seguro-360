@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { DocumentUploadSection } from "@/components/shared/DocumentUploadSection";
 import { clientService, buildClientPayload, type ClientUpdatePayload } from "@/services/clientService";
@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -18,13 +20,14 @@ import { toast } from "@/hooks/use-toast";
 import {
   Phone, Mail, MessageSquare, Calendar, Clock, User,
   Target, DollarSign, FileText, ArrowRight, CheckCircle2,
-  Pencil, Save, X, Send, StickyNote, Trash2, Upload, Loader2, Download
+  Pencil, Save, X, Send, StickyNote, Trash2, Upload, Loader2, Download, ChevronsUpDown, Check
 } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
 import { leadsService } from "@/services/leadsService";
 import type { ExtractedDocumentData } from "@/services/documentAnalysisService";
 import { useLeadHistory } from "@/hooks/useLeads";
-import { formatPhone } from "@/lib/utils";
+import { useAgents } from "@/hooks/useAgents";
+import { formatPhone, cn } from "@/lib/utils";
 import { v4 as uuidv4 } from "uuid";
 
 const statusLabels: Record<Lead["status"], string> = {
