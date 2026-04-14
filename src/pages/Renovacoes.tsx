@@ -25,6 +25,7 @@ const Renovacoes = () => {
   const [search, setSearch] = useState("");
   const [selectedRenovacao, setSelectedRenovacao] = useState<RenovacaoData | null>(null);
   const [viewMode, setViewMode] = useState<"table" | "kanban">("kanban");
+  const [novaRenovacaoOpen, setNovaRenovacaoOpen] = useState(false);
   const { data: apiStatuses } = useRenovacaoStatuses();
   const { data: apiClients, isLoading } = useRenovacaoClients();
   const queryClient = useQueryClient();
