@@ -17,18 +17,6 @@ import {
   ShieldAlert, Wrench, TimerOff, MessageCircle, Wallet, CheckCircle2, XCircle, AlertCircle,
 } from "lucide-react";
 
-// --- Shortcuts ---
-const allShortcuts = [
-  { title: "Leads", desc: "Gerenciar leads e oportunidades", icon: Target, path: "/leads", color: "bg-accent/15 text-accent", scopes: ["leads"] },
-  { title: "Clientes", desc: "Carteira de clientes", icon: Users, path: "/clientes", color: "bg-primary/15 text-primary", scopes: ["clientes"] },
-  { title: "Apólices", desc: "Consultar apólices vigentes", icon: FileText, path: "/apolices", color: "bg-info/15 text-info", scopes: ["apolices"] },
-  { title: "Sinistros", desc: "Acompanhar sinistros", icon: AlertTriangle, path: "/sinistros", color: "bg-destructive/15 text-destructive", scopes: ["sinistros"] },
-  { title: "Renovações", desc: "Renovações pendentes", icon: RefreshCw, path: "/renovacoes", color: "bg-warning/15 text-warning", scopes: ["renovacoes"] },
-  { title: "Comissões", desc: "Extrato de comissões", icon: DollarSign, path: "/comissoes", color: "bg-success/15 text-success", scopes: ["comissoes"] },
-  { title: "WhatsApp", desc: "Mensagens e atendimento", icon: MessageSquare, path: "/whatsapp", color: "bg-accent/15 text-accent", scopes: ["whatsapp"] },
-  { title: "Agenda", desc: "Compromissos e tarefas", icon: Calendar, path: "/agenda", color: "bg-primary/15 text-primary", scopes: [] },
-  { title: "Relatórios", desc: "Análises e relatórios", icon: BarChart3, path: "/relatorios", color: "bg-muted-foreground/15 text-muted-foreground", scopes: [] },
-];
 
 function parseDateBR(dateStr: string): Date | null {
   if (!dateStr) return null;
@@ -206,7 +194,7 @@ const Dashboard = () => {
     return kpis;
   }, [totalLeads, newLeadsCount, apolices, upcomingRenewals, sinistros, sinistroSummary, financeiroClients, financeiroSummary, hasScope]);
 
-  const visibleShortcuts = allShortcuts.filter(s => s.scopes.length === 0 || s.scopes.some(sc => hasScope(sc)));
+  
   const showRenewals = hasScope("renovacoes");
   const showLeadSummary = hasScope("leads");
   const showNewLeadsAlert = !isAdmin && hasScope("leads") && newLeadsCount > 0;
@@ -276,28 +264,6 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Shortcuts Grid */}
-        <div>
-          <h3 className="text-sm font-semibold text-foreground mb-3">Acesso Rápido</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {visibleShortcuts.map((shortcut) => (
-              <button
-                key={shortcut.path}
-                onClick={() => navigate(shortcut.path)}
-                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-all hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5"
-              >
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${shortcut.color} shrink-0`}>
-                  <shortcut.icon className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-foreground truncate">{shortcut.title}</p>
-                  <p className="text-[11px] text-muted-foreground truncate">{shortcut.desc}</p>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Lead Summary + Sinistros + Renewals */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
