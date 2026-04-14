@@ -55,6 +55,7 @@ export type FinancialDataSingle = {
   iof: string;
   forma_pagamento: string;
   franquia: string;
+  responsavel?: string;
   coberturas: Array<{ descricao: string; limite: string; premio: string }>;
   lista_parcelas?: ParcelaStatus[];
 };
