@@ -4,10 +4,11 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Mail, Phone, RefreshCw, LayoutGrid, List, Loader2 } from "lucide-react";
+import { Search, Filter, Mail, Phone, RefreshCw, LayoutGrid, List, Loader2, Plus } from "lucide-react";
 import { useState, useMemo } from "react";
 import { RenovacaoDetailDialog, type RenovacaoData } from "@/components/renovacoes/RenovacaoDetailDialog";
 import { RenovacaoKanban, type RenovacaoKanbanColumn } from "@/components/renovacoes/RenovacaoKanban";
+import { NovaRenovacaoDialog } from "@/components/renovacoes/NovaRenovacaoDialog";
 import { useRenovacaoStatuses } from "@/hooks/useRenovacaoStatus";
 import { useRenovacaoClients } from "@/hooks/useRenovacaoClients";
 import { renovacaoClientService, type RenovacaoClient } from "@/services/renovacaoClientService";
@@ -24,6 +25,7 @@ const Renovacoes = () => {
   const [search, setSearch] = useState("");
   const [selectedRenovacao, setSelectedRenovacao] = useState<RenovacaoData | null>(null);
   const [viewMode, setViewMode] = useState<"table" | "kanban">("kanban");
+  const [novaRenovacaoOpen, setNovaRenovacaoOpen] = useState(false);
   const { data: apiStatuses } = useRenovacaoStatuses();
   const { data: apiClients, isLoading } = useRenovacaoClients();
   const queryClient = useQueryClient();
@@ -83,6 +85,13 @@ const Renovacoes = () => {
             <p className="text-sm text-muted-foreground">{renovacoes.length} renovações próximas</p>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
+              onClick={() => setNovaRenovacaoOpen(true)}
+            >
+              <Plus className="h-3.5 w-3.5" /> Nova Renovação
+            </Button>
             <Button
               variant={viewMode === "kanban" ? "default" : "outline"}
               size="sm"
@@ -190,6 +199,11 @@ const Renovacoes = () => {
             setSelectedRenovacao(null);
             toast.success(`Renovação ${updated.apolice} atualizada!`);
           }}
+        />
+
+        <NovaRenovacaoDialog
+          open={novaRenovacaoOpen}
+          onOpenChange={setNovaRenovacaoOpen}
         />
       </div>
     </AppLayout>

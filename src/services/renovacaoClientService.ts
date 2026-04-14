@@ -59,4 +59,16 @@ export const renovacaoClientService = {
     });
     if (!response.ok) throw new Error("Erro ao atualizar cliente de renovação");
   },
+
+  async create(data: Omit<RenovacaoClient, "id">): Promise<void> {
+    const response = await fetch(`${BASE_URL}/v1/create/renovacao/client`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "orchestrator": "crm_hatanaka",
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error("Erro ao criar cliente de renovação");
+  },
 };
