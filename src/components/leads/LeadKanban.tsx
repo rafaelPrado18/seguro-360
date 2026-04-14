@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { GripVertical, MessageSquare, MoreHorizontal, Maximize2, Plus } from "lucide-react";
+import { GripVertical, Phone, MessageSquare, MoreHorizontal, Maximize2, Plus } from "lucide-react";
 import type { Lead } from "@/services/leadsService";
 import type { LeadSubStatus } from "@/services/statusService";
 
