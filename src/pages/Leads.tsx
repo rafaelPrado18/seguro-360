@@ -217,7 +217,7 @@ const Leads = () => {
     return templates.find(t => t.categoria === category && t.status === "aprovado") || null;
   };
 
-  const handleStatusChange = (leadId: string, newStatus: string) => {
+  const handleStatusChange = (leadId: string, newStatus: string, substatus?: string) => {
     const lead = leads.find(l => l.id === leadId);
     if (!lead) return;
     const template = getTemplateForStatus(newStatus);
@@ -226,7 +226,7 @@ const Leads = () => {
       setSelectedTemplate(template);
       setSendMessage(true);
     } else {
-      applyStatusChange(leadId, newStatus, false);
+      applyStatusChange(leadId, newStatus, false, substatus);
     }
   };
 
