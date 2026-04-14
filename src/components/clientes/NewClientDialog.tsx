@@ -44,6 +44,7 @@ const vehiclePolicySchema = z.object({
   iof: z.string().trim().max(20).optional().default(""),
   forma_pagamento: z.string().trim().max(50).optional().default(""),
   franquia: z.string().trim().max(20).optional().default(""),
+  responsavel: z.string().trim().max(100).optional().default(""),
 });
 
 const clientSchema = z.object({
@@ -245,6 +246,7 @@ export function NewClientDialog({ open, onOpenChange, editClient, onClientCreate
             iof: v.iof || "",
             forma_pagamento: v.forma_pagamento || "",
             franquia: v.franquia || "",
+            responsavel: v.responsavel || "",
             coberturas: [],
           })),
     };
