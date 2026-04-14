@@ -176,6 +176,7 @@ export function NewClientDialog({ open, onOpenChange, editClient, onClientCreate
             iof: vp.financial.iof || "",
             forma_pagamento: vp.financial.forma_pagamento || "",
             franquia: vp.financial.franquia || "",
+            responsavel: (vp.financial as any).responsavel || "",
           }))
         : [{ ...emptyVehicle }];
 
