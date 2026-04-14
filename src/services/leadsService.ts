@@ -17,6 +17,7 @@ export interface Lead {
   placa?: string;
   observacoes: string;
   cliente_id: string | null;
+  substatus?: string;
   created_at: string;
   updated_at: string;
 }

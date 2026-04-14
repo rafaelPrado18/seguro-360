@@ -318,10 +318,22 @@ export function LeadDetailSheet({ lead, open, onOpenChange, onLeadUpdate, onLead
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <Badge variant={lead.status === "novo" ? "default" : "outline"} className={`text-[10px] ${statusColors[lead.status]}`}>
-                  {statusLabels[lead.status]}
+                  {(() => {
+                    const matched = realStatuses.find(s => s.key === lead.status);
+                    return matched ? matched.label : (statusLabels[lead.status] || lead.status);
+                  })()}
                 </Badge>
+                {lead.substatus && (() => {
+                  const matched = realStatuses.find(s => s.key === lead.status);
+                  const subLabel = matched?.substatus?.find(ss => ss.key === lead.substatus)?.label || lead.substatus;
+                  return (
+                    <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                      {subLabel}
+                    </Badge>
+                  );
+                })()}
                 <Badge variant="secondary" className="text-[10px]">
                   {origemLabels[lead.origem] || lead.origem}
                 </Badge>
