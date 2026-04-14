@@ -160,7 +160,7 @@ export function buildClientPayload(
       vigencia_inicio: data.vigencia_inicio,
       vigencia_fim: data.vigencia_fim,
       seguradora: data.seguradora,
-      comissao: "",
+      comissao: data.comissao || "",
       classe_bonus: data.classe_bonus,
       iof: data.iof,
       forma_pagamento: data.forma_pagamento,
