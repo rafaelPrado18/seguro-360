@@ -77,6 +77,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
       form.reset();
       setActiveTab("existente");
       setPendingClientName(null);
+      setTerceiros([]);
     }
   }, [open]);
 
