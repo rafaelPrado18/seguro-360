@@ -20,7 +20,12 @@ import { useAgenda } from "@/hooks/useAgenda";
 import { NewClientDialog } from "@/components/clientes/NewClientDialog";
 import { sinistroService } from "@/services/sinistroService";
 import type { SinistroItem } from "./SinistroKanban";
+import type { SinistroTerceiro } from "@/services/sinistroService";
 import type { Client, VehiclePolicy } from "@/services/clientService";
+
+const emptyTerceiro = (): SinistroTerceiro => ({
+  nome: "", telefone: "", cpf: "", cep: "", endereco: "", email: "", numero_sinistro: "",
+});
 
 const sinistroSchema = z.object({
   clienteId: z.string().min(1, "Selecione um cliente"),
