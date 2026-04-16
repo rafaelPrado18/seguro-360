@@ -11,11 +11,15 @@ import { toast } from "@/hooks/use-toast";
 import { sinistroService } from "@/services/sinistroService";
 
 const SINISTRO_COLUMNS: SinistroKanbanColumn[] = [
-  { id: "abertura", label: "Abertura / Agendamento Vistoria", color: "text-info", bgColor: "bg-info" },
+  { id: "abertura", label: "Abertura do Sinistro", color: "text-info", bgColor: "bg-info" },
+  { id: "agendamento_vistoria", label: "Agendamento de Vistoria", color: "text-info", bgColor: "bg-info" },
+  { id: "em_analise", label: "Em Análise", color: "text-warning", bgColor: "bg-warning" },
   { id: "indenizacao_integral", label: "Indenização Integral", color: "text-accent", bgColor: "bg-accent" },
+  { id: "acordo_terceiro", label: "Acordo Terceiro", color: "text-accent", bgColor: "bg-accent" },
+  { id: "lucros_cessantes", label: "Lucros Cessantes", color: "text-accent", bgColor: "bg-accent" },
+  { id: "pendente_retorno", label: "Pendente Retorno Seg/Terc", color: "text-warning", bgColor: "bg-warning" },
   { id: "fora_do_prazo", label: "Fora do Prazo", color: "text-destructive", bgColor: "bg-destructive" },
   { id: "acompanhamento_reparo", label: "Acompanhamento de Reparo", color: "text-success", bgColor: "bg-success" },
-  { id: "whats", label: "WhatsApp", color: "text-primary", bgColor: "bg-primary" },
 ];
 
 const FILTER_OPTIONS = [
