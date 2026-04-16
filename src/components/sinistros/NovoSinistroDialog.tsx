@@ -384,6 +384,38 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
                     )} />
                   </div>
 
+                  {/* Terceiros */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-foreground">Terceiros envolvidos</span>
+                      <Button type="button" variant="outline" size="sm" className="gap-1 h-7 text-xs" onClick={() => setTerceiros(prev => [...prev, emptyTerceiro()])}>
+                        <Plus className="h-3 w-3" /> Adicionar
+                      </Button>
+                    </div>
+                    {terceiros.map((t, idx) => (
+                      <div key={idx} className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-muted-foreground">Terceiro {idx + 1}</span>
+                          <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-destructive hover:text-destructive" onClick={() => setTerceiros(prev => prev.filter((_, i) => i !== idx))}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input placeholder="Nome" className="h-8 text-xs" value={t.nome} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, nome: e.target.value } : x))} />
+                          <Input placeholder="Telefone" className="h-8 text-xs" value={t.telefone} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, telefone: e.target.value } : x))} />
+                          <Input placeholder="CPF" className="h-8 text-xs" value={t.cpf} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, cpf: e.target.value } : x))} />
+                          <Input placeholder="CEP" className="h-8 text-xs" value={t.cep} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, cep: e.target.value } : x))} />
+                          <Input placeholder="Endereço" className="h-8 text-xs col-span-2" value={t.endereco} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, endereco: e.target.value } : x))} />
+                          <Input placeholder="E-mail" className="h-8 text-xs" value={t.email} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, email: e.target.value } : x))} />
+                          <Input placeholder="Nº Sinistro" className="h-8 text-xs" value={t.numero_sinistro} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, numero_sinistro: e.target.value } : x))} />
+                        </div>
+                      </div>
+                    ))}
+                    {terceiros.length === 0 && (
+                      <p className="text-xs text-muted-foreground italic">Nenhum terceiro adicionado.</p>
+                    )}
+                  </div>
+
                   <FormField control={form.control} name="observacoes" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Observações</FormLabel>
