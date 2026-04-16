@@ -14,13 +14,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, UserPlus, Users, Car } from "lucide-react";
+import { Loader2, UserPlus, Users, Car, Plus, Trash2 } from "lucide-react";
 import { useClients } from "@/hooks/useClients";
 import { useAgenda } from "@/hooks/useAgenda";
 import { NewClientDialog } from "@/components/clientes/NewClientDialog";
 import { sinistroService } from "@/services/sinistroService";
 import type { SinistroItem } from "./SinistroKanban";
+import type { SinistroTerceiro } from "@/services/sinistroService";
 import type { Client, VehiclePolicy } from "@/services/clientService";
+
+const emptyTerceiro = (): SinistroTerceiro => ({
+  nome: "", telefone: "", cpf: "", cep: "", endereco: "", email: "", numero_sinistro: "",
+});
 
 const sinistroSchema = z.object({
   clienteId: z.string().min(1, "Selecione um cliente"),
@@ -55,6 +60,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
   const [activeTab, setActiveTab] = useState<"existente" | "novo">("existente");
   const [showNewClientDialog, setShowNewClientDialog] = useState(false);
   const [pendingClientName, setPendingClientName] = useState<string | null>(null);
+  const [terceiros, setTerceiros] = useState<SinistroTerceiro[]>([]);
   const { data: clients, isLoading: loadingClients } = useClients();
   const { createTarefa } = useAgenda();
 
@@ -71,6 +77,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
       form.reset();
       setActiveTab("existente");
       setPendingClientName(null);
+      setTerceiros([]);
     }
   }, [open]);
 
@@ -141,7 +148,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
           placa: vehicle.vehicle.veiculo_placa,
           chassi: vehicle.vehicle.veiculo_chassi,
         } : undefined,
-        terceiros: [] as { nome: string; telefone: string; cpf: string; cep: string; endereco: string; email: string; numero_sinistro: string }[],
+        terceiros: terceiros.filter(t => t.nome.trim() !== ""),
       };
 
       // Enviar para API
@@ -375,6 +382,38 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
                         <FormMessage />
                       </FormItem>
                     )} />
+                  </div>
+
+                  {/* Terceiros */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-foreground">Terceiros envolvidos</span>
+                      <Button type="button" variant="outline" size="sm" className="gap-1 h-7 text-xs" onClick={() => setTerceiros(prev => [...prev, emptyTerceiro()])}>
+                        <Plus className="h-3 w-3" /> Adicionar
+                      </Button>
+                    </div>
+                    {terceiros.map((t, idx) => (
+                      <div key={idx} className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-muted-foreground">Terceiro {idx + 1}</span>
+                          <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-destructive hover:text-destructive" onClick={() => setTerceiros(prev => prev.filter((_, i) => i !== idx))}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input placeholder="Nome" className="h-8 text-xs" value={t.nome} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, nome: e.target.value } : x))} />
+                          <Input placeholder="Telefone" className="h-8 text-xs" value={t.telefone} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, telefone: e.target.value } : x))} />
+                          <Input placeholder="CPF" className="h-8 text-xs" value={t.cpf} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, cpf: e.target.value } : x))} />
+                          <Input placeholder="CEP" className="h-8 text-xs" value={t.cep} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, cep: e.target.value } : x))} />
+                          <Input placeholder="Endereço" className="h-8 text-xs col-span-2" value={t.endereco} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, endereco: e.target.value } : x))} />
+                          <Input placeholder="E-mail" className="h-8 text-xs" value={t.email} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, email: e.target.value } : x))} />
+                          <Input placeholder="Nº Sinistro" className="h-8 text-xs" value={t.numero_sinistro} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, numero_sinistro: e.target.value } : x))} />
+                        </div>
+                      </div>
+                    ))}
+                    {terceiros.length === 0 && (
+                      <p className="text-xs text-muted-foreground italic">Nenhum terceiro adicionado.</p>
+                    )}
                   </div>
 
                   <FormField control={form.control} name="observacoes" render={({ field }) => (
