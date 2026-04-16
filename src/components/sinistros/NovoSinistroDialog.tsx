@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, UserPlus, Users, Car } from "lucide-react";
+import { Loader2, UserPlus, Users, Car, Plus, Trash2 } from "lucide-react";
 import { useClients } from "@/hooks/useClients";
 import { useAgenda } from "@/hooks/useAgenda";
 import { NewClientDialog } from "@/components/clientes/NewClientDialog";
