@@ -60,6 +60,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
   const [activeTab, setActiveTab] = useState<"existente" | "novo">("existente");
   const [showNewClientDialog, setShowNewClientDialog] = useState(false);
   const [pendingClientName, setPendingClientName] = useState<string | null>(null);
+  const [terceiros, setTerceiros] = useState<SinistroTerceiro[]>([]);
   const { data: clients, isLoading: loadingClients } = useClients();
   const { createTarefa } = useAgenda();
 
