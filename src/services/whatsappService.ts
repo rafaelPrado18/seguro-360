@@ -68,6 +68,8 @@ function getCookie(name: string): string | null {
 }  
 
 const userToken = getCookie('userToken')
+const whatsappInstanceId = getCookie('whatsappInstanceId')
+const whatsappInstanceToken = getCookie('whatsappInstanceToken')
 
 export const whatsappService = {
 
@@ -99,11 +101,14 @@ export const whatsappService = {
     myHeaders.append("Content-Type", "application/json");
     myHeaders.append("Authorization", `Bearer ${userToken}`);
     
+    const resolvedInstanceId = payload.instanceId || whatsappInstanceId || undefined;
+
     const raw = JSON.stringify({
       userId: payload.userId,
       chatId: payload.chatId,
       message: payload.message,
-      ...(payload.instanceId ? { instanceId: payload.instanceId } : {}),
+      ...(resolvedInstanceId ? { instanceId: resolvedInstanceId } : {}),
+      ...(whatsappInstanceToken ? { instanceToken: whatsappInstanceToken } : {}),
     });
 
     const response = await fetch(`${BASE_URL}/v1/send/message`, {
@@ -138,12 +143,15 @@ export const whatsappService = {
     const myHeaders = new Headers();
     myHeaders.append("Authorization", `Bearer ${userToken}`);
 
+    const resolvedInstanceId = payload.instanceId || whatsappInstanceId || undefined;
+
     const formdata = new FormData();
     formdata.append("file", payload.file, payload.file.name);
     formdata.append("fileType", fileTypeMap[payload.tipo]);
     formdata.append("userId", payload.userId);
     formdata.append("chatId", payload.chatId);
-    if (payload.instanceId) formdata.append("instanceId", payload.instanceId);
+    if (resolvedInstanceId) formdata.append("instanceId", resolvedInstanceId);
+    if (whatsappInstanceToken) formdata.append("instanceToken", whatsappInstanceToken);
 
     const response = await fetch(`${BASE_URL}/v1/send/media`, {
       method: "POST",
