@@ -58,6 +58,41 @@ const Login = () => {
       });
 
       // ================================
+      // BUSCAR INSTÂNCIA DO WHATSAPP DO USUÁRIO
+      // ================================
+      try {
+        const instancesResponse = await fetch("https://crm-hataseg.com.br/v1/whatsapp/instances", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${data.userToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (instancesResponse.ok) {
+          const instancesData = await instancesResponse.json();
+          const instances = instancesData?.data || [];
+
+          // Encontra a instância em que o usuário é um dos corretores
+          const userInstance = instances.find((inst: { corretores?: string[] }) =>
+            Array.isArray(inst.corretores) && inst.corretores.includes(data.name)
+          );
+
+          if (userInstance) {
+            document.cookie = `whatsappInstanceId=${userInstance.instanceId}; path=/;`;
+            document.cookie = `whatsappInstanceToken=${userInstance.token}; path=/;`;
+            console.log("Instância WhatsApp vinculada:", userInstance.name);
+          } else {
+            console.warn("Nenhuma instância WhatsApp encontrada para o usuário:", data.name);
+          }
+        } else {
+          console.warn("Falha ao buscar instâncias WhatsApp");
+        }
+      } catch (error) {
+        console.error("Erro ao buscar instância WhatsApp:", error);
+      }
+
+      // ================================
       // ATUALIZAR STATUS DO USUÁRIO
       // ================================
       try {
