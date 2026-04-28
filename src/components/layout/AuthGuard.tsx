@@ -64,6 +64,31 @@ export function AuthGuard({ children }: AuthGuardProps) {
     return () => clearInterval(interval);
   }, [location.pathname]);
 
+  // Auto-logout after 45 minutes of inactivity (no clicks)
+  useEffect(() => {
+    if (status !== "ok") return;
+
+    const INACTIVITY_MS = 45 * 60 * 1000;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const resetTimer = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        setStatus("denied");
+      }, INACTIVITY_MS);
+    };
+
+    resetTimer();
+    window.addEventListener("click", resetTimer);
+    window.addEventListener("keydown", resetTimer);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("click", resetTimer);
+      window.removeEventListener("keydown", resetTimer);
+    };
+  }, [status]);
+
   useEffect(() => {
     if (status === "denied") {
       // Clear cookies
