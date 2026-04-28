@@ -186,7 +186,7 @@ export function RedistribuirLeadsDialog({ open, onOpenChange, corretores, onRedi
                     Selecionar todos ({onlineCorretores.length})
                   </label>
                 </div>
-                <ScrollArea className="max-h-[160px]">
+                <ScrollArea className="h-[180px]">
                   <div className="divide-y">
                     {onlineCorretores.map((agent) => (
                       <div
