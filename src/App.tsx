@@ -23,6 +23,7 @@ import GerenciarStatusRenovacao from "./pages/GerenciarStatusRenovacao";
 import Usuarios from "./pages/Usuarios";
 import WhatsAppInstancias from "./pages/WhatsAppInstancias";
 import Empresas from "./pages/Empresas";
+import Ponto from "./pages/Ponto";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -46,6 +47,7 @@ const App = () => (
         <Route path="/financeiro" element={<AuthGuard><ScopeGuard scope="comissoes"><Financeiro /></ScopeGuard></AuthGuard>} />
         <Route path="/renovacoes" element={<AuthGuard><ScopeGuard scope="renovacoes"><Renovacoes /></ScopeGuard></AuthGuard>} />
         <Route path="/agenda" element={<AuthGuard><Agenda /></AuthGuard>} />
+        <Route path="/ponto" element={<AuthGuard><Ponto /></AuthGuard>} />
         <Route path="/relatorios" element={<AuthGuard><Relatorios /></AuthGuard>} />
         <Route path="/usuarios" element={<AuthGuard><AdminGuard><Usuarios /></AdminGuard></AuthGuard>} />
         <Route path="/configuracoes" element={<AuthGuard><AdminGuard><Configuracoes /></AdminGuard></AuthGuard>} />
