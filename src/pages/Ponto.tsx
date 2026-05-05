@@ -138,14 +138,9 @@ const Ponto = () => {
     }
   };
 
-  const historyRecords = useMemo(
-    () => records.filter(r => r.date !== today),
-    [records, today]
-  );
-
   const groupedHistory = useMemo(() => {
     const map = new Map<string, PunchRecord[]>();
-    historyRecords.forEach(r => {
+    records.forEach(r => {
       const key = `${r.userId}__${r.date}`;
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(r);
