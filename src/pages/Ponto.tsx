@@ -6,22 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LogIn, Coffee, Utensils, LogOut, Clock, CalendarDays } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LogIn, Coffee, Utensils, LogOut, Clock, CalendarDays, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useRole } from "@/contexts/RoleContext";
+import { pontoService, PunchRecord } from "@/services/pontoService";
 
-type PunchType = "entrada" | "saida_almoco" | "retorno_almoco" | "saida";
-
-interface PunchRecord {
-  userId: string;
-  userName: string;
-  date: string; // YYYY-MM-DD
-  type: PunchType;
-  time: string; // HH:mm:ss
-  iso: string;
-}
-
-const STORAGE_KEY = "hataseg_ponto_records";
+type PunchType = PunchRecord["type"];
 
 const PUNCH_LABEL: Record<PunchType, string> = {
   entrada: "Entrada",
@@ -40,19 +32,13 @@ const PUNCH_ICON: Record<PunchType, typeof LogIn> = {
 };
 
 function todayKey() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-function loadRecords(): PunchRecord[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  } catch {
-    return [];
-  }
-}
-
-function saveRecords(records: PunchRecord[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+function firstDayOfMonth() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
 }
 
 function diffHours(records: PunchRecord[]): string {
@@ -74,9 +60,13 @@ function diffHours(records: PunchRecord[]): string {
 
 const Ponto = () => {
   const { currentUser, isAdmin } = useRole();
-  const [records, setRecords] = useState<PunchRecord[]>(loadRecords());
+  const [records, setRecords] = useState<PunchRecord[]>([]);
   const [now, setNow] = useState(new Date());
   const [filterUser, setFilterUser] = useState<string>("__me__");
+  const [loading, setLoading] = useState(false);
+  const [punching, setPunching] = useState<PunchType | null>(null);
+  const [startDate, setStartDate] = useState(firstDayOfMonth());
+  const [endDate, setEndDate] = useState(todayKey());
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
@@ -84,6 +74,33 @@ const Ponto = () => {
   }, []);
 
   const today = todayKey();
+
+  const fetchRecords = async () => {
+    setLoading(true);
+    try {
+      const params: { userId?: string; startDate?: string; endDate?: string } = {
+        startDate,
+        endDate,
+      };
+      if (!isAdmin || filterUser === "__me__") {
+        params.userId = currentUser.id;
+      } else if (filterUser !== "__all__") {
+        params.userId = filterUser;
+      }
+      const data = await pontoService.list(params);
+      setRecords(data);
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Erro ao buscar registros", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecords();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterUser, startDate, endDate, currentUser.id, isAdmin]);
 
   const myToday = useMemo(
     () => records.filter(r => r.userId === currentUser.id && r.date === today),
@@ -94,7 +111,7 @@ const Ponto = () => {
     return PUNCH_ORDER.find(t => !myToday.some(r => r.type === t));
   }, [myToday]);
 
-  const handlePunch = (type: PunchType) => {
+  const handlePunch = async (type: PunchType) => {
     if (myToday.some(r => r.type === type)) {
       toast({ title: "Batida já registrada", description: PUNCH_LABEL[type], variant: "destructive" });
       return;
@@ -108,22 +125,23 @@ const Ponto = () => {
       time: d.toTimeString().slice(0, 8),
       iso: d.toISOString(),
     };
-    const updated = [...records, newRec];
-    setRecords(updated);
-    saveRecords(updated);
-    toast({ title: `${PUNCH_LABEL[type]} registrada`, description: `às ${newRec.time}` });
+    setPunching(type);
+    try {
+      await pontoService.create(newRec);
+      toast({ title: `${PUNCH_LABEL[type]} registrada`, description: `às ${newRec.time}` });
+      await fetchRecords();
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Erro ao registrar ponto", variant: "destructive" });
+    } finally {
+      setPunching(null);
+    }
   };
 
-  // History data
-  const historyRecords = useMemo(() => {
-    let base = records;
-    if (!isAdmin || filterUser === "__me__") {
-      base = base.filter(r => r.userId === currentUser.id);
-    } else if (filterUser !== "__all__") {
-      base = base.filter(r => r.userId === filterUser);
-    }
-    return base.filter(r => r.date !== today);
-  }, [records, isAdmin, filterUser, currentUser.id, today]);
+  const historyRecords = useMemo(
+    () => records.filter(r => r.date !== today),
+    [records, today]
+  );
 
   const groupedHistory = useMemo(() => {
     const map = new Map<string, PunchRecord[]>();
@@ -200,10 +218,10 @@ const Ponto = () => {
                       <Button
                         className="w-full"
                         variant={isNext ? "default" : "outline"}
-                        disabled={!!rec}
+                        disabled={!!rec || punching !== null}
                         onClick={() => handlePunch(type)}
                       >
-                        Bater Ponto
+                        {punching === type ? <Loader2 className="h-4 w-4 animate-spin" /> : "Bater Ponto"}
                       </Button>
                     </CardContent>
                   </Card>
@@ -237,23 +255,36 @@ const Ponto = () => {
           </TabsContent>
 
           <TabsContent value="historico" className="space-y-4">
-            {isAdmin && (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">Filtrar por usuário:</span>
-                <Select value={filterUser} onValueChange={setFilterUser}>
-                  <SelectTrigger className="w-64">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__me__">Meus registros</SelectItem>
-                    <SelectItem value="__all__">Todos os usuários</SelectItem>
-                    {allUsers.map(u => (
-                      <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="flex items-end gap-3 flex-wrap">
+              {isAdmin && (
+                <div>
+                  <Label className="text-xs text-muted-foreground">Usuário</Label>
+                  <Select value={filterUser} onValueChange={setFilterUser}>
+                    <SelectTrigger className="w-64">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__me__">Meus registros</SelectItem>
+                      <SelectItem value="__all__">Todos os usuários</SelectItem>
+                      {allUsers.map(u => (
+                        <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              <div>
+                <Label className="text-xs text-muted-foreground">Início</Label>
+                <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-44" />
               </div>
-            )}
+              <div>
+                <Label className="text-xs text-muted-foreground">Fim</Label>
+                <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-44" />
+              </div>
+              <Button variant="outline" onClick={fetchRecords} disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Atualizar"}
+              </Button>
+            </div>
 
             <Card>
               <CardContent className="p-0">
@@ -270,7 +301,13 @@ const Ponto = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {groupedHistory.length === 0 ? (
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={isAdmin ? 7 : 6} className="text-center py-10">
+                          <Loader2 className="h-5 w-5 animate-spin inline" />
+                        </TableCell>
+                      </TableRow>
+                    ) : groupedHistory.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={isAdmin ? 7 : 6} className="text-center py-10 text-muted-foreground">
                           Nenhum registro anterior
