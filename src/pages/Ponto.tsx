@@ -151,7 +151,7 @@ const Ponto = () => {
         return { userId, userName: recs[0].userName, date, records: recs };
       })
       .sort((a, b) => b.date.localeCompare(a.date));
-  }, [historyRecords]);
+  }, [records]);
 
   const allUsers = useMemo(() => {
     const map = new Map<string, string>();
