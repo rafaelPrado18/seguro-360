@@ -20,6 +20,7 @@ const FUNCTION_LABELS: Record<string, string> = {
   corretor_renovacao: "Corretor — Renovação",
   corretor_sinistro: "Corretor — Sinistro",
   corretor_financeiro: "Corretor — Financeiro",
+  corretor_emissao: "Corretor — Emissão",
 };
 
 const FUNCTION_COLORS: Record<string, string> = {
@@ -28,6 +29,7 @@ const FUNCTION_COLORS: Record<string, string> = {
   corretor_renovacao: "bg-info text-info-foreground",
   corretor_sinistro: "bg-destructive text-destructive-foreground",
   corretor_financeiro: "bg-success text-success-foreground",
+  corretor_emissao: "bg-warning text-warning-foreground",
 };
 
 const VINCULO_LABELS: Record<string, string> = {
@@ -231,6 +233,7 @@ const Usuarios = () => {
                         <SelectItem value="corretor_renovacao">Corretor — Renovação</SelectItem>
                         <SelectItem value="corretor_sinistro">Corretor — Sinistro</SelectItem>
                         <SelectItem value="corretor_financeiro">Corretor — Financeiro</SelectItem>
+                        <SelectItem value="corretor_emissao">Corretor — Emissão</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
