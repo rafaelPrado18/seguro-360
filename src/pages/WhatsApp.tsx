@@ -199,10 +199,18 @@ const WhatsApp = () => {
   const archiveMutation = useArchiveConversation();
   const markAsReadMutation = useMarkAsRead();
 
+  const parseMsgDate = (s?: string) => {
+    if (!s) return 0;
+    const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/);
+    if (m) {
+      const [, dd, mm, yyyy, hh, mi, ss] = m;
+      return new Date(+yyyy, +mm - 1, +dd, +hh, +mi, +ss).getTime();
+    }
+    const t = new Date(s).getTime();
+    return isNaN(t) ? 0 : t;
+  };
   const contacts = [...(conversationsData?.data || [])].sort((a, b) => {
-    const ta = a.ultima_mensagem_at ? new Date(a.ultima_mensagem_at).getTime() : 0;
-    const tb = b.ultima_mensagem_at ? new Date(b.ultima_mensagem_at).getTime() : 0;
-    return tb - ta;
+    return parseMsgDate(b.ultima_mensagem_at) - parseMsgDate(a.ultima_mensagem_at);
   });
   const filteredContacts = searchQuery.trim()
     ? contacts.filter(c =>
