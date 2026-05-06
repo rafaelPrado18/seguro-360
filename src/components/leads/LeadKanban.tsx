@@ -14,6 +14,7 @@ export interface KanbanColumn {
   label: string;
   color: string;
   bgColor: string;
+  tipo?: "ativo" | "ganho" | "perdido";
   substatus?: LeadSubStatus[];
 }
 
