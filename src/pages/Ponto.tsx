@@ -325,18 +325,20 @@ const Ponto = () => {
                       <TableHead>Retorno Almoço</TableHead>
                       <TableHead>Saída</TableHead>
                       <TableHead>Total</TableHead>
+                      <TableHead>Hora Extra</TableHead>
+                      <TableHead>Atrasos</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {loading ? (
                       <TableRow>
-                        <TableCell colSpan={isAdmin ? 7 : 6} className="text-center py-10">
+                        <TableCell colSpan={isAdmin ? 9 : 8} className="text-center py-10">
                           <Loader2 className="h-5 w-5 animate-spin inline" />
                         </TableCell>
                       </TableRow>
                     ) : groupedHistory.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={isAdmin ? 7 : 6} className="text-center py-10 text-muted-foreground">
+                        <TableCell colSpan={isAdmin ? 9 : 8} className="text-center py-10 text-muted-foreground">
                           Nenhum registro anterior
                         </TableCell>
                       </TableRow>
@@ -354,6 +356,8 @@ const Ponto = () => {
                             <TableCell>{t("retorno_almoco")}</TableCell>
                             <TableCell>{t("saida")}</TableCell>
                             <TableCell className="font-semibold">{diffHours(g.records)}</TableCell>
+                            <TableCell className="text-emerald-600 font-medium">{overtime(g.records)}</TableCell>
+                            <TableCell className="text-destructive font-medium">{atraso(g.records)}</TableCell>
                           </TableRow>
                         );
                       })
