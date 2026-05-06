@@ -13,6 +13,7 @@ export interface Lead {
   status: "novo" | "em_contato" | "qualificado" | "proposta_enviada" | "convertido" | "perdido";
   corretor_responsavel: string | null;
   valor_estimado: number;
+  comissao?: number;
   modelo?: string;
   placa?: string;
   observacoes: string;
