@@ -574,22 +574,22 @@ const WhatsApp = () => {
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
                       {c.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}
                     </div>
-                    {c.nao_lidas > 0 && (
+                    {(c.nao_lidas > 0 || (c as any).nao_lida) && (
                       <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-success text-[9px] font-bold text-success-foreground flex items-center justify-center">
-                        {c.nao_lidas}
+                        {c.nao_lidas > 0 ? c.nao_lidas : ""}
                       </span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline">
-                      <p className={`text-sm truncate ${c.nao_lidas > 0 ? "font-semibold text-foreground" : "font-medium text-foreground"}`}>{c.nome}</p>
+                      <p className={`text-sm truncate ${(c.nao_lidas > 0 || (c as any).nao_lida) ? "font-semibold text-foreground" : "font-medium text-foreground"}`}>{c.nome}</p>
                       <span className="text-[10px] text-muted-foreground flex-shrink-0 ml-2">{formatTime(c.ultima_mensagem_at)}</span>
                     </div>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      {c.nao_lidas > 0 && (
+                      {(c.nao_lidas > 0 || (c as any).nao_lida) && (
                         <span className="h-2 w-2 rounded-full bg-success flex-shrink-0" aria-label="Mensagem não lida" />
                       )}
-                      <p className={`text-xs truncate ${c.nao_lidas > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                      <p className={`text-xs truncate ${(c.nao_lidas > 0 || (c as any).nao_lida) ? "text-foreground font-medium" : "text-muted-foreground"}`}>
                           {c.ultima_mensagem ? c.ultima_mensagem : "lead novo"}
                       </p>
                     </div>
