@@ -29,7 +29,7 @@ import NotFound from "./pages/NotFound";
 const App = () => (
   <TooltipProvider>
     <Toaster />
-    <Sonner />
+    <Sonner position="top-right" richColors closeButton expand visibleToasts={5} duration={8000} />
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
