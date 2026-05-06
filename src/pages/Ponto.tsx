@@ -41,21 +41,53 @@ function firstDayOfMonth() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
 }
 
-function diffHours(records: PunchRecord[]): string {
+const STANDARD_WORK_MS = 8 * 3600000;
+const EXPECTED_ENTRY_HOUR = 8;
+const EXPECTED_ENTRY_MIN = 0;
+
+function totalWorkedMs(records: PunchRecord[]): number | null {
   const get = (t: PunchType) => records.find(r => r.type === t);
   const e = get("entrada");
   const sa = get("saida_almoco");
   const ra = get("retorno_almoco");
   const s = get("saida");
-  if (!e) return "—";
-  let totalMs = 0;
+  if (!e) return null;
   const end = s ? new Date(s.iso).getTime() : Date.now();
-  totalMs = end - new Date(e.iso).getTime();
+  let totalMs = end - new Date(e.iso).getTime();
   if (sa && ra) totalMs -= new Date(ra.iso).getTime() - new Date(sa.iso).getTime();
   if (totalMs < 0) totalMs = 0;
-  const h = Math.floor(totalMs / 3600000);
-  const m = Math.floor((totalMs % 3600000) / 60000);
+  return totalMs;
+}
+
+function formatHM(ms: number): string {
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
   return `${h}h ${m}m`;
+}
+
+function diffHours(records: PunchRecord[]): string {
+  const ms = totalWorkedMs(records);
+  if (ms == null) return "—";
+  return formatHM(ms);
+}
+
+function overtime(records: PunchRecord[]): string {
+  const ms = totalWorkedMs(records);
+  if (ms == null) return "—";
+  const extra = ms - STANDARD_WORK_MS;
+  if (extra <= 0) return "0h 0m";
+  return formatHM(extra);
+}
+
+function atraso(records: PunchRecord[]): string {
+  const e = records.find(r => r.type === "entrada");
+  if (!e) return "—";
+  const d = new Date(e.iso);
+  const expected = new Date(d);
+  expected.setHours(EXPECTED_ENTRY_HOUR, EXPECTED_ENTRY_MIN, 0, 0);
+  const diff = d.getTime() - expected.getTime();
+  if (diff <= 0) return "0h 0m";
+  return formatHM(diff);
 }
 
 const Ponto = () => {
@@ -164,7 +196,7 @@ const Ponto = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Batimento de Ponto</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Registro de Ponto</h1>
             <p className="text-muted-foreground">Registre suas entradas e saídas do expediente</p>
           </div>
           <Card className="px-4 py-3">
@@ -293,18 +325,20 @@ const Ponto = () => {
                       <TableHead>Retorno Almoço</TableHead>
                       <TableHead>Saída</TableHead>
                       <TableHead>Total</TableHead>
+                      <TableHead>Hora Extra</TableHead>
+                      <TableHead>Atrasos</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {loading ? (
                       <TableRow>
-                        <TableCell colSpan={isAdmin ? 7 : 6} className="text-center py-10">
+                        <TableCell colSpan={isAdmin ? 9 : 8} className="text-center py-10">
                           <Loader2 className="h-5 w-5 animate-spin inline" />
                         </TableCell>
                       </TableRow>
                     ) : groupedHistory.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={isAdmin ? 7 : 6} className="text-center py-10 text-muted-foreground">
+                        <TableCell colSpan={isAdmin ? 9 : 8} className="text-center py-10 text-muted-foreground">
                           Nenhum registro anterior
                         </TableCell>
                       </TableRow>
@@ -322,6 +356,8 @@ const Ponto = () => {
                             <TableCell>{t("retorno_almoco")}</TableCell>
                             <TableCell>{t("saida")}</TableCell>
                             <TableCell className="font-semibold">{diffHours(g.records)}</TableCell>
+                            <TableCell className="text-emerald-600 font-medium">{overtime(g.records)}</TableCell>
+                            <TableCell className="text-destructive font-medium">{atraso(g.records)}</TableCell>
                           </TableRow>
                         );
                       })
