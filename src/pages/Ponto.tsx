@@ -42,8 +42,9 @@ function firstDayOfMonth() {
 }
 
 const STANDARD_WORK_MS = 8 * 3600000;
-const EXPECTED_ENTRY_HOUR = 8;
+const EXPECTED_ENTRY_HOUR = 9;
 const EXPECTED_ENTRY_MIN = 0;
+const ENTRY_TOLERANCE_MS = 15 * 60000;
 
 function totalWorkedMs(records: PunchRecord[]): number | null {
   const get = (t: PunchType) => records.find(r => r.type === t);
@@ -86,7 +87,7 @@ function atraso(records: PunchRecord[]): string {
   const expected = new Date(d);
   expected.setHours(EXPECTED_ENTRY_HOUR, EXPECTED_ENTRY_MIN, 0, 0);
   const diff = d.getTime() - expected.getTime();
-  if (diff <= 0) return "0h 0m";
+  if (diff <= ENTRY_TOLERANCE_MS) return "0h 0m";
   return formatHM(diff);
 }
 
