@@ -69,6 +69,7 @@ export const ROLE_EMOJI: Record<UserRole, string> = {
   corretor_renovacao: "🔄",
   corretor_sinistro: "⚠️",
   corretor_financeiro: "💰",
+  corretor_emissao: "📄",
 };
 
 /** Which data scopes each role focuses on */
@@ -79,6 +80,7 @@ export const ROLE_SCOPES: Record<UserRole, string[]> = {
   corretor_renovacao: ["renovacoes", "apolices", "clientes", "whatsapp"],
   corretor_sinistro: ["sinistros", "clientes", "apolices", "whatsapp"],
   corretor_financeiro: ["comissoes", "relatorios", "apolices", "clientes"],
+  corretor_emissao: ["leads", "whatsapp", "clientes", "apolices", "renovacoes", "sinistros", "comissoes", "relatorios"],
 };
 
 interface RoleContextType {
