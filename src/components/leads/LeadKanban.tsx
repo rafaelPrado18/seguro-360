@@ -167,6 +167,16 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                         <span className="text-xs font-medium text-foreground">{lead.modelo || "Sem placa"}</span>
                         <span className="text-[11px] text-muted-foreground">{lead.telefone || "Sem telefone"}</span>
                       </div>
+                      {(lead.status === "convertido" || lead.status === "perdido") && (
+                        <div className="flex items-center justify-between mt-2 px-2 py-1 rounded bg-accent/10 border border-accent/20">
+                          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Comissão</span>
+                          <span className="text-xs font-bold text-accent">
+                            {typeof lead.comissao === "number"
+                              ? lead.comissao.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                              : "—"}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
                         <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">
                           {lead.corretor_responsavel || "Sem corretor"}
