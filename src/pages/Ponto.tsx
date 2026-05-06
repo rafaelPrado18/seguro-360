@@ -12,6 +12,7 @@ import { LogIn, Coffee, Utensils, LogOut, Clock, CalendarDays, Loader2 } from "l
 import { toast } from "@/hooks/use-toast";
 import { useRole } from "@/contexts/RoleContext";
 import { pontoService, PunchRecord } from "@/services/pontoService";
+import { agentsService } from "@/services/agentsService";
 
 type PunchType = PunchRecord["type"];
 
@@ -161,6 +162,19 @@ const Ponto = () => {
     setPunching(type);
     try {
       await pontoService.create(newRec);
+      // Sync agent online/offline status with punch type
+      const newStatus: "online" | "offline" =
+        type === "entrada" || type === "retorno_almoco" ? "online" : "offline";
+      try {
+        await agentsService.updateAgentStatus({
+          agentId: currentUser.id,
+          status: newStatus,
+          userId: currentUser.id,
+        });
+        document.cookie = `userStatus=${newStatus}; path=/;`;
+      } catch (e) {
+        console.error("Erro ao atualizar status do agente:", e);
+      }
       toast({ title: `${PUNCH_LABEL[type]} registrada`, description: `às ${newRec.time}` });
       await fetchRecords();
     } catch (err) {
