@@ -208,9 +208,13 @@ export const whatsappService = {
     if (!response.ok) throw new Error("Erro ao arquivar conversa");
   },
 
-  // POST /api/whatsapp/conversations/:id/read - Marcar como lida
-  async markAsRead(contatoId: string): Promise<void> {
-    const response = await fetch(`${BASE_URL}/whatsapp/conversations/${contatoId}/read`, { method: "POST" });
+  // POST /v1/mark/as/read/message - Marcar mensagens como lidas
+  async markAsRead(telefone: string): Promise<void> {
+    const response = await fetch(`${BASE_URL}/v1/mark/as/read/message`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", orchestrator: "crm-hatanaka" },
+      body: JSON.stringify({ telefone }),
+    });
     if (!response.ok) throw new Error("Erro ao marcar como lida");
   },
 
