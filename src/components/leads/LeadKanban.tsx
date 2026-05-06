@@ -172,7 +172,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                           {lead.corretor_responsavel || "Sem corretor"}
                         </span>
                         <div className="flex gap-0.5">
-                          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); navigate("/whatsapp"); }}>
+                          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); navigate("/whatsapp", { state: { telefone: lead.telefone, nome: lead.nome, leadId: lead.id } }); }}>
                             <MessageSquare className="h-3 w-3 text-muted-foreground" />
                           </Button>
                         </div>
@@ -274,11 +274,11 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
                     {lead.telefone && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); navigate("/whatsapp"); }}>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); navigate("/whatsapp", { state: { telefone: lead.telefone, nome: lead.nome, leadId: lead.id } }); }}>
                         <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>
                     )}
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); navigate("/whatsapp"); }}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); navigate("/whatsapp", { state: { telefone: lead.telefone, nome: lead.nome, leadId: lead.id } }); }}>
                       <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
                   </div>
