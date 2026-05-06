@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -205,6 +206,36 @@ const WhatsApp = () => {
         c.telefone?.includes(searchQuery)
       )
     : contacts;
+
+  // Auto-open chat when navigated with phone in state
+  const location = useLocation();
+  const autoOpenedRef = useRef<string | null>(null);
+  useEffect(() => {
+    const state = location.state as { telefone?: string; nome?: string; leadId?: string } | null;
+    const tel = String(state?.telefone || "").replace(/\D/g, "");
+    if (!tel || autoOpenedRef.current === tel) return;
+    if (selectedContact && selectedContact.telefone.replace(/\D/g, "").endsWith(tel)) {
+      autoOpenedRef.current = tel;
+      return;
+    }
+    const match = contacts.find((c) => c.telefone.replace(/\D/g, "").endsWith(tel));
+    const contact: WhatsAppContact = match ?? {
+      id: uuidv4(),
+      nome: state?.nome || "Contato",
+      telefone: tel,
+      foto_url: null,
+      lead_id: state?.leadId || null,
+      cliente_id: null,
+      ultima_mensagem: "",
+      ultima_mensagem_at: new Date().toISOString(),
+      nao_lidas: 0,
+      status: "ativo" as const,
+      tags: [],
+    };
+    autoOpenedRef.current = tel;
+    setSelectedContact(contact);
+    setShowMobileContacts(false);
+  }, [location.state, contacts, selectedContact]);
 
   // Local optimistic messages
   const [optimisticMsgs, setOptimisticMsgs] = useState<ExtMessage[]>([]);
