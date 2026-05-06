@@ -279,8 +279,9 @@ const WhatsApp = () => {
 
   // Auto mark as read when selecting contact
   useEffect(() => {
-    if (selectedContact && selectedContact.nao_lidas > 0) {
-      markAsReadMutation.mutate(selectedContact.id);
+    if (selectedContact && (selectedContact.nao_lidas > 0 || (selectedContact as any).nao_lida)) {
+      const tel = selectedContact.telefone.replace(/\D/g, "");
+      markAsReadMutation.mutate(tel);
     }
   }, [selectedContact?.id]);
 
