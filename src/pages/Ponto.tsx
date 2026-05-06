@@ -41,21 +41,53 @@ function firstDayOfMonth() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
 }
 
-function diffHours(records: PunchRecord[]): string {
+const STANDARD_WORK_MS = 8 * 3600000;
+const EXPECTED_ENTRY_HOUR = 8;
+const EXPECTED_ENTRY_MIN = 0;
+
+function totalWorkedMs(records: PunchRecord[]): number | null {
   const get = (t: PunchType) => records.find(r => r.type === t);
   const e = get("entrada");
   const sa = get("saida_almoco");
   const ra = get("retorno_almoco");
   const s = get("saida");
-  if (!e) return "—";
-  let totalMs = 0;
+  if (!e) return null;
   const end = s ? new Date(s.iso).getTime() : Date.now();
-  totalMs = end - new Date(e.iso).getTime();
+  let totalMs = end - new Date(e.iso).getTime();
   if (sa && ra) totalMs -= new Date(ra.iso).getTime() - new Date(sa.iso).getTime();
   if (totalMs < 0) totalMs = 0;
-  const h = Math.floor(totalMs / 3600000);
-  const m = Math.floor((totalMs % 3600000) / 60000);
+  return totalMs;
+}
+
+function formatHM(ms: number): string {
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
   return `${h}h ${m}m`;
+}
+
+function diffHours(records: PunchRecord[]): string {
+  const ms = totalWorkedMs(records);
+  if (ms == null) return "—";
+  return formatHM(ms);
+}
+
+function overtime(records: PunchRecord[]): string {
+  const ms = totalWorkedMs(records);
+  if (ms == null) return "—";
+  const extra = ms - STANDARD_WORK_MS;
+  if (extra <= 0) return "0h 0m";
+  return formatHM(extra);
+}
+
+function atraso(records: PunchRecord[]): string {
+  const e = records.find(r => r.type === "entrada");
+  if (!e) return "—";
+  const d = new Date(e.iso);
+  const expected = new Date(d);
+  expected.setHours(EXPECTED_ENTRY_HOUR, EXPECTED_ENTRY_MIN, 0, 0);
+  const diff = d.getTime() - expected.getTime();
+  if (diff <= 0) return "0h 0m";
+  return formatHM(diff);
 }
 
 const Ponto = () => {
