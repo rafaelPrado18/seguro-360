@@ -199,7 +199,11 @@ const WhatsApp = () => {
   const archiveMutation = useArchiveConversation();
   const markAsReadMutation = useMarkAsRead();
 
-  const contacts = conversationsData?.data || [];
+  const contacts = [...(conversationsData?.data || [])].sort((a, b) => {
+    const ta = a.ultima_mensagem_at ? new Date(a.ultima_mensagem_at).getTime() : 0;
+    const tb = b.ultima_mensagem_at ? new Date(b.ultima_mensagem_at).getTime() : 0;
+    return tb - ta;
+  });
   const filteredContacts = searchQuery.trim()
     ? contacts.filter(c =>
         c.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
