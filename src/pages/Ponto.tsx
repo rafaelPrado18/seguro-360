@@ -87,7 +87,7 @@ function atraso(records: PunchRecord[]): string {
   const expected = new Date(d);
   expected.setHours(EXPECTED_ENTRY_HOUR, EXPECTED_ENTRY_MIN, 0, 0);
   const diff = d.getTime() - expected.getTime();
-  if (diff <= 0) return "0h 0m";
+  if (diff <= ENTRY_TOLERANCE_MS) return "0h 0m";
   return formatHM(diff);
 }
 
