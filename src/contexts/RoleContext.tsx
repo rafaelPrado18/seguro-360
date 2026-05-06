@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-export type UserRole = "super_admin" | "administrador" | "corretor" | "corretor_renovacao" | "corretor_sinistro" | "corretor_financeiro";
+export type UserRole = "super_admin" | "administrador" | "corretor" | "corretor_renovacao" | "corretor_sinistro" | "corretor_financeiro" | "corretor_emissao";
 export type BrokerStatus = "online" | "offline";
 
 export interface UserProfile {
@@ -19,10 +19,12 @@ const FUNCTION_TO_ROLE: Record<string, UserRole> = {
   "Corretor — Renovação": "corretor_renovacao",
   "Corretor — Sinistro": "corretor_sinistro",
   "Corretor — Financeiro": "corretor_financeiro",
+  "Corretor — Emissão": "corretor_emissao",
   "corretor": "corretor",
   "corretor_renovacao": "corretor_renovacao",
   "corretor_sinistro": "corretor_sinistro",
   "corretor_financeiro": "corretor_financeiro",
+  "corretor_emissao": "corretor_emissao",
   "super_admin": "super_admin"
 };
 
@@ -57,6 +59,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   corretor_renovacao: "Corretor — Renovação",
   corretor_sinistro: "Corretor — Sinistro",
   corretor_financeiro: "Corretor — Financeiro",
+  corretor_emissao: "Corretor — Emissão",
 };
 
 export const ROLE_EMOJI: Record<UserRole, string> = {
