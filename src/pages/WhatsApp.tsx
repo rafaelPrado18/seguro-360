@@ -516,7 +516,13 @@ const WhatsApp = () => {
     }
   };
 
-  const formatTime = (d: string) => new Date(d).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  const formatTime = (d: string) => {
+    if (!d) return "";
+    const m = d.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})/);
+    if (m) return `${m[4]}:${m[5]}`;
+    const dt = new Date(d);
+    return isNaN(dt.getTime()) ? "" : dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  };
   const formatRecTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
   const StatusIcon = ({ status }: { status: WhatsAppMessage["status"] }) => {
