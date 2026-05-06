@@ -14,6 +14,7 @@ export interface KanbanColumn {
   label: string;
   color: string;
   bgColor: string;
+  tipo?: "ativo" | "ganho" | "perdido";
   substatus?: LeadSubStatus[];
 }
 
@@ -167,7 +168,7 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                         <span className="text-xs font-medium text-foreground">{lead.modelo || "Sem placa"}</span>
                         <span className="text-[11px] text-muted-foreground">{lead.telefone || "Sem telefone"}</span>
                       </div>
-                      {(lead.status === "convertido" || lead.status === "perdido") && (
+                      {(col.tipo === "ganho" || col.tipo === "perdido") && (
                         <div className="flex items-center justify-between mt-2 px-2 py-1 rounded bg-accent/10 border border-accent/20">
                           <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Comissão</span>
                           <span className="text-xs font-bold text-accent">
