@@ -98,6 +98,7 @@ const Usuarios = () => {
       name: u.name,
       email: u.email,
       telefone: u.telefone,
+      documentNumber: u.documentNumber || "",
       function: u.function,
       vinculo: u.vinculo,
       birthDate: u.birthDate ? u.birthDate.split("T")[0] : "",
