@@ -76,7 +76,8 @@ function diffHours(records: PunchRecord[]): string {
   return formatHM(ms);
 }
 
-function overtime(records: PunchRecord[]): string {
+function overtime(records: PunchRecord[], skip = false): string {
+  if (skip) return "—";
   const ms = totalWorkedMs(records);
   if (ms == null) return "—";
   const extra = ms - STANDARD_WORK_MS;
