@@ -463,6 +463,9 @@ const Ponto = () => {
               <Button variant="outline" onClick={fetchRecords} disabled={loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Atualizar"}
               </Button>
+              <Button variant="outline" onClick={handleExportPdf} disabled={loading || groupedHistory.length === 0} className="gap-2">
+                <FileText className="h-4 w-4" /> Exportar PDF
+              </Button>
             </div>
 
             <Card>
