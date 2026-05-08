@@ -67,7 +67,7 @@ function mapEventToNotification(event: NotificationEvent): Notification {
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { currentUser } = useRole();
 
-  const { data: apiEvents } = useNotificationEvents(currentUser.nome);
+  const { data: apiEvents } = useNotificationEvents(currentUser.id);
   const markReadMutation = useMarkEventAsRead();
   const markAllReadMutation = useMarkAllEventsAsRead();
 
