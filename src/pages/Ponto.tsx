@@ -290,7 +290,7 @@ const Ponto = () => {
         ? "Todos"
         : (targetAgent?.name || allUsers.find(u => u.id === filterUser)?.name || filterUser);
     const cpf = targetAgent?.documentNumber || "—";
-    const empresa = "HataSeg - Seguros & Previdência";
+    const empresa = "R. I. HATANAKA CORRETAGEM DE SEGUROS - 26.388.592/0001-54";
 
     doc.setFontSize(10);
     doc.text(`Empresa: ${empresa}`, 14, 30);
