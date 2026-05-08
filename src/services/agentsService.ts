@@ -4,6 +4,7 @@ export interface Agent {
   name: string;
   email: string;
   telefone: string;
+  documentNumber: string;
   status: "online" | "offline";
   isActive: boolean;
   vinculo: string;
