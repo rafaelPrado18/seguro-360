@@ -108,7 +108,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   };
 
   const markAllAsRead = () => {
-    markAllReadMutation.mutate(currentUser.nome);
+    markAllReadMutation.mutate(currentUser.id);
   };
 
   const addNotification = () => {
