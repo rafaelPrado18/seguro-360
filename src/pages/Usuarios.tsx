@@ -42,6 +42,7 @@ interface AgentForm {
   name: string;
   email: string;
   telefone: string;
+  documentNumber: string;
   function: string;
   vinculo: string;
   birthDate: string;
@@ -51,6 +52,7 @@ const EMPTY_FORM: AgentForm = {
   name: "",
   email: "",
   telefone: "",
+  documentNumber: "",
   function: "corretor",
   vinculo: "clt",
   birthDate: "",
