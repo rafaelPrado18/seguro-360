@@ -13,7 +13,7 @@ import { LogIn, Coffee, Utensils, LogOut, Clock, CalendarDays, Loader2, Pencil, 
 import { toast } from "@/hooks/use-toast";
 import { useRole } from "@/contexts/RoleContext";
 import { pontoService, PunchRecord } from "@/services/pontoService";
-import { agentsService } from "@/services/agentsService";
+import { agentsService, Agent } from "@/services/agentsService";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -76,7 +76,8 @@ function diffHours(records: PunchRecord[]): string {
   return formatHM(ms);
 }
 
-function overtime(records: PunchRecord[]): string {
+function overtime(records: PunchRecord[], skip = false): string {
+  if (skip) return "—";
   const ms = totalWorkedMs(records);
   if (ms == null) return "—";
   const extra = ms - STANDARD_WORK_MS;
@@ -107,6 +108,17 @@ const Ponto = () => {
   const [editing, setEditing] = useState<PunchRecord | null>(null);
   const [editTime, setEditTime] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+  const [agents, setAgents] = useState<Agent[]>([]);
+
+  useEffect(() => {
+    agentsService.getAgents().then(setAgents).catch(() => {});
+  }, []);
+
+  const isCorretorNovo = (userId: string) => {
+    const a = agents.find(ag => ag.userId === userId || ag.agentId === userId);
+    const fn = (a?.function || "").toLowerCase();
+    return fn === "corretor" || fn.includes("novo");
+  };
 
   const handleSaveEdit = async () => {
     if (!editing) return;
@@ -280,7 +292,7 @@ const Ponto = () => {
       const ms = totalWorkedMs(g.records);
       if (ms != null) {
         totalMs += ms;
-        totalExtraMs += Math.max(0, ms - STANDARD_WORK_MS);
+        if (!isCorretorNovo(g.userId)) totalExtraMs += Math.max(0, ms - STANDARD_WORK_MS);
       }
       const e = g.records.find(r => r.type === "entrada");
       if (e) {
@@ -323,7 +335,7 @@ const Ponto = () => {
         t("retorno_almoco"),
         t("saida"),
         diffHours(g.records),
-        overtime(g.records),
+        overtime(g.records, isCorretorNovo(g.userId)),
         atraso(g.records),
       ];
       return showUser ? [base[0], g.userName, ...base.slice(1)] : base;
@@ -524,7 +536,7 @@ const Ponto = () => {
                             <TableCell>{cell("retorno_almoco")}</TableCell>
                             <TableCell>{cell("saida")}</TableCell>
                             <TableCell className="font-semibold">{diffHours(g.records)}</TableCell>
-                            <TableCell className="text-emerald-600 font-medium">{overtime(g.records)}</TableCell>
+                            <TableCell className="text-emerald-600 font-medium">{overtime(g.records, isCorretorNovo(g.userId))}</TableCell>
                             <TableCell className="text-destructive font-medium">{atraso(g.records)}</TableCell>
                           </TableRow>
                         );
