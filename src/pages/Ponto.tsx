@@ -13,7 +13,7 @@ import { LogIn, Coffee, Utensils, LogOut, Clock, CalendarDays, Loader2, Pencil, 
 import { toast } from "@/hooks/use-toast";
 import { useRole } from "@/contexts/RoleContext";
 import { pontoService, PunchRecord } from "@/services/pontoService";
-import { agentsService } from "@/services/agentsService";
+import { agentsService, Agent } from "@/services/agentsService";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
