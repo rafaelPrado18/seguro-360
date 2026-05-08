@@ -9,11 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { LogIn, Coffee, Utensils, LogOut, Clock, CalendarDays, Loader2, Pencil } from "lucide-react";
+import { LogIn, Coffee, Utensils, LogOut, Clock, CalendarDays, Loader2, Pencil, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useRole } from "@/contexts/RoleContext";
 import { pontoService, PunchRecord } from "@/services/pontoService";
 import { agentsService } from "@/services/agentsService";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 type PunchType = PunchRecord["type"];
 
