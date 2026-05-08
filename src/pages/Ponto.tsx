@@ -108,6 +108,17 @@ const Ponto = () => {
   const [editing, setEditing] = useState<PunchRecord | null>(null);
   const [editTime, setEditTime] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+  const [agents, setAgents] = useState<Agent[]>([]);
+
+  useEffect(() => {
+    agentsService.getAgents().then(setAgents).catch(() => {});
+  }, []);
+
+  const isCorretorNovo = (userId: string) => {
+    const a = agents.find(ag => ag.userId === userId || ag.agentId === userId);
+    const fn = (a?.function || "").toLowerCase();
+    return fn === "corretor" || fn.includes("novo");
+  };
 
   const handleSaveEdit = async () => {
     if (!editing) return;
