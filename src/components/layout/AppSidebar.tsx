@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const menuItems = [
+  { icon: Clock, label: "Registro de Ponto", path: "/ponto", adminOnly: false, superAdminOnly: false, scope: null, highlighted: true },
   { icon: LayoutDashboard, label: "Dashboard", path: "/", adminOnly: false, superAdminOnly: false, scope: null },
   { icon: Target, label: "Leads", path: "/leads", adminOnly: false, superAdminOnly: false, scope: "leads" },
   { icon: MessageSquare, label: "WhatsApp", path: "/whatsapp", adminOnly: false, superAdminOnly: false, scope: "whatsapp" },
