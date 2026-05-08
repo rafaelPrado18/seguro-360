@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const menuItems = [
+  { icon: Clock, label: "Registro de Ponto", path: "/ponto", adminOnly: false, superAdminOnly: false, scope: null, highlighted: true },
   { icon: LayoutDashboard, label: "Dashboard", path: "/", adminOnly: false, superAdminOnly: false, scope: null },
   { icon: Target, label: "Leads", path: "/leads", adminOnly: false, superAdminOnly: false, scope: "leads" },
   { icon: MessageSquare, label: "WhatsApp", path: "/whatsapp", adminOnly: false, superAdminOnly: false, scope: "whatsapp" },
@@ -25,7 +26,7 @@ const menuItems = [
   { icon: Wallet, label: "Financeiro", path: "/financeiro", adminOnly: false, superAdminOnly: false, scope: "comissoes" },
   { icon: RefreshCw, label: "Renovações", path: "/renovacoes", adminOnly: false, superAdminOnly: false, scope: "renovacoes" },
   { icon: CalendarCheck, label: "Agenda", path: "/agenda", adminOnly: false, superAdminOnly: false, scope: null },
-  { icon: Clock, label: "Ponto", path: "/ponto", adminOnly: false, superAdminOnly: false, scope: null },
+  
   { icon: BarChart3, label: "Relatórios", path: "/relatorios", adminOnly: false, superAdminOnly: false, scope: null },
   { icon: Workflow, label: "Ger. Status Leads", path: "/gerenciar-status", adminOnly: true, superAdminOnly: false, scope: null },
   { icon: Workflow, label: "Ger. Status Renov.", path: "/gerenciar-status-renovacao", adminOnly: true, superAdminOnly: false, scope: null },
@@ -98,10 +99,12 @@ export function AppSidebar({ onClose, collapsed = false, onToggleCollapse }: App
               } ${
                 isActive
                   ? "bg-sidebar-accent text-sidebar-primary"
+                  : item.highlighted
+                  ? "bg-accent/15 text-accent ring-1 ring-accent/40 hover:bg-accent/25 font-semibold shadow-sm"
                   : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               }`}
             >
-              <item.icon className={`h-4 w-4 flex-shrink-0 ${isActive ? "text-sidebar-primary" : ""}`} />
+              <item.icon className={`h-4 w-4 flex-shrink-0 ${isActive ? "text-sidebar-primary" : item.highlighted ? "text-accent" : ""}`} />
               {!collapsed && (
                 <>
                   <span className="truncate">{item.label}</span>
