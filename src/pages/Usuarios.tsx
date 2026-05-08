@@ -131,6 +131,7 @@ const Usuarios = () => {
         name: form.name,
         email: form.email,
         telefone: form.telefone,
+        documentNumber: form.documentNumber,
         function: form.function,
         vinculo: form.vinculo,
         birthDate: form.birthDate ? `${form.birthDate}T00:00:00` : "",
