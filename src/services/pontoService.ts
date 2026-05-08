@@ -1,5 +1,6 @@
 export interface PunchRecord {
   _id?: string;
+  punchId?: string;
   userId: string;
   userName: string;
   date: string; // YYYY-MM-DD
