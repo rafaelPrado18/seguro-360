@@ -1,5 +1,6 @@
 export interface PunchRecord {
   _id?: string;
+  punchId?: string;
   userId: string;
   userName: string;
   date: string; // YYYY-MM-DD
@@ -44,6 +45,16 @@ export const pontoService = {
       body: JSON.stringify(record),
     });
     if (!res.ok) throw new Error("Erro ao registrar ponto");
+    return res.json().catch(() => record);
+  },
+
+  async update(record: PunchRecord & { punchId: string }): Promise<PunchRecord> {
+    const res = await fetch("https://crm-hataseg.com.br/clock/punch", {
+      method: "PATCH",
+      headers: { ...HEADERS, messageid: genMessageId() },
+      body: JSON.stringify(record),
+    });
+    if (!res.ok) throw new Error("Erro ao atualizar ponto");
     return res.json().catch(() => record);
   },
 };

@@ -8,7 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Coffee, Utensils, LogOut, Clock, CalendarDays, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { LogIn, Coffee, Utensils, LogOut, Clock, CalendarDays, Loader2, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useRole } from "@/contexts/RoleContext";
 import { pontoService, PunchRecord } from "@/services/pontoService";
@@ -101,6 +102,37 @@ const Ponto = () => {
   const [punching, setPunching] = useState<PunchType | null>(null);
   const [startDate, setStartDate] = useState(firstDayOfMonth());
   const [endDate, setEndDate] = useState(todayKey());
+  const [editing, setEditing] = useState<PunchRecord | null>(null);
+  const [editTime, setEditTime] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const handleSaveEdit = async () => {
+    if (!editing) return;
+    const punchId = editing.punchId || editing._id;
+    if (!punchId) {
+      toast({ title: "Registro sem ID", variant: "destructive" });
+      return;
+    }
+    const time = editTime.length === 5 ? `${editTime}:00` : editTime;
+    const iso = new Date(`${editing.date}T${time}`).toISOString();
+    setSavingEdit(true);
+    try {
+      await pontoService.update({ ...editing, punchId, time, iso });
+      toast({ title: "Registro atualizado" });
+      setEditing(null);
+      await fetchRecords();
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Erro ao atualizar registro", variant: "destructive" });
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const openEdit = (rec: PunchRecord) => {
+    setEditing(rec);
+    setEditTime(rec.time.slice(0, 5));
+  };
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
@@ -359,17 +391,30 @@ const Ponto = () => {
                       </TableRow>
                     ) : (
                       groupedHistory.map(g => {
-                        const t = (type: PunchType) => g.records.find(r => r.type === type)?.time.slice(0, 5) || "—";
+                        const cell = (type: PunchType) => {
+                          const rec = g.records.find(r => r.type === type);
+                          if (!rec) return <span className="text-muted-foreground">—</span>;
+                          return (
+                            <div className="flex items-center gap-1">
+                              <span>{rec.time.slice(0, 5)}</span>
+                              {isAdmin && (
+                                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => openEdit(rec)}>
+                                  <Pencil className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
+                          );
+                        };
                         return (
                           <TableRow key={`${g.userId}-${g.date}`}>
                             <TableCell className="font-medium">
                               {new Date(g.date + "T00:00:00").toLocaleDateString("pt-BR")}
                             </TableCell>
                             {isAdmin && <TableCell>{g.userName}</TableCell>}
-                            <TableCell>{t("entrada")}</TableCell>
-                            <TableCell>{t("saida_almoco")}</TableCell>
-                            <TableCell>{t("retorno_almoco")}</TableCell>
-                            <TableCell>{t("saida")}</TableCell>
+                            <TableCell>{cell("entrada")}</TableCell>
+                            <TableCell>{cell("saida_almoco")}</TableCell>
+                            <TableCell>{cell("retorno_almoco")}</TableCell>
+                            <TableCell>{cell("saida")}</TableCell>
                             <TableCell className="font-semibold">{diffHours(g.records)}</TableCell>
                             <TableCell className="text-emerald-600 font-medium">{overtime(g.records)}</TableCell>
                             <TableCell className="text-destructive font-medium">{atraso(g.records)}</TableCell>
@@ -384,6 +429,31 @@ const Ponto = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Registro de Ponto</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                {editing.userName} — {new Date(editing.date + "T00:00:00").toLocaleDateString("pt-BR")} — {PUNCH_LABEL[editing.type]}
+              </div>
+              <div>
+                <Label>Horário</Label>
+                <Input type="time" value={editTime} onChange={(e) => setEditTime(e.target.value)} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>Cancelar</Button>
+            <Button onClick={handleSaveEdit} disabled={savingEdit}>
+              {savingEdit ? <Loader2 className="h-4 w-4 animate-spin" /> : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
