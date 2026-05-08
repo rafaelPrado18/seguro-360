@@ -292,7 +292,7 @@ const Ponto = () => {
       const ms = totalWorkedMs(g.records);
       if (ms != null) {
         totalMs += ms;
-        totalExtraMs += Math.max(0, ms - STANDARD_WORK_MS);
+        if (!isCorretorNovo(g.userId)) totalExtraMs += Math.max(0, ms - STANDARD_WORK_MS);
       }
       const e = g.records.find(r => r.type === "entrada");
       if (e) {
