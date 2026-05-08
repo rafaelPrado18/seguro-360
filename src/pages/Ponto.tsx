@@ -391,17 +391,30 @@ const Ponto = () => {
                       </TableRow>
                     ) : (
                       groupedHistory.map(g => {
-                        const t = (type: PunchType) => g.records.find(r => r.type === type)?.time.slice(0, 5) || "—";
+                        const cell = (type: PunchType) => {
+                          const rec = g.records.find(r => r.type === type);
+                          if (!rec) return <span className="text-muted-foreground">—</span>;
+                          return (
+                            <div className="flex items-center gap-1">
+                              <span>{rec.time.slice(0, 5)}</span>
+                              {isAdmin && (
+                                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => openEdit(rec)}>
+                                  <Pencil className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
+                          );
+                        };
                         return (
                           <TableRow key={`${g.userId}-${g.date}`}>
                             <TableCell className="font-medium">
                               {new Date(g.date + "T00:00:00").toLocaleDateString("pt-BR")}
                             </TableCell>
                             {isAdmin && <TableCell>{g.userName}</TableCell>}
-                            <TableCell>{t("entrada")}</TableCell>
-                            <TableCell>{t("saida_almoco")}</TableCell>
-                            <TableCell>{t("retorno_almoco")}</TableCell>
-                            <TableCell>{t("saida")}</TableCell>
+                            <TableCell>{cell("entrada")}</TableCell>
+                            <TableCell>{cell("saida_almoco")}</TableCell>
+                            <TableCell>{cell("retorno_almoco")}</TableCell>
+                            <TableCell>{cell("saida")}</TableCell>
                             <TableCell className="font-semibold">{diffHours(g.records)}</TableCell>
                             <TableCell className="text-emerald-600 font-medium">{overtime(g.records)}</TableCell>
                             <TableCell className="text-destructive font-medium">{atraso(g.records)}</TableCell>
