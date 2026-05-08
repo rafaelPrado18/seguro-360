@@ -335,7 +335,7 @@ const Ponto = () => {
         t("retorno_almoco"),
         t("saida"),
         diffHours(g.records),
-        overtime(g.records),
+        overtime(g.records, isCorretorNovo(g.userId)),
         atraso(g.records),
       ];
       return showUser ? [base[0], g.userName, ...base.slice(1)] : base;
