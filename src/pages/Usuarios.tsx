@@ -224,6 +224,10 @@ const Usuarios = () => {
                   <Label className="text-xs">Telefone</Label>
                   <Input value={form.telefone} onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} placeholder="(11) 99999-0000" className="h-9 text-sm" />
                 </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">CPF / Documento</Label>
+                  <Input value={form.documentNumber} onChange={e => setForm(f => ({ ...f, documentNumber: e.target.value }))} placeholder="000.000.000-00" className="h-9 text-sm" />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label className="text-xs">Perfil / Função</Label>
