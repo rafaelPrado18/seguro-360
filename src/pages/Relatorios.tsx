@@ -297,6 +297,184 @@ const Relatorios = () => {
     XLSX.writeFile(wb, `relatorio_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }, [corretorTotals]);
 
+  // ── Filter leads by current period buckets ──
+  const periodLeads = useMemo(() => {
+    const start = buckets[0]?.start;
+    const end = buckets[buckets.length - 1]?.end;
+    if (!start || !end) return leads;
+    return leads.filter(l => {
+      const d = parseDate(l.created_at);
+      return d && d >= start && d <= end;
+    });
+  }, [leads, buckets]);
+
+  const periodLabel = useMemo(() => {
+    return periodo === "dia" ? "Últimos 7 dias" : periodo === "semana" ? "Últimas 4 semanas" : "Últimos 6 meses";
+  }, [periodo]);
+
+  const buildPdfHeader = useCallback((doc: jsPDF, title: string, subtitle?: string) => {
+    doc.setFillColor(28, 41, 84);
+    doc.rect(0, 0, doc.internal.pageSize.getWidth(), 22, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("HataSeg - Seguros & Previdência", 14, 10);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(title, 14, 17);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(9);
+    const right = `Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}`;
+    doc.text(right, doc.internal.pageSize.getWidth() - 14, 17, { align: "right" });
+    if (subtitle) {
+      doc.setFontSize(10);
+      doc.text(subtitle, 14, 30);
+      return 36;
+    }
+    return 30;
+  }, []);
+
+  const drawKpis = useCallback((doc: jsPDF, y: number, ls: Lead[]) => {
+    const total = ls.length;
+    const convertidos = ls.filter(l => l.status === "convertido").length;
+    const perdidos = ls.filter(l => l.status === "perdido").length;
+    const valor = ls.reduce((s, l) => s + (Number(l.valor_estimado) || 0), 0);
+    const conv = total > 0 ? Math.round((convertidos / total) * 100) : 0;
+    autoTable(doc, {
+      startY: y,
+      head: [["Total Leads", "Convertidos", "Perdidos", "Taxa Conversão", "Valor Total"]],
+      body: [[
+        String(total),
+        String(convertidos),
+        String(perdidos),
+        `${conv}%`,
+        valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+      ]],
+      theme: "grid",
+      headStyles: { fillColor: [28, 41, 84], textColor: 255, fontSize: 9 },
+      bodyStyles: { fontSize: 10, halign: "center", fontStyle: "bold" },
+      margin: { left: 14, right: 14 },
+    });
+    return (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6;
+  }, []);
+
+  const handleExportPdfGeral = useCallback(() => {
+    const doc = new jsPDF();
+    let y = buildPdfHeader(doc, "Relatório Geral de Produção", `Total de leads: ${leads.length}`);
+    y = drawKpis(doc, y, leads);
+
+    // Ranking
+    const ranking = [...corretorTotals].sort((a, b) => b.convertidos - a.convertidos || b.totalLeads - a.totalLeads);
+    autoTable(doc, {
+      startY: y,
+      head: [["#", "Corretor", "Leads", "Convertidos", "Valor Total", "Conversão"]],
+      body: ranking.map((c, i) => [
+        `${i + 1}º`,
+        c.nome,
+        String(c.totalLeads),
+        String(c.convertidos),
+        c.valorTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+        `${c.conversao}%`,
+      ]),
+      theme: "striped",
+      headStyles: { fillColor: [28, 41, 84], textColor: 255 },
+      styles: { fontSize: 9 },
+      margin: { left: 14, right: 14 },
+      didDrawPage: () => { buildPdfHeader(doc, "Relatório Geral de Produção"); },
+    });
+
+    // Status distribution
+    let y2 = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6;
+    autoTable(doc, {
+      startY: y2,
+      head: [["Status", "Quantidade", "%"]],
+      body: statusPieData.map(s => [s.name, String(s.value), `${leads.length > 0 ? Math.round((s.value / leads.length) * 100) : 0}%`]),
+      theme: "grid",
+      headStyles: { fillColor: [28, 41, 84], textColor: 255 },
+      styles: { fontSize: 9 },
+      margin: { left: 14, right: 14 },
+    });
+
+    doc.save(`relatorio_geral_${new Date().toISOString().slice(0, 10)}.pdf`);
+  }, [leads, corretorTotals, statusPieData, buildPdfHeader, drawKpis]);
+
+  const handleExportPdfPeriodo = useCallback(() => {
+    const doc = new jsPDF();
+    let y = buildPdfHeader(doc, `Relatório por Período — ${periodLabel}`, `Leads no período: ${periodLeads.length}`);
+    y = drawKpis(doc, y, periodLeads);
+
+    // Por bucket
+    autoTable(doc, {
+      startY: y,
+      head: [["Período", "Total", "Convertidos", "Perdidos", "Valor"]],
+      body: buckets.map(b => {
+        const inB = leads.filter(l => {
+          const d = parseDate(l.created_at);
+          return d && d >= b.start && d <= b.end;
+        });
+        const conv = inB.filter(l => l.status === "convertido").length;
+        const perd = inB.filter(l => l.status === "perdido").length;
+        const valor = inB.reduce((s, l) => s + (Number(l.valor_estimado) || 0), 0);
+        return [
+          `${b.label} (${format(b.start, "dd/MM", { locale: ptBR })}-${format(b.end, "dd/MM", { locale: ptBR })})`,
+          String(inB.length),
+          String(conv),
+          String(perd),
+          valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+        ];
+      }),
+      theme: "striped",
+      headStyles: { fillColor: [28, 41, 84], textColor: 255 },
+      styles: { fontSize: 9 },
+      margin: { left: 14, right: 14 },
+    });
+
+    doc.save(`relatorio_periodo_${new Date().toISOString().slice(0, 10)}.pdf`);
+  }, [periodLeads, buckets, leads, periodLabel, buildPdfHeader, drawKpis]);
+
+  const handleExportPdfUsuario = useCallback(() => {
+    const doc = new jsPDF();
+    buildPdfHeader(doc, "Relatório por Usuário (Corretores)", `${corretorNames.length} corretores · ${leads.length} leads`);
+    let y = 36;
+
+    corretorNames.forEach((nome, idx) => {
+      const userLeads = leads.filter(l => resolveCorretorName(l.corretor_responsavel) === nome);
+      if (userLeads.length === 0) return;
+
+      if (y > doc.internal.pageSize.getHeight() - 60) {
+        doc.addPage();
+        buildPdfHeader(doc, "Relatório por Usuário (Corretores)");
+        y = 30;
+      }
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(28, 41, 84);
+      doc.text(`${idx + 1}. ${nome}`, 14, y);
+      y += 4;
+
+      y = drawKpis(doc, y, userLeads);
+
+      // Status breakdown
+      const statusMap: Record<string, number> = {};
+      userLeads.forEach(l => { const k = l.status || "novo"; statusMap[k] = (statusMap[k] || 0) + 1; });
+      autoTable(doc, {
+        startY: y,
+        head: [["Status", "Qtde"]],
+        body: Object.entries(statusMap).map(([k, v]) => [statusLabels[k] || k, String(v)]),
+        theme: "grid",
+        headStyles: { fillColor: [200, 200, 200], textColor: 0, fontSize: 8 },
+        styles: { fontSize: 8 },
+        margin: { left: 14, right: 14 },
+        tableWidth: 80,
+      });
+      y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8;
+    });
+
+    doc.save(`relatorio_usuarios_${new Date().toISOString().slice(0, 10)}.pdf`);
+  }, [corretorNames, leads, resolveCorretorName, buildPdfHeader, drawKpis, statusLabels]);
+
+
   const isLoading = loadingLeads || loadingAgents;
 
   // ── KPIs ──
