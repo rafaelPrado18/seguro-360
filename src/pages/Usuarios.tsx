@@ -42,6 +42,7 @@ interface AgentForm {
   name: string;
   email: string;
   telefone: string;
+  documentNumber: string;
   function: string;
   vinculo: string;
   birthDate: string;
@@ -51,6 +52,7 @@ const EMPTY_FORM: AgentForm = {
   name: "",
   email: "",
   telefone: "",
+  documentNumber: "",
   function: "corretor",
   vinculo: "clt",
   birthDate: "",
@@ -96,6 +98,7 @@ const Usuarios = () => {
       name: u.name,
       email: u.email,
       telefone: u.telefone,
+      documentNumber: u.documentNumber || "",
       function: u.function,
       vinculo: u.vinculo,
       birthDate: u.birthDate ? u.birthDate.split("T")[0] : "",
@@ -128,6 +131,7 @@ const Usuarios = () => {
         name: form.name,
         email: form.email,
         telefone: form.telefone,
+        documentNumber: form.documentNumber,
         function: form.function,
         vinculo: form.vinculo,
         birthDate: form.birthDate ? `${form.birthDate}T00:00:00` : "",
@@ -219,6 +223,10 @@ const Usuarios = () => {
                 <div className="space-y-1.5">
                   <Label className="text-xs">Telefone</Label>
                   <Input value={form.telefone} onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} placeholder="(11) 99999-0000" className="h-9 text-sm" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">CPF / Documento</Label>
+                  <Input value={form.documentNumber} onChange={e => setForm(f => ({ ...f, documentNumber: e.target.value }))} placeholder="000.000.000-00" className="h-9 text-sm" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
