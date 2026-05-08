@@ -500,9 +500,30 @@ const Relatorios = () => {
           </div>
           <div className="flex items-center gap-2">
             <PeriodSelector value={periodo} onChange={setPeriodo} />
-            <Button variant="outline" size="sm" className="gap-2 h-8 text-xs" onClick={handleExport} disabled={isLoading}>
-              <Download className="h-3.5 w-3.5" /> Exportar
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2 h-8 text-xs" disabled={isLoading}>
+                  <Download className="h-3.5 w-3.5" /> Exportar
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel className="text-xs">PDF</DropdownMenuLabel>
+                <DropdownMenuItem onClick={handleExportPdfGeral} className="text-xs gap-2">
+                  <FileText className="h-3.5 w-3.5" /> Relatório Geral
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportPdfPeriodo} className="text-xs gap-2">
+                  <FileText className="h-3.5 w-3.5" /> Por Período
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportPdfUsuario} className="text-xs gap-2">
+                  <FileText className="h-3.5 w-3.5" /> Por Usuário
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs">Excel</DropdownMenuLabel>
+                <DropdownMenuItem onClick={handleExport} className="text-xs gap-2">
+                  <Download className="h-3.5 w-3.5" /> Ranking Corretores
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
