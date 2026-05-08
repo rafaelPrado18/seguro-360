@@ -102,6 +102,37 @@ const Ponto = () => {
   const [punching, setPunching] = useState<PunchType | null>(null);
   const [startDate, setStartDate] = useState(firstDayOfMonth());
   const [endDate, setEndDate] = useState(todayKey());
+  const [editing, setEditing] = useState<PunchRecord | null>(null);
+  const [editTime, setEditTime] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const handleSaveEdit = async () => {
+    if (!editing) return;
+    const punchId = editing.punchId || editing._id;
+    if (!punchId) {
+      toast({ title: "Registro sem ID", variant: "destructive" });
+      return;
+    }
+    const time = editTime.length === 5 ? `${editTime}:00` : editTime;
+    const iso = new Date(`${editing.date}T${time}`).toISOString();
+    setSavingEdit(true);
+    try {
+      await pontoService.update({ ...editing, punchId, time, iso });
+      toast({ title: "Registro atualizado" });
+      setEditing(null);
+      await fetchRecords();
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Erro ao atualizar registro", variant: "destructive" });
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const openEdit = (rec: PunchRecord) => {
+    setEditing(rec);
+    setEditTime(rec.time.slice(0, 5));
+  };
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
