@@ -117,7 +117,7 @@ const Ponto = () => {
   const isCorretorNovo = (userId: string) => {
     const a = agents.find(ag => ag.userId === userId || ag.agentId === userId);
     const fn = (a?.function || "").toLowerCase();
-    return fn === "corretor" || fn.includes("novo");
+    return fn === "corretor" || fn === "corretor_renovacao" || fn.includes("novo") || fn.includes("renova");
   };
 
   const handleSaveEdit = async () => {
