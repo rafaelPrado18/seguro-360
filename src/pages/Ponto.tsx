@@ -9,11 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { LogIn, Coffee, Utensils, LogOut, Clock, CalendarDays, Loader2, Pencil } from "lucide-react";
+import { LogIn, Coffee, Utensils, LogOut, Clock, CalendarDays, Loader2, Pencil, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useRole } from "@/contexts/RoleContext";
 import { pontoService, PunchRecord } from "@/services/pontoService";
 import { agentsService } from "@/services/agentsService";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 type PunchType = PunchRecord["type"];
 
@@ -238,6 +240,109 @@ const Ponto = () => {
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
   }, [records]);
 
+  const handleExportPdf = () => {
+    const doc = new jsPDF();
+    // Header
+    doc.setFillColor(28, 41, 84);
+    doc.rect(0, 0, doc.internal.pageSize.getWidth(), 22, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("HataSeg - Seguros & Previdência", 14, 10);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Relatório de Ponto", 14, 17);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(9);
+    doc.text(
+      `Gerado em ${new Date().toLocaleString("pt-BR")}`,
+      doc.internal.pageSize.getWidth() - 14,
+      17,
+      { align: "right" }
+    );
+
+    const fmtDate = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("pt-BR");
+    const subtitle = `Período: ${fmtDate(startDate)} a ${fmtDate(endDate)}`;
+    const userInfo = !isAdmin || filterUser === "__me__"
+      ? `Usuário: ${currentUser.nome}`
+      : filterUser === "__all__"
+        ? "Usuário: Todos"
+        : `Usuário: ${allUsers.find(u => u.id === filterUser)?.name || filterUser}`;
+    doc.setFontSize(10);
+    doc.text(subtitle, 14, 30);
+    doc.text(userInfo, 14, 36);
+
+    // Aggregate totals
+    let totalMs = 0;
+    let totalExtraMs = 0;
+    let totalAtrasoMs = 0;
+    groupedHistory.forEach(g => {
+      const ms = totalWorkedMs(g.records);
+      if (ms != null) {
+        totalMs += ms;
+        totalExtraMs += Math.max(0, ms - STANDARD_WORK_MS);
+      }
+      const e = g.records.find(r => r.type === "entrada");
+      if (e) {
+        const d = new Date(e.iso);
+        const expected = new Date(d);
+        expected.setHours(EXPECTED_ENTRY_HOUR, EXPECTED_ENTRY_MIN, 0, 0);
+        const diff = d.getTime() - expected.getTime();
+        if (diff > ENTRY_TOLERANCE_MS) totalAtrasoMs += diff;
+      }
+    });
+
+    autoTable(doc, {
+      startY: 42,
+      head: [["Dias registrados", "Total trabalhado", "Total horas extras", "Total atrasos"]],
+      body: [[
+        String(groupedHistory.length),
+        formatHM(totalMs),
+        formatHM(totalExtraMs),
+        formatHM(totalAtrasoMs),
+      ]],
+      theme: "grid",
+      headStyles: { fillColor: [28, 41, 84], textColor: 255, fontSize: 9 },
+      bodyStyles: { fontSize: 10, halign: "center", fontStyle: "bold" },
+      margin: { left: 14, right: 14 },
+    });
+
+    const yStart = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6;
+
+    const showUser = isAdmin && filterUser !== "__me__";
+    const head = showUser
+      ? [["Data", "Usuário", "Entrada", "S. Almoço", "R. Almoço", "Saída", "Total", "Extra", "Atraso"]]
+      : [["Data", "Entrada", "S. Almoço", "R. Almoço", "Saída", "Total", "Extra", "Atraso"]];
+
+    const rows = groupedHistory.map(g => {
+      const t = (type: PunchType) => g.records.find(r => r.type === type)?.time.slice(0, 5) || "—";
+      const base = [
+        new Date(g.date + "T00:00:00").toLocaleDateString("pt-BR"),
+        t("entrada"),
+        t("saida_almoco"),
+        t("retorno_almoco"),
+        t("saida"),
+        diffHours(g.records),
+        overtime(g.records),
+        atraso(g.records),
+      ];
+      return showUser ? [base[0], g.userName, ...base.slice(1)] : base;
+    });
+
+    autoTable(doc, {
+      startY: yStart,
+      head,
+      body: rows,
+      theme: "striped",
+      headStyles: { fillColor: [28, 41, 84], textColor: 255, fontSize: 9 },
+      styles: { fontSize: 8 },
+      margin: { left: 14, right: 14 },
+    });
+
+    doc.save(`relatorio_ponto_${startDate}_${endDate}.pdf`);
+  };
+
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -357,6 +462,9 @@ const Ponto = () => {
               </div>
               <Button variant="outline" onClick={fetchRecords} disabled={loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Atualizar"}
+              </Button>
+              <Button variant="outline" onClick={handleExportPdf} disabled={loading || groupedHistory.length === 0} className="gap-2">
+                <FileText className="h-4 w-4" /> Exportar PDF
               </Button>
             </div>
 
