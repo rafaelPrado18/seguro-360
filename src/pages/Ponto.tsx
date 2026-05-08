@@ -429,6 +429,31 @@ const Ponto = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Registro de Ponto</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                {editing.userName} — {new Date(editing.date + "T00:00:00").toLocaleDateString("pt-BR")} — {PUNCH_LABEL[editing.type]}
+              </div>
+              <div>
+                <Label>Horário</Label>
+                <Input type="time" value={editTime} onChange={(e) => setEditTime(e.target.value)} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>Cancelar</Button>
+            <Button onClick={handleSaveEdit} disabled={savingEdit}>
+              {savingEdit ? <Loader2 className="h-4 w-4 animate-spin" /> : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
