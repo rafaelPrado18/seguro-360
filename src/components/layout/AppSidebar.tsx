@@ -99,10 +99,12 @@ export function AppSidebar({ onClose, collapsed = false, onToggleCollapse }: App
               } ${
                 isActive
                   ? "bg-sidebar-accent text-sidebar-primary"
+                  : item.highlighted
+                  ? "bg-accent/15 text-accent ring-1 ring-accent/40 hover:bg-accent/25 font-semibold shadow-sm"
                   : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               }`}
             >
-              <item.icon className={`h-4 w-4 flex-shrink-0 ${isActive ? "text-sidebar-primary" : ""}`} />
+              <item.icon className={`h-4 w-4 flex-shrink-0 ${isActive ? "text-sidebar-primary" : item.highlighted ? "text-accent" : ""}`} />
               {!collapsed && (
                 <>
                   <span className="truncate">{item.label}</span>
