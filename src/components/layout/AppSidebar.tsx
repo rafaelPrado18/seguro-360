@@ -26,7 +26,7 @@ const menuItems = [
   { icon: Wallet, label: "Financeiro", path: "/financeiro", adminOnly: false, superAdminOnly: false, scope: "comissoes" },
   { icon: RefreshCw, label: "Renovações", path: "/renovacoes", adminOnly: false, superAdminOnly: false, scope: "renovacoes" },
   { icon: CalendarCheck, label: "Agenda", path: "/agenda", adminOnly: false, superAdminOnly: false, scope: null },
-  { icon: Clock, label: "Ponto", path: "/ponto", adminOnly: false, superAdminOnly: false, scope: null },
+  
   { icon: BarChart3, label: "Relatórios", path: "/relatorios", adminOnly: false, superAdminOnly: false, scope: null },
   { icon: Workflow, label: "Ger. Status Leads", path: "/gerenciar-status", adminOnly: true, superAdminOnly: false, scope: null },
   { icon: Workflow, label: "Ger. Status Renov.", path: "/gerenciar-status-renovacao", adminOnly: true, superAdminOnly: false, scope: null },
