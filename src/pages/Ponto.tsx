@@ -274,15 +274,29 @@ const Ponto = () => {
     );
 
     const fmtDate = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("pt-BR");
-    const subtitle = `Período: ${fmtDate(startDate)} a ${fmtDate(endDate)}`;
-    const userInfo = !isAdmin || filterUser === "__me__"
-      ? `Usuário: ${currentUser.nome}`
+
+    // Resolve user / agent for header info
+    const targetUserId = !isAdmin || filterUser === "__me__"
+      ? currentUser.id
       : filterUser === "__all__"
-        ? "Usuário: Todos"
-        : `Usuário: ${allUsers.find(u => u.id === filterUser)?.name || filterUser}`;
+        ? null
+        : filterUser;
+    const targetAgent = targetUserId
+      ? agents.find(a => a.userId === targetUserId || a.agentId === targetUserId)
+      : null;
+    const userName = !isAdmin || filterUser === "__me__"
+      ? currentUser.nome
+      : filterUser === "__all__"
+        ? "Todos"
+        : (targetAgent?.name || allUsers.find(u => u.id === filterUser)?.name || filterUser);
+    const cpf = targetAgent?.documentNumber || "—";
+    const empresa = "HataSeg - Seguros & Previdência";
+
     doc.setFontSize(10);
-    doc.text(subtitle, 14, 30);
-    doc.text(userInfo, 14, 36);
+    doc.text(`Empresa: ${empresa}`, 14, 30);
+    doc.text(`Nome: ${userName}`, 14, 36);
+    doc.text(`CPF: ${cpf}`, 14, 42);
+    doc.text(`Período: ${fmtDate(startDate)} a ${fmtDate(endDate)}`, 14, 48);
 
     // Aggregate totals
     let totalMs = 0;
@@ -305,7 +319,7 @@ const Ponto = () => {
     });
 
     autoTable(doc, {
-      startY: 42,
+      startY: 54,
       head: [["Dias registrados", "Total trabalhado", "Total horas extras", "Total atrasos"]],
       body: [[
         String(groupedHistory.length),
