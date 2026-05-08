@@ -159,10 +159,10 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
               )}
             </div>
             <div className="max-h-64 overflow-y-auto">
-              {notifications.length === 0 ? (
-                <p className="p-4 text-center text-sm text-muted-foreground">Nenhuma notificação</p>
+              {notifications.filter(n => !n.read).length === 0 ? (
+                <p className="p-4 text-center text-sm text-muted-foreground">Nenhuma notificação não lida</p>
               ) : (
-                notifications.slice(0, 10).map(n => (
+                notifications.filter(n => !n.read).slice(0, 10).map(n => (
                   <button
                     key={n.id}
                     className={`w-full text-left px-4 py-3 border-b border-border hover:bg-muted/50 transition-colors ${!n.read ? "bg-accent/5" : ""}`}
