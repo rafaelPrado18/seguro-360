@@ -48,10 +48,10 @@ export const agentsService = {
   },
 
   async updateAgent(id: string, data: Partial<Agent>): Promise<void> {
-    const response = await fetch(`${BASE_URL}/update/agent/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+    const response = await fetch(`${BASE_URL}/v1/update/profile`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getCookie("userToken")}` },
+      body: JSON.stringify({ agentId: id, userId: getCookie("userId"), ...data }),
     });
     if (!response.ok) throw new Error("Erro ao atualizar agente");
   },
