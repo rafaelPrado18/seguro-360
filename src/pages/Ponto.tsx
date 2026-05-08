@@ -319,7 +319,7 @@ const Ponto = () => {
     });
 
     autoTable(doc, {
-      startY: 42,
+      startY: 54,
       head: [["Dias registrados", "Total trabalhado", "Total horas extras", "Total atrasos"]],
       body: [[
         String(groupedHistory.length),
