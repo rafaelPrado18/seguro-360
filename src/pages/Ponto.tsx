@@ -243,7 +243,11 @@ const Ponto = () => {
         const [userId, date] = key.split("__");
         return { userId, userName: recs[0].userName, date, records: recs };
       })
-      .sort((a, b) => b.date.localeCompare(a.date));
+      .sort((a, b) => {
+        const nameCmp = a.userName.localeCompare(b.userName, "pt-BR", { sensitivity: "base" });
+        if (nameCmp !== 0) return nameCmp;
+        return a.date.localeCompare(b.date);
+      });
   }, [records]);
 
   const allUsers = useMemo(() => {
