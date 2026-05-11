@@ -207,7 +207,7 @@ const Leads = () => {
         return total > 0 ? Number(((conv / total) * 100).toFixed(1)) : 0;
       })(),
       valor_total_convertido: leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase() && l.status === "convertido")
-        .reduce((sum, l) => sum + (l.valor_estimado || 0), 0),
+        .reduce((sum, l) => sum + (Number(l.valor_estimado) || 0), 0),
     }));
   }, [agentCorretores, leads]);
 
