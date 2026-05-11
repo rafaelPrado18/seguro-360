@@ -36,6 +36,7 @@ const categoriaLabels: Record<string, string> = {
 const WhatsAppTemplates = () => {
   const { data: apiTemplates = [], isLoading } = useWhatsAppTemplates();
   const createTemplateMutation = useCreateWhatsAppTemplate();
+  const updateTemplateMutation = useUpdateWhatsAppTemplate();
   const [templates, setTemplates] = useState<WhatsAppTemplate[]>([]);
 
   useEffect(() => {
