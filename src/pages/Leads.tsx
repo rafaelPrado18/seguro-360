@@ -106,14 +106,16 @@ const Leads = () => {
     return KANBAN_COLUMNS_FALLBACK;
   }, [apiStatuses]);
 
-  // Status keys representing "convertido" (ganho) and "perdido" — derived from API
+  // Status keys representing "convertido" (ganho) and "perdido" — derived from API + fallbacks
+  const GANHO_FALLBACK = ["convertido", "fechado", "ganho", "ganhou", "venda", "vendido"];
+  const PERDIDO_FALLBACK = ["perdido", "perda", "perdeu"];
   const ganhoKeys = useMemo(() => {
-    const set = new Set<string>(["convertido"]);
+    const set = new Set<string>(GANHO_FALLBACK);
     apiStatuses?.forEach(s => { if (s.tipo === "ganho") set.add(s.key); });
     return set;
   }, [apiStatuses]);
   const perdidoKeys = useMemo(() => {
-    const set = new Set<string>(["perdido"]);
+    const set = new Set<string>(PERDIDO_FALLBACK);
     apiStatuses?.forEach(s => { if (s.tipo === "perdido") set.add(s.key); });
     return set;
   }, [apiStatuses]);
