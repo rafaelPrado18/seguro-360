@@ -127,6 +127,8 @@ const Leads = () => {
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
   const [leads, setLeads] = useState(PLACEHOLDER_LEADS);
   const [corretorFilter, setCorretorFilter] = useState<string[]>([]);
+  const [origemFilter, setOrigemFilter] = useState<string>("all");
+  const [ramoFilter, setRamoFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [customDateStart, setCustomDateStart] = useState<string>("");
   const [customDateEnd, setCustomDateEnd] = useState<string>("");
@@ -376,9 +378,23 @@ const Leads = () => {
     return null;
   };
 
+  const origemOptions = useMemo(() => {
+    const set = new Set<string>();
+    leads.forEach(l => { if (l.origem) set.add(l.origem); });
+    return Array.from(set).sort();
+  }, [leads]);
+
+  const ramoOptions = useMemo(() => {
+    const set = new Set<string>();
+    leads.forEach(l => { if (l.ramo_interesse) set.add(l.ramo_interesse); });
+    return Array.from(set).sort();
+  }, [leads]);
+
   const displayLeads = leads.filter(l => {
     const matchesSearch = l.nome?.toLowerCase()?.includes(search?.toLowerCase()) || l.telefone?.includes(search);
     const matchesStatus = statusFilter === "all" || l.status === statusFilter;
+    const matchesOrigem = origemFilter === "all" || l.origem === origemFilter;
+    const matchesRamo = ramoFilter === "all" || l.ramo_interesse === ramoFilter;
     const matchesCorretor = isAdmin
       ? corretorFilter.length === 0 || corretorFilter.includes(l.corretor_responsavel?.toLowerCase() || "")
       : l.corretor_responsavel?.toLowerCase() === currentUser.nome.toLowerCase() || !l.corretor_responsavel?.toLowerCase();
@@ -396,7 +412,7 @@ const Leads = () => {
       }
     }
 
-    return matchesSearch && matchesStatus && matchesCorretor && matchesDate;
+    return matchesSearch && matchesStatus && matchesOrigem && matchesRamo && matchesCorretor && matchesDate;
   });
 
   const sortedLeads = [...displayLeads].sort((a, b) => {
@@ -558,6 +574,39 @@ const Leads = () => {
                 </PopoverContent>
               </Popover>
             )}
+            <Select value={ramoFilter} onValueChange={setRamoFilter}>
+              <SelectTrigger className="w-[150px] h-9 text-sm">
+                <SelectValue placeholder="Tipo de Lead" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Ramos</SelectItem>
+                {ramoOptions.map(r => (
+                  <SelectItem key={r} value={r}>{r}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={origemFilter} onValueChange={setOrigemFilter}>
+              <SelectTrigger className="w-[150px] h-9 text-sm">
+                <SelectValue placeholder="Origem" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as Origens</SelectItem>
+                {origemOptions.map(o => (
+                  <SelectItem key={o} value={o}>{origemLabels[o] || o}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[160px] h-9 text-sm">
+                <SelectValue placeholder="Etapa do Funil" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as Etapas</SelectItem>
+                {kanbanColumns.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={dateFilter} onValueChange={(v) => { setDateFilter(v); if (v !== "custom") { setCustomDateStart(""); setCustomDateEnd(""); } }}>
               <SelectTrigger className="w-[160px] sm:w-[180px] h-9 text-sm">
                 <CalendarDays className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
