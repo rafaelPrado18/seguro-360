@@ -34,8 +34,8 @@ const FILTER_OPTIONS = [
 
 const Sinistros = () => {
   const [search, setSearch] = useState("");
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [filterValue, setFilterValue] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("");
   const [sinistros, setSinistros] = useState<SinistroItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -60,6 +60,7 @@ const Sinistros = () => {
         apolice: s.apolice,
         oficina: s.oficina,
         observacoes: s.observacoes,
+        dataTratativa: s.dataTratativa,
         veiculo: s.veiculo,
         terceiros: s.terceiros,
       }));
@@ -81,23 +82,11 @@ const Sinistros = () => {
     loadSinistros();
   }, []);
 
-  const activeFilterOption = FILTER_OPTIONS.find(f => f.value === activeFilter);
-
   const filtered = sinistros.filter(s => {
     const matchSearch = !search || s.cliente.toLowerCase().includes(search.toLowerCase()) || s.id.includes(search);
-
-    let matchFilter = true;
-    if (activeFilterOption && activeFilterOption.type === "text" && filterValue) {
-      if (activeFilter === "seguradora") {
-        matchFilter = s.seguradora.toLowerCase().includes(filterValue.toLowerCase());
-      } else if (activeFilter === "oficinas") {
-        matchFilter = (s.oficina || "").toLowerCase().includes(filterValue.toLowerCase());
-      }
-    } else if (activeFilterOption && activeFilterOption.type === "status") {
-      matchFilter = s.status === activeFilterOption.statusId;
-    }
-
-    return matchSearch && matchFilter;
+    const matchStatus = statusFilter === "all" || s.status === statusFilter;
+    const matchDate = !dateFilter || (s.dataTratativa || s.dataAbertura || "").includes(dateFilter);
+    return matchSearch && matchStatus && matchDate;
   });
 
   const handleStatusChange = async (sinistroId: string, newStatus: string) => {
@@ -141,24 +130,29 @@ const Sinistros = () => {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input placeholder="Buscar sinistros..." className="pl-9 h-9 text-sm" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
-          <Select value={activeFilter} onValueChange={(v) => { setActiveFilter(v); setFilterValue(""); }}>
-            <SelectTrigger className="w-[280px] h-9 text-sm">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[240px] h-9 text-sm">
               <Filter className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-              <SelectValue />
+              <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              {FILTER_OPTIONS.map(f => (
-                <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+              <SelectItem value="all">Todos os status</SelectItem>
+              {SINISTRO_COLUMNS.map(c => (
+                <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          {activeFilterOption?.type === "text" && (
-            <Input
-              placeholder={`Filtrar por ${activeFilterOption.label}...`}
-              className="h-9 text-sm max-w-xs"
-              value={filterValue}
-              onChange={(e) => setFilterValue(e.target.value)}
-            />
+          <Input
+            type="date"
+            className="h-9 text-sm w-[170px]"
+            value={dateFilter ? dateFilter.split("/").reverse().join("-") : ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              setDateFilter(v ? v.split("-").reverse().join("/") : "");
+            }}
+          />
+          {dateFilter && (
+            <Button variant="ghost" size="sm" className="h-9" onClick={() => setDateFilter("")}>Limpar data</Button>
           )}
         </div>
 

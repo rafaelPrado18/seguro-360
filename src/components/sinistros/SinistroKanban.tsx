@@ -46,6 +46,7 @@ export interface SinistroItem {
   apolice?: string;
   oficina?: string;
   observacoes?: string;
+  dataTratativa?: string;
   veiculo?: SinistroVeiculo;
   terceiros?: SinistroTerceiroItem[];
 }
@@ -168,6 +169,12 @@ export function SinistroKanban({ sinistros, columns, onStatusChange, onItemClick
                           <span className="text-xs font-bold text-foreground">{item.valor}</span>
                           <span className="text-[10px] text-muted-foreground">{item.dataAbertura}</span>
                         </div>
+                        {item.dataTratativa && (
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="text-[10px] text-muted-foreground">Tratativa:</span>
+                            <span className="text-[10px] font-medium text-foreground">{item.dataTratativa}</span>
+                          </div>
+                        )}
                         <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
                           <span className="text-[10px] text-muted-foreground font-mono">{item.apolice || "—"}</span>
                           <div className="flex gap-0.5">

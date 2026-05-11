@@ -29,6 +29,7 @@ export interface SinistroCreatePayload {
   apolice?: string;
   oficina?: string;
   observacoes?: string;
+  dataTratativa?: string;
   veiculo?: {
     fabricante: string;
     modelo: string;
