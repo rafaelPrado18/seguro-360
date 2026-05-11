@@ -34,8 +34,8 @@ const FILTER_OPTIONS = [
 
 const Sinistros = () => {
   const [search, setSearch] = useState("");
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [filterValue, setFilterValue] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("");
   const [sinistros, setSinistros] = useState<SinistroItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [detailOpen, setDetailOpen] = useState(false);
