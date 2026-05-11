@@ -49,6 +49,15 @@ export function useUpdateWhatsAppTemplate() {
   });
 }
 
+export function useDeleteWhatsAppTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: import("@/services/whatsappService").WhatsAppTemplate) =>
+      whatsappService.deleteTemplate(payload),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["whatsapp", "templates"] }),
+  });
+}
+
 export function useWhatsAppStatus() {
   return useQuery({
     queryKey: ["whatsapp", "status"],
