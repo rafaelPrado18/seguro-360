@@ -293,14 +293,19 @@ const Ponto = () => {
       : filterUser === "__all__"
         ? "Todos"
         : (targetAgent?.name || allUsers.find(u => u.id === filterUser)?.name || filterUser);
+    const isGeral = isAdmin && filterUser === "__all__";
     const cpf = targetAgent?.documentNumber || "—";
     const empresa = "R. I. HATANAKA CORRETAGEM DE SEGUROS - 26.388.592/0001-54";
 
     doc.setFontSize(10);
     doc.text(`Empresa: ${empresa}`, 14, 30);
     doc.text(`Nome: ${userName}`, 14, 36);
-    doc.text(`CPF: ${cpf}`, 14, 42);
-    doc.text(`Período: ${fmtDate(startDate)} a ${fmtDate(endDate)}`, 14, 48);
+    let yInfo = 42;
+    if (!isGeral) {
+      doc.text(`CPF: ${cpf}`, 14, yInfo);
+      yInfo += 6;
+    }
+    doc.text(`Período: ${fmtDate(startDate)} a ${fmtDate(endDate)}`, 14, yInfo);
 
     // Aggregate totals
     let totalMs = 0;
