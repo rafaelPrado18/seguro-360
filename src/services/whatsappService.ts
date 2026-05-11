@@ -228,6 +228,27 @@ export const whatsappService = {
     if (!response.ok) throw new Error("Erro ao atualizar template");
   },
 
+  // DELETE /v1/delete/template - Excluir template
+  async deleteTemplate(payload: WhatsAppTemplate): Promise<void> {
+    const response = await fetch(`${BASE_URL}/v1/delete/template`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        orchestrator: "crm-hatanaka",
+      },
+      body: JSON.stringify({
+        filtros: {
+          id: payload.id,
+          nome: payload.nome,
+          categoria: payload.categoria,
+          status: payload.status,
+        },
+        deletarTodos: false,
+      }),
+    });
+    if (!response.ok) throw new Error("Erro ao excluir template");
+  },
+
   // POST /api/whatsapp/conversations/:id/archive - Arquivar conversa
   async archiveConversation(contatoId: string): Promise<void> {
     const response = await fetch(`${BASE_URL}/whatsapp/conversations/${contatoId}/archive`, { method: "POST" });
