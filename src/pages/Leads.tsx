@@ -195,20 +195,22 @@ const Leads = () => {
   const [sendMessage, setSendMessage] = useState(true);
 
   const distribution = useMemo(() => {
-    return agentCorretores.map(a => ({
-      corretor_id: a.agentId,
-      corretor_nome: a.name?.toLowerCase(),
-      total_leads: leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase()).length,
-      convertidos: leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase() && l.status === "convertido").length,
-      taxa_conversao: (() => {
-        const total = leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase()).length;
-        const conv = leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase() && l.status === "convertido").length;
-        return total > 0 ? Number(((conv / total) * 100).toFixed(1)) : 0;
-      })(),
-      valor_total_convertido: leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase() && l.status === "convertido")
-        .reduce((sum, l) => sum + (Number(l.valor_estimado) || 0), 0),
-    }));
-  }, [agentCorretores, leads]);
+    return agentCorretores.map(a => {
+      const name = a.name?.toLowerCase();
+      const myLeads = leads.filter(l => l.corretor_responsavel?.toLowerCase() === name);
+      const convertidosLeads = myLeads.filter(l => isConvertido(l.status));
+      const total = myLeads.length;
+      const conv = convertidosLeads.length;
+      return {
+        corretor_id: a.agentId,
+        corretor_nome: name,
+        total_leads: total,
+        convertidos: conv,
+        taxa_conversao: total > 0 ? Number(((conv / total) * 100).toFixed(1)) : 0,
+        valor_total_convertido: convertidosLeads.reduce((sum, l) => sum + (Number(l.valor_estimado) || 0), 0),
+      };
+    });
+  }, [agentCorretores, leads, isConvertido]);
 
   const getTemplateForStatus = (status: string): WhatsAppTemplate | null => {
     console.log('status:', status)
