@@ -453,8 +453,6 @@ const Leads = () => {
                       <th className="px-4 py-2.5 text-center font-medium text-muted-foreground">Leads</th>
                       <th className="px-4 py-2.5 text-center font-medium text-muted-foreground">Convertidos</th>
                       <th className="px-4 py-2.5 text-center font-medium text-muted-foreground">Taxa</th>
-                      <th className="px-4 py-2.5 text-right font-medium text-muted-foreground">Valor Convertido</th>
-                      <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Performance</th>
                     </tr>
                   </thead>
                   <tbody>
