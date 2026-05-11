@@ -127,6 +127,8 @@ const Leads = () => {
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
   const [leads, setLeads] = useState(PLACEHOLDER_LEADS);
   const [corretorFilter, setCorretorFilter] = useState<string[]>([]);
+  const [origemFilter, setOrigemFilter] = useState<string>("all");
+  const [ramoFilter, setRamoFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [customDateStart, setCustomDateStart] = useState<string>("");
   const [customDateEnd, setCustomDateEnd] = useState<string>("");
