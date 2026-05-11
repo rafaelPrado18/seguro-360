@@ -105,6 +105,19 @@ const Leads = () => {
     }
     return KANBAN_COLUMNS_FALLBACK;
   }, [apiStatuses]);
+
+  // Status keys representing "convertido" (ganho) and "perdido" — derived from API
+  const ganhoKeys = useMemo(() => {
+    const set = new Set<string>(["convertido"]);
+    apiStatuses?.forEach(s => { if (s.tipo === "ganho") set.add(s.key); });
+    return set;
+  }, [apiStatuses]);
+  const perdidoKeys = useMemo(() => {
+    const set = new Set<string>(["perdido"]);
+    apiStatuses?.forEach(s => { if (s.tipo === "perdido") set.add(s.key); });
+    return set;
+  }, [apiStatuses]);
+  const isConvertido = useCallback((s: string) => ganhoKeys.has(s), [ganhoKeys]);
   const updateLeadStatus = useUpdateLeadStatus();
   const redistributeLeads = useRedistributeLeads();
   const [search, setSearch] = useState("");
