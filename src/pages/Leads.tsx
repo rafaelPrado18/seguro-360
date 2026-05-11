@@ -170,7 +170,7 @@ const Leads = () => {
 
       case "convertido":
         counters.convertidos++;
-        counters.valor_total += lead.valor_estimado || 0;
+        counters.valor_total += Number(lead.valor_estimado) || 0;
         break;
 
       case "perdido":
