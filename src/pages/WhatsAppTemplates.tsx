@@ -78,11 +78,22 @@ const WhatsAppTemplates = () => {
     const vars = extractVariables(formData.conteudo);
 
     if (editingTemplate) {
-      setTemplates(prev => prev.map(t =>
-        t.id === editingTemplate.id
-          ? { ...t, nome: formData.nome, categoria: formData.categoria, conteudo: formData.conteudo, variaveis: vars }
-          : t
-      ));
+      const updated: WhatsAppTemplate = {
+        ...editingTemplate,
+        nome: formData.nome,
+        categoria: formData.categoria,
+        conteudo: formData.conteudo,
+        variaveis: vars,
+      };
+      try {
+        await updateTemplateMutation.mutateAsync(updated);
+        setTemplates(prev => prev.map(t => (t.id === editingTemplate.id ? updated : t)));
+        toast({ title: "Template atualizado", description: "Template atualizado com sucesso." });
+      } catch (err) {
+        console.error("Erro ao atualizar template:", err);
+        toast({ title: "Erro", description: "Não foi possível atualizar o template.", variant: "destructive" });
+        return;
+      }
     } else {
       try {
         await createTemplateMutation.mutateAsync({
