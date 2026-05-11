@@ -473,12 +473,6 @@ const Leads = () => {
                             {d.taxa_conversao}%
                           </span>
                         </td>
-                        <td className="px-4 py-2.5 text-right font-semibold">R$ {(d.valor_total_convertido / 1000).toFixed(0)}k</td>
-                        <td className="px-4 py-2.5">
-                          <div className="w-full bg-muted rounded-full h-1.5">
-                            <div className="h-1.5 rounded-full bg-primary transition-all" style={{ width: `${d.taxa_conversao * 2.5}%` }} />
-                          </div>
-                        </td>
                       </tr>
                     ))}
                   </tbody>
