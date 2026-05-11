@@ -160,6 +160,7 @@ input[type="datetime-local"],
 input[type="month"],
 input[type="week"] {
   color-scheme: light;
+  color: hsl(var(--foreground));
 }
 .dark input[type="date"],
 .dark input[type="time"],
@@ -167,4 +168,18 @@ input[type="week"] {
 .dark input[type="month"],
 .dark input[type="week"] {
   color-scheme: dark;
+  color: hsl(var(--foreground));
+}
+.dark input[type="date"]::-webkit-datetime-edit,
+.dark input[type="time"]::-webkit-datetime-edit,
+.dark input[type="datetime-local"]::-webkit-datetime-edit,
+.dark input[type="month"]::-webkit-datetime-edit,
+.dark input[type="week"]::-webkit-datetime-edit,
+.dark input[type="date"]::-webkit-datetime-edit-text,
+.dark input[type="date"]::-webkit-datetime-edit-day-field,
+.dark input[type="date"]::-webkit-datetime-edit-month-field,
+.dark input[type="date"]::-webkit-datetime-edit-year-field,
+.dark input[type="time"]::-webkit-datetime-edit-hour-field,
+.dark input[type="time"]::-webkit-datetime-edit-minute-field {
+  color: hsl(var(--foreground));
 }
