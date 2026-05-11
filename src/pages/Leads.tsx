@@ -204,11 +204,26 @@ const Leads = () => {
       .replace(/\s+/g, " ")
       .trim();
 
+  const nameConnectors = new Set(["de", "da", "do", "das", "dos", "e"]);
+  const getNameSignature = (s?: string | null) =>
+    normalizeName(s)
+      .split(" ")
+      .filter(token => token && !nameConnectors.has(token))
+      .sort()
+      .join(" ");
+
+  const isSameCorretor = (a?: string | null, b?: string | null) => {
+    const normalizedA = normalizeName(a);
+    const normalizedB = normalizeName(b);
+    if (!normalizedA || !normalizedB) return false;
+    if (normalizedA === normalizedB) return true;
+    return getNameSignature(a) === getNameSignature(b);
+  };
+
   const distribution = useMemo(() => {
     return agentCorretores.map(a => {
       const name = a.name?.toLowerCase();
-      const normalized = normalizeName(a.name);
-      const myLeads = leads.filter(l => normalizeName(l.corretor_responsavel) === normalized);
+      const myLeads = leads.filter(l => isSameCorretor(l.corretor_responsavel, a.name));
       const convertidosLeads = myLeads.filter(l => isConvertido(l.status));
       const total = myLeads.length;
       const conv = convertidosLeads.length;
