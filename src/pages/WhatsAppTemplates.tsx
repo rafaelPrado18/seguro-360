@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Copy, Send, Eye, Variable, FileText } from "lucide-react";
 import type { WhatsAppTemplate } from "@/services/whatsappService";
-import { useWhatsAppTemplates, useCreateWhatsAppTemplate, useUpdateWhatsAppTemplate } from "@/hooks/useWhatsApp";
+import { useWhatsAppTemplates, useCreateWhatsAppTemplate, useUpdateWhatsAppTemplate, useDeleteWhatsAppTemplate } from "@/hooks/useWhatsApp";
 import { toast } from "@/hooks/use-toast";
 
 const AVAILABLE_VARIABLES = [
@@ -113,8 +113,17 @@ const WhatsAppTemplates = () => {
     setIsDialogOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    setTemplates(prev => prev.filter(t => t.id !== id));
+  const deleteTemplateMutation = useDeleteWhatsAppTemplate();
+
+  const handleDelete = async (template: WhatsAppTemplate) => {
+    try {
+      await deleteTemplateMutation.mutateAsync(template);
+      setTemplates(prev => prev.filter(t => t.id !== template.id));
+      toast({ title: "Template excluído", description: "Template removido com sucesso." });
+    } catch (err) {
+      console.error("Erro ao excluir template:", err);
+      toast({ title: "Erro", description: "Não foi possível excluir o template.", variant: "destructive" });
+    }
   };
 
   const getPreviewText = (template: WhatsAppTemplate) => {
@@ -201,7 +210,7 @@ const WhatsAppTemplates = () => {
                       onClick={() => setTemplates(prev => [...prev, { ...t, id: Date.now().toString(), nome: `${t.nome} (cópia)`, status: "pendente" }])}>
                       <Copy className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(t.id)} title="Excluir">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(t)} title="Excluir">
                       <Trash2 className="h-3.5 w-3.5 text-destructive" />
                     </Button>
                   </div>
