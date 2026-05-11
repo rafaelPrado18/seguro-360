@@ -105,6 +105,19 @@ const Leads = () => {
     }
     return KANBAN_COLUMNS_FALLBACK;
   }, [apiStatuses]);
+
+  // Status keys representing "convertido" (ganho) and "perdido" — derived from API
+  const ganhoKeys = useMemo(() => {
+    const set = new Set<string>(["convertido"]);
+    apiStatuses?.forEach(s => { if (s.tipo === "ganho") set.add(s.key); });
+    return set;
+  }, [apiStatuses]);
+  const perdidoKeys = useMemo(() => {
+    const set = new Set<string>(["perdido"]);
+    apiStatuses?.forEach(s => { if (s.tipo === "perdido") set.add(s.key); });
+    return set;
+  }, [apiStatuses]);
+  const isConvertido = useCallback((s: string) => ganhoKeys.has(s), [ganhoKeys]);
   const updateLeadStatus = useUpdateLeadStatus();
   const redistributeLeads = useRedistributeLeads();
   const [search, setSearch] = useState("");
@@ -151,31 +164,17 @@ const Leads = () => {
   };
 
   for (const lead of leads) {
+    if (isConvertido(lead.status)) {
+      counters.convertidos++;
+      counters.valor_total += Number(lead.valor_estimado) || 0;
+      continue;
+    }
+    if (perdidoKeys.has(lead.status)) { counters.perdidos++; continue; }
     switch (lead.status) {
-      case "novo":
-        counters.novos++;
-        break;
-
-      case "em_contato":
-        counters.em_contato++;
-        break;
-
-      case "qualificado":
-        counters.qualificados++;
-        break;
-
-      case "proposta_enviada":
-        counters.proposta_enviada++;
-        break;
-
-      case "convertido":
-        counters.convertidos++;
-        counters.valor_total += Number(lead.valor_estimado) || 0;
-        break;
-
-      case "perdido":
-        counters.perdidos++;
-        break;
+      case "novo": counters.novos++; break;
+      case "em_contato": counters.em_contato++; break;
+      case "qualificado": counters.qualificados++; break;
+      case "proposta_enviada": counters.proposta_enviada++; break;
     }
   }
 
@@ -188,7 +187,7 @@ const Leads = () => {
     ...counters,
     taxa_conversao: Number(taxa.toFixed(1)),
   };
-}, [leads]);
+}, [leads, isConvertido, perdidoKeys]);
 
   // Status change + template confirmation
   const [pendingChange, setPendingChange] = useState<{ leadId: string; newStatus: string; lead: Lead } | null>(null);
@@ -196,20 +195,22 @@ const Leads = () => {
   const [sendMessage, setSendMessage] = useState(true);
 
   const distribution = useMemo(() => {
-    return agentCorretores.map(a => ({
-      corretor_id: a.agentId,
-      corretor_nome: a.name?.toLowerCase(),
-      total_leads: leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase()).length,
-      convertidos: leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase() && l.status === "convertido").length,
-      taxa_conversao: (() => {
-        const total = leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase()).length;
-        const conv = leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase() && l.status === "convertido").length;
-        return total > 0 ? Number(((conv / total) * 100).toFixed(1)) : 0;
-      })(),
-      valor_total_convertido: leads.filter(l => l.corretor_responsavel?.toLowerCase() === a.name?.toLowerCase() && l.status === "convertido")
-        .reduce((sum, l) => sum + (Number(l.valor_estimado) || 0), 0),
-    }));
-  }, [agentCorretores, leads]);
+    return agentCorretores.map(a => {
+      const name = a.name?.toLowerCase();
+      const myLeads = leads.filter(l => l.corretor_responsavel?.toLowerCase() === name);
+      const convertidosLeads = myLeads.filter(l => isConvertido(l.status));
+      const total = myLeads.length;
+      const conv = convertidosLeads.length;
+      return {
+        corretor_id: a.agentId,
+        corretor_nome: name,
+        total_leads: total,
+        convertidos: conv,
+        taxa_conversao: total > 0 ? Number(((conv / total) * 100).toFixed(1)) : 0,
+        valor_total_convertido: convertidosLeads.reduce((sum, l) => sum + (Number(l.valor_estimado) || 0), 0),
+      };
+    });
+  }, [agentCorretores, leads, isConvertido]);
 
   const getTemplateForStatus = (status: string): WhatsAppTemplate | null => {
     console.log('status:', status)
