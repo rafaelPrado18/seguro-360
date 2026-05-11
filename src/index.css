@@ -175,11 +175,21 @@ input[type="week"] {
 .dark input[type="datetime-local"]::-webkit-datetime-edit,
 .dark input[type="month"]::-webkit-datetime-edit,
 .dark input[type="week"]::-webkit-datetime-edit,
+.dark input[type="date"]::-webkit-datetime-edit-fields-wrapper,
 .dark input[type="date"]::-webkit-datetime-edit-text,
 .dark input[type="date"]::-webkit-datetime-edit-day-field,
 .dark input[type="date"]::-webkit-datetime-edit-month-field,
 .dark input[type="date"]::-webkit-datetime-edit-year-field,
 .dark input[type="time"]::-webkit-datetime-edit-hour-field,
-.dark input[type="time"]::-webkit-datetime-edit-minute-field {
-  color: hsl(var(--foreground));
+.dark input[type="time"]::-webkit-datetime-edit-minute-field,
+.dark input[type="time"]::-webkit-datetime-edit-ampm-field {
+  color: hsl(var(--foreground)) !important;
+  -webkit-text-fill-color: hsl(var(--foreground)) !important;
+}
+.dark input[type="date"],
+.dark input[type="time"],
+.dark input[type="datetime-local"],
+.dark input[type="month"],
+.dark input[type="week"] {
+  -webkit-text-fill-color: hsl(var(--foreground));
 }
