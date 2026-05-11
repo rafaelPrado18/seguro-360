@@ -202,6 +202,32 @@ export const whatsappService = {
     if (!response.ok) throw new Error("Erro ao criar template");
   },
 
+  // PATCH /v1/update/template - Atualizar template
+  async updateTemplate(payload: WhatsAppTemplate): Promise<void> {
+    const response = await fetch(`${BASE_URL}/v1/update/template`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", orchestrator: "crm-hatanaka" },
+      body: JSON.stringify({
+        filtros: {
+          id: payload.id,
+          nome: payload.nome,
+          categoria: payload.categoria,
+          status: payload.status,
+        },
+        dados: {
+          id: payload.id,
+          nome: payload.nome,
+          categoria: payload.categoria,
+          conteudo: payload.conteudo,
+          variaveis: payload.variaveis,
+          status: payload.status,
+        },
+        atualizarTodos: false,
+      }),
+    });
+    if (!response.ok) throw new Error("Erro ao atualizar template");
+  },
+
   // POST /api/whatsapp/conversations/:id/archive - Arquivar conversa
   async archiveConversation(contatoId: string): Promise<void> {
     const response = await fetch(`${BASE_URL}/whatsapp/conversations/${contatoId}/archive`, { method: "POST" });
