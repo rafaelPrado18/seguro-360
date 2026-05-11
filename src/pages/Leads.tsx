@@ -378,9 +378,23 @@ const Leads = () => {
     return null;
   };
 
+  const origemOptions = useMemo(() => {
+    const set = new Set<string>();
+    leads.forEach(l => { if (l.origem) set.add(l.origem); });
+    return Array.from(set).sort();
+  }, [leads]);
+
+  const ramoOptions = useMemo(() => {
+    const set = new Set<string>();
+    leads.forEach(l => { if (l.ramo_interesse) set.add(l.ramo_interesse); });
+    return Array.from(set).sort();
+  }, [leads]);
+
   const displayLeads = leads.filter(l => {
     const matchesSearch = l.nome?.toLowerCase()?.includes(search?.toLowerCase()) || l.telefone?.includes(search);
     const matchesStatus = statusFilter === "all" || l.status === statusFilter;
+    const matchesOrigem = origemFilter === "all" || l.origem === origemFilter;
+    const matchesRamo = ramoFilter === "all" || l.ramo_interesse === ramoFilter;
     const matchesCorretor = isAdmin
       ? corretorFilter.length === 0 || corretorFilter.includes(l.corretor_responsavel?.toLowerCase() || "")
       : l.corretor_responsavel?.toLowerCase() === currentUser.nome.toLowerCase() || !l.corretor_responsavel?.toLowerCase();
@@ -398,7 +412,7 @@ const Leads = () => {
       }
     }
 
-    return matchesSearch && matchesStatus && matchesCorretor && matchesDate;
+    return matchesSearch && matchesStatus && matchesOrigem && matchesRamo && matchesCorretor && matchesDate;
   });
 
   const sortedLeads = [...displayLeads].sort((a, b) => {
