@@ -453,8 +453,6 @@ const Leads = () => {
                       <th className="px-4 py-2.5 text-center font-medium text-muted-foreground">Leads</th>
                       <th className="px-4 py-2.5 text-center font-medium text-muted-foreground">Convertidos</th>
                       <th className="px-4 py-2.5 text-center font-medium text-muted-foreground">Taxa</th>
-                      <th className="px-4 py-2.5 text-right font-medium text-muted-foreground">Valor Convertido</th>
-                      <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Performance</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -474,12 +472,6 @@ const Leads = () => {
                           <span className={`font-semibold ${d.taxa_conversao >= 35 ? "text-success" : d.taxa_conversao >= 25 ? "text-warning" : "text-destructive"}`}>
                             {d.taxa_conversao}%
                           </span>
-                        </td>
-                        <td className="px-4 py-2.5 text-right font-semibold">R$ {(d.valor_total_convertido / 1000).toFixed(0)}k</td>
-                        <td className="px-4 py-2.5">
-                          <div className="w-full bg-muted rounded-full h-1.5">
-                            <div className="h-1.5 rounded-full bg-primary transition-all" style={{ width: `${d.taxa_conversao * 2.5}%` }} />
-                          </div>
                         </td>
                       </tr>
                     ))}
