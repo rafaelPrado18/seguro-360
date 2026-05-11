@@ -60,6 +60,7 @@ const Sinistros = () => {
         apolice: s.apolice,
         oficina: s.oficina,
         observacoes: s.observacoes,
+        dataTratativa: s.dataTratativa,
         veiculo: s.veiculo,
         terceiros: s.terceiros,
       }));
