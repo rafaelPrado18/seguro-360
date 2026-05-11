@@ -164,31 +164,17 @@ const Leads = () => {
   };
 
   for (const lead of leads) {
+    if (isConvertido(lead.status)) {
+      counters.convertidos++;
+      counters.valor_total += Number(lead.valor_estimado) || 0;
+      continue;
+    }
+    if (perdidoKeys.has(lead.status)) { counters.perdidos++; continue; }
     switch (lead.status) {
-      case "novo":
-        counters.novos++;
-        break;
-
-      case "em_contato":
-        counters.em_contato++;
-        break;
-
-      case "qualificado":
-        counters.qualificados++;
-        break;
-
-      case "proposta_enviada":
-        counters.proposta_enviada++;
-        break;
-
-      case "convertido":
-        counters.convertidos++;
-        counters.valor_total += Number(lead.valor_estimado) || 0;
-        break;
-
-      case "perdido":
-        counters.perdidos++;
-        break;
+      case "novo": counters.novos++; break;
+      case "em_contato": counters.em_contato++; break;
+      case "qualificado": counters.qualificados++; break;
+      case "proposta_enviada": counters.proposta_enviada++; break;
     }
   }
 
@@ -201,7 +187,7 @@ const Leads = () => {
     ...counters,
     taxa_conversao: Number(taxa.toFixed(1)),
   };
-}, [leads]);
+}, [leads, isConvertido, perdidoKeys]);
 
   // Status change + template confirmation
   const [pendingChange, setPendingChange] = useState<{ leadId: string; newStatus: string; lead: Lead } | null>(null);
