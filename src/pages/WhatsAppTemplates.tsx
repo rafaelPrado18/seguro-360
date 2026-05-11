@@ -113,8 +113,17 @@ const WhatsAppTemplates = () => {
     setIsDialogOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    setTemplates(prev => prev.filter(t => t.id !== id));
+  const deleteTemplateMutation = useDeleteWhatsAppTemplate();
+
+  const handleDelete = async (template: WhatsAppTemplate) => {
+    try {
+      await deleteTemplateMutation.mutateAsync(template);
+      setTemplates(prev => prev.filter(t => t.id !== template.id));
+      toast({ title: "Template excluído", description: "Template removido com sucesso." });
+    } catch (err) {
+      console.error("Erro ao excluir template:", err);
+      toast({ title: "Erro", description: "Não foi possível excluir o template.", variant: "destructive" });
+    }
   };
 
   const getPreviewText = (template: WhatsAppTemplate) => {
