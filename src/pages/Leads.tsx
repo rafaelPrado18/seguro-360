@@ -196,10 +196,19 @@ const Leads = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<WhatsAppTemplate | null>(null);
   const [sendMessage, setSendMessage] = useState(true);
 
+  const normalizeName = (s?: string | null) =>
+    (s || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+
   const distribution = useMemo(() => {
     return agentCorretores.map(a => {
       const name = a.name?.toLowerCase();
-      const myLeads = leads.filter(l => l.corretor_responsavel?.toLowerCase() === name);
+      const normalized = normalizeName(a.name);
+      const myLeads = leads.filter(l => normalizeName(l.corretor_responsavel) === normalized);
       const convertidosLeads = myLeads.filter(l => isConvertido(l.status));
       const total = myLeads.length;
       const conv = convertidosLeads.length;
