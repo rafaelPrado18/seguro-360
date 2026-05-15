@@ -14,7 +14,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, UserPlus, Users, Car, Plus, Trash2 } from "lucide-react";
+import { Loader2, UserPlus, Users, Car, Plus, Trash2, Check, ChevronsUpDown } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import { useClients } from "@/hooks/useClients";
 import { useAgenda } from "@/hooks/useAgenda";
 import { NewClientDialog } from "@/components/clientes/NewClientDialog";
@@ -61,6 +64,7 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
   const [showNewClientDialog, setShowNewClientDialog] = useState(false);
   const [pendingClientName, setPendingClientName] = useState<string | null>(null);
   const [terceiros, setTerceiros] = useState<SinistroTerceiro[]>([]);
+  const [clienteOpen, setClienteOpen] = useState(false);
   const { data: clients, isLoading: loadingClients } = useClients();
   const { createTarefa } = useAgenda();
 
@@ -207,26 +211,48 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
                     </TabsList>
 
                     <TabsContent value="existente" className="mt-3 space-y-3">
-                      <FormField control={form.control} name="clienteId" render={({ field }) => (
-                        <FormItem>
+                      <FormField control={form.control} name="clienteId" render={({ field }) => {
+                        const selected = (clients || []).find(c => c.id === field.value);
+                        return (
+                        <FormItem className="flex flex-col">
                           <FormLabel>Cliente</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder={loadingClients ? "Carregando..." : "Selecione um cliente"} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {(clients || []).map(c => (
-                                <SelectItem key={c.id} value={c.id}>
-                                  {c.nome} — {c.cpf}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <Popover open={clienteOpen} onOpenChange={setClienteOpen}>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button variant="outline" role="combobox" aria-expanded={clienteOpen} className="w-full justify-between font-normal">
+                                  {loadingClients ? "Carregando..." : selected ? `${selected.nome} — ${selected.cpf}` : "Selecione um cliente"}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                              <Command filter={(value, search) => value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0}>
+                                <CommandInput placeholder="Buscar por nome ou CPF..." />
+                                <CommandList>
+                                  <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
+                                  <CommandGroup>
+                                    {(clients || []).map(c => (
+                                      <CommandItem
+                                        key={c.id}
+                                        value={`${c.nome} ${c.cpf || ""}`}
+                                        onSelect={() => {
+                                          field.onChange(c.id);
+                                          setClienteOpen(false);
+                                        }}
+                                      >
+                                        <Check className={cn("mr-2 h-4 w-4", field.value === c.id ? "opacity-100" : "opacity-0")} />
+                                        {c.nome} — {c.cpf}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
                           <FormMessage />
                         </FormItem>
-                      )} />
+                        );
+                      }} />
 
                       {/* Vehicle selection - shown when client is selected */}
                       {selectedClient && selectedClient.vehicles.length > 0 && (
