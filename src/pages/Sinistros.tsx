@@ -20,6 +20,7 @@ const SINISTRO_COLUMNS: SinistroKanbanColumn[] = [
   { id: "pendente_retorno", label: "Pendente Retorno Seg/Terc", color: "text-warning", bgColor: "bg-warning" },
   { id: "fora_do_prazo", label: "Fora do Prazo", color: "text-destructive", bgColor: "bg-destructive" },
   { id: "acompanhamento_reparo", label: "Acompanhamento de Reparo", color: "text-success", bgColor: "bg-success" },
+  { id: "finalizado", label: "Finalizado", color: "text-success", bgColor: "bg-success" },
 ];
 
 const FILTER_OPTIONS = [
