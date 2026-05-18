@@ -297,6 +297,16 @@ export const whatsappService = {
     return ;
   },
 
+  // MOCK - Verifica se o número possui WhatsApp.
+  // TODO: substituir pela chamada real quando o endpoint estiver disponível.
+  async checkNumberExists(telefone: string): Promise<boolean> {
+    await new Promise((r) => setTimeout(r, 600));
+    const digits = telefone.replace(/\D/g, "");
+    // Regras simuladas: válido se tiver 12-13 dígitos e não terminar em "0000"
+    if (digits.length < 12 || digits.length > 13) return false;
+    if (digits.endsWith("0000")) return false;
+    return true;
+
   // GET /api/whatsapp/webhook - Endpoint de webhook para receber mensagens (server-side)
   // POST /api/whatsapp/webhook - Receber notificações de mensagens (server-side)
   // Nota: O webhook deve ser configurado no painel da sua API WhatsApp apontando para o seu backend
