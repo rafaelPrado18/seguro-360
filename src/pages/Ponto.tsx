@@ -500,11 +500,45 @@ const Ponto = () => {
               )}
               <div>
                 <Label className="text-xs text-muted-foreground">Início</Label>
-                <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-44" />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-44 justify-start text-left font-normal", !startDate && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {startDate ? format(new Date(startDate + "T00:00:00"), "dd/MM/yyyy", { locale: ptBR }) : "Selecione"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={startDate ? new Date(startDate + "T00:00:00") : undefined}
+                      onSelect={(d) => d && setStartDate(format(d, "yyyy-MM-dd"))}
+                      initialFocus
+                      locale={ptBR}
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Fim</Label>
-                <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-44" />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-44 justify-start text-left font-normal", !endDate && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {endDate ? format(new Date(endDate + "T00:00:00"), "dd/MM/yyyy", { locale: ptBR }) : "Selecione"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={endDate ? new Date(endDate + "T00:00:00") : undefined}
+                      onSelect={(d) => d && setEndDate(format(d, "yyyy-MM-dd"))}
+                      initialFocus
+                      locale={ptBR}
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               <Button variant="outline" onClick={fetchRecords} disabled={loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Atualizar"}
