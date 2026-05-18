@@ -644,15 +644,6 @@ const WhatsApp = () => {
                   >
                     <User className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 hidden sm:flex" title="Vincular Lead">
-                    <Link2 className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 hidden sm:flex" title="Arquivar" onClick={handleArchive}>
-                    <Archive className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                  </Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8">
                     <MoreVertical className="h-4 w-4 text-muted-foreground" />
                   </Button>
