@@ -306,7 +306,7 @@ export const whatsappService = {
       throw new Error("Instância do WhatsApp não configurada");
     }
     const response = await fetch(`${BASE_URL}/v1/whatsapp/verify/number`, {
-      method: "GET",
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         instanceId,
