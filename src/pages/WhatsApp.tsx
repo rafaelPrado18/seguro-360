@@ -293,10 +293,8 @@ const WhatsApp = () => {
 
     const rawPhone = selectedContact.telefone.replace(/\D/g, "");
     const chatId = rawPhone.includes("@") ? rawPhone : `${rawPhone}@c.us`;
-    const quotePrefix = replyingTo
-      ? `> ${(replyingTo.conteudo || "").split("\n").join("\n> ").slice(0, 300)}\n\n`
-      : "";
-    const text = quotePrefix + messageInput;
+    const text = messageInput;
+    const replyMessageId = replyingTo?.id;
 
     // Optimistic: show message immediately
     const optimisticMsg: ExtMessage = {
@@ -316,7 +314,14 @@ const WhatsApp = () => {
     setReplyingTo(null);
 
     sendMessageMutation.mutate(
-      { chatId, tipo: "text", userId, message: text, ...(instanceId ? { instanceId } : {}) },
+      {
+        chatId,
+        tipo: "text",
+        userId,
+        message: text,
+        ...(instanceId ? { instanceId } : {}),
+        ...(replyMessageId ? { messageId: replyMessageId } : {}),
+      },
       {
         onError: () => {
           toast({ title: "Erro", description: "Falha ao enviar mensagem", variant: "destructive" });

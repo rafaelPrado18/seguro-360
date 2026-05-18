@@ -49,6 +49,7 @@ export interface SendMessagePayload {
   media_url?: string;
   template_id?: string;
   template_vars?: Record<string, string>;
+  messageId?: string;
 }
 
 export interface ConversationFilters {
@@ -107,6 +108,7 @@ export const whatsappService = {
       userId: payload.userId,
       chatId: payload.chatId,
       message: payload.message,
+      ...(payload.messageId ? { messageId: payload.messageId } : {}),
       ...(resolvedInstanceId ? { instanceId: resolvedInstanceId } : {}),
       ...(whatsappInstanceToken ? { instanceToken: whatsappInstanceToken } : {}),
     });
