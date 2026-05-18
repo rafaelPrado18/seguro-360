@@ -814,6 +814,20 @@ const WhatsApp = () => {
                   </div>
                 ) : (
                   <div className="max-w-2xl mx-auto">
+                    {replyingTo && (
+                      <div className="flex items-start gap-2 mb-2 p-2 rounded-md bg-muted border-l-4 border-primary">
+                        <Reply className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-semibold text-primary">
+                            Respondendo a {replyingTo.direcao === "enviada" ? "você" : (selectedContact?.nome || "contato")}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">{replyingTo.conteudo || "(mídia)"}</p>
+                        </div>
+                        <button onClick={() => setReplyingTo(null)} className="text-muted-foreground hover:text-foreground flex-shrink-0">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
                     {/* Preview area for pending files */}
                     {pendingFiles.length > 0 && (
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
