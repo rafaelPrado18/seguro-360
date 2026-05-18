@@ -306,6 +306,8 @@ export const whatsappService = {
     if (digits.length < 12 || digits.length > 13) return false;
     if (digits.endsWith("0000")) return false;
     return true;
+  },
+
 
   // GET /api/whatsapp/webhook - Endpoint de webhook para receber mensagens (server-side)
   // POST /api/whatsapp/webhook - Receber notificações de mensagens (server-side)
