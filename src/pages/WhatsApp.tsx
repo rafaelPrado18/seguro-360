@@ -552,9 +552,6 @@ const WhatsApp = () => {
                 <Button variant="ghost" size="icon" className="h-7 w-7" title="Novo Contato" onClick={() => setNewContactOpen(true)}>
                   <Plus className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7" title="Arquivadas">
-                  <Archive className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
               </div>
             </div>
             <div className="relative">
@@ -643,9 +640,6 @@ const WhatsApp = () => {
                     title="Ver detalhes do Lead" onClick={() => setShowLeadDetails(!showLeadDetails)}
                   >
                     <User className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreVertical className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </div>
               </div>
