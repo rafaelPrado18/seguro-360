@@ -269,24 +269,6 @@ const Ponto = () => {
 
   const handleExportPdf = () => {
     const doc = new jsPDF();
-    // Header
-    doc.setFillColor(28, 41, 84);
-    doc.rect(0, 0, doc.internal.pageSize.getWidth(), 22, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("HataSeg - Seguros & Previdência", 14, 10);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("Relatório de Ponto", 14, 17);
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(9);
-    doc.text(
-      `Gerado em ${new Date().toLocaleString("pt-BR")}`,
-      doc.internal.pageSize.getWidth() - 14,
-      17,
-      { align: "right" }
-    );
 
     const fmtDate = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("pt-BR");
 
@@ -308,82 +290,123 @@ const Ponto = () => {
     const cpf = targetAgent?.documentNumber || "—";
     const empresa = "R. I. HATANAKA CORRETAGEM DE SEGUROS - 26.388.592/0001-54";
 
-    doc.setFontSize(10);
-    doc.text(`Empresa: ${empresa}`, 14, 30);
-    doc.text(`Nome: ${userName}`, 14, 36);
-    let yInfo = 42;
-    if (!isGeral) {
-      doc.text(`CPF: ${cpf}`, 14, yInfo);
+    const renderUserSection = (
+      uName: string,
+      uCpf: string,
+      groups: typeof groupedHistory,
+      startY: number,
+    ) => {
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Empresa: ${empresa}`, 14, startY);
+      doc.text(`Nome: ${uName}`, 14, startY + 6);
+      let yInfo = startY + 12;
+      doc.text(`CPF: ${uCpf}`, 14, yInfo);
       yInfo += 6;
+      doc.text(`Período: ${fmtDate(startDate)} a ${fmtDate(endDate)}`, 14, yInfo);
+
+      let totalMs = 0;
+      let totalExtraMs = 0;
+      let totalAtrasoMs = 0;
+      groups.forEach(g => {
+        const ms = totalWorkedMs(g.records);
+        if (ms != null) {
+          totalMs += ms;
+          if (!isCorretorNovo(g.userId)) totalExtraMs += Math.max(0, ms - STANDARD_WORK_MS);
+        }
+        const e = g.records.find(r => r.type === "entrada");
+        if (e) {
+          const d = new Date(e.iso);
+          const expected = new Date(d);
+          expected.setHours(EXPECTED_ENTRY_HOUR, EXPECTED_ENTRY_MIN, 0, 0);
+          const diff = d.getTime() - expected.getTime();
+          if (diff > ENTRY_TOLERANCE_MS) totalAtrasoMs += diff;
+        }
+      });
+
+      autoTable(doc, {
+        startY: yInfo + 6,
+        head: [["Dias registrados", "Total trabalhado", "Total horas extras", "Total atrasos"]],
+        body: [[
+          String(groups.length),
+          formatHM(totalMs),
+          formatHM(totalExtraMs),
+          formatHM(totalAtrasoMs),
+        ]],
+        theme: "grid",
+        headStyles: { fillColor: [28, 41, 84], textColor: 255, fontSize: 9 },
+        bodyStyles: { fontSize: 10, halign: "center", fontStyle: "bold" },
+        margin: { left: 14, right: 14 },
+      });
+
+      const yTable = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6;
+
+      const rows = groups.map(g => {
+        const t = (type: PunchType) => g.records.find(r => r.type === type)?.time.slice(0, 5) || "—";
+        return [
+          new Date(g.date + "T00:00:00").toLocaleDateString("pt-BR"),
+          t("entrada"),
+          t("saida_almoco"),
+          t("retorno_almoco"),
+          t("saida"),
+          diffHours(g.records),
+          overtime(g.records, isCorretorNovo(g.userId)),
+          atraso(g.records),
+        ];
+      });
+
+      autoTable(doc, {
+        startY: yTable,
+        head: [["Data", "Entrada", "S. Almoço", "R. Almoço", "Saída", "Total", "Extra", "Atraso"]],
+        body: rows,
+        theme: "striped",
+        headStyles: { fillColor: [28, 41, 84], textColor: 255, fontSize: 9 },
+        styles: { fontSize: 8 },
+        margin: { left: 14, right: 14 },
+      });
+    };
+
+    const drawHeader = () => {
+      doc.setFillColor(28, 41, 84);
+      doc.rect(0, 0, doc.internal.pageSize.getWidth(), 22, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("HataSeg - Seguros & Previdência", 14, 10);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text("Relatório de Ponto", 14, 17);
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(9);
+      doc.text(
+        `Gerado em ${new Date().toLocaleString("pt-BR")}`,
+        doc.internal.pageSize.getWidth() - 14,
+        17,
+        { align: "right" }
+      );
+    };
+
+    if (isGeral) {
+      // One page per collaborator
+      const byUser = new Map<string, typeof groupedHistory>();
+      groupedHistory.forEach(g => {
+        if (!byUser.has(g.userId)) byUser.set(g.userId, []);
+        byUser.get(g.userId)!.push(g);
+      });
+      const entries = Array.from(byUser.entries()).sort((a, b) =>
+        a[1][0].userName.localeCompare(b[1][0].userName, "pt-BR", { sensitivity: "base" })
+      );
+      entries.forEach(([uid, groups], idx) => {
+        if (idx > 0) doc.addPage();
+        drawHeader();
+        const agent = agents.find(a => a.userId === uid || a.agentId === uid);
+        renderUserSection(groups[0].userName, agent?.documentNumber || "—", groups, 30);
+      });
+    } else {
+      drawHeader();
+      renderUserSection(userName, cpf, groupedHistory, 30);
     }
-    doc.text(`Período: ${fmtDate(startDate)} a ${fmtDate(endDate)}`, 14, yInfo);
-
-    // Aggregate totals
-    let totalMs = 0;
-    let totalExtraMs = 0;
-    let totalAtrasoMs = 0;
-    groupedHistory.forEach(g => {
-      const ms = totalWorkedMs(g.records);
-      if (ms != null) {
-        totalMs += ms;
-        if (!isCorretorNovo(g.userId)) totalExtraMs += Math.max(0, ms - STANDARD_WORK_MS);
-      }
-      const e = g.records.find(r => r.type === "entrada");
-      if (e) {
-        const d = new Date(e.iso);
-        const expected = new Date(d);
-        expected.setHours(EXPECTED_ENTRY_HOUR, EXPECTED_ENTRY_MIN, 0, 0);
-        const diff = d.getTime() - expected.getTime();
-        if (diff > ENTRY_TOLERANCE_MS) totalAtrasoMs += diff;
-      }
-    });
-
-    autoTable(doc, {
-      startY: 54,
-      head: [["Dias registrados", "Total trabalhado", "Total horas extras", "Total atrasos"]],
-      body: [[
-        String(groupedHistory.length),
-        formatHM(totalMs),
-        formatHM(totalExtraMs),
-        formatHM(totalAtrasoMs),
-      ]],
-      theme: "grid",
-      headStyles: { fillColor: [28, 41, 84], textColor: 255, fontSize: 9 },
-      bodyStyles: { fontSize: 10, halign: "center", fontStyle: "bold" },
-      margin: { left: 14, right: 14 },
-    });
-
-    const yStart = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6;
-
-    const showUser = isAdmin && filterUser !== "__me__";
-    const head = showUser
-      ? [["Data", "Usuário", "Entrada", "S. Almoço", "R. Almoço", "Saída", "Total", "Extra", "Atraso"]]
-      : [["Data", "Entrada", "S. Almoço", "R. Almoço", "Saída", "Total", "Extra", "Atraso"]];
-
-    const rows = groupedHistory.map(g => {
-      const t = (type: PunchType) => g.records.find(r => r.type === type)?.time.slice(0, 5) || "—";
-      const base = [
-        new Date(g.date + "T00:00:00").toLocaleDateString("pt-BR"),
-        t("entrada"),
-        t("saida_almoco"),
-        t("retorno_almoco"),
-        t("saida"),
-        diffHours(g.records),
-        overtime(g.records, isCorretorNovo(g.userId)),
-        atraso(g.records),
-      ];
-      return showUser ? [base[0], g.userName, ...base.slice(1)] : base;
-    });
-
-    autoTable(doc, {
-      startY: yStart,
-      head,
-      body: rows,
-      theme: "striped",
-      headStyles: { fillColor: [28, 41, 84], textColor: 255, fontSize: 9 },
-      styles: { fontSize: 8 },
-      margin: { left: 14, right: 14 },
-    });
 
     doc.save(`relatorio_ponto_${startDate}_${endDate}.pdf`);
   };
