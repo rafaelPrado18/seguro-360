@@ -122,22 +122,23 @@ const Ponto = () => {
 
   const handleSaveEdit = async () => {
     if (!editing) return;
-    const punchId = editing.punchId || editing._id;
-    if (!punchId) {
-      toast({ title: "Registro sem ID", variant: "destructive" });
-      return;
-    }
     const time = editTime.length === 5 ? `${editTime}:00` : editTime;
     const iso = new Date(`${editing.date}T${time}`).toISOString();
+    const punchId = editing.punchId || editing._id;
     setSavingEdit(true);
     try {
-      await pontoService.update({ ...editing, punchId, time, iso });
-      toast({ title: "Registro atualizado" });
+      if (punchId) {
+        await pontoService.update({ ...editing, punchId, time, iso });
+        toast({ title: "Registro atualizado" });
+      } else {
+        await pontoService.create({ ...editing, time, iso });
+        toast({ title: "Registro criado" });
+      }
       setEditing(null);
       await fetchRecords();
     } catch (e) {
       console.error(e);
-      toast({ title: "Erro ao atualizar registro", variant: "destructive" });
+      toast({ title: "Erro ao salvar registro", variant: "destructive" });
     } finally {
       setSavingEdit(false);
     }
@@ -146,6 +147,11 @@ const Ponto = () => {
   const openEdit = (rec: PunchRecord) => {
     setEditing(rec);
     setEditTime(rec.time.slice(0, 5));
+  };
+
+  const openCreate = (userId: string, userName: string, date: string, type: PunchType) => {
+    setEditing({ userId, userName, date, type, time: "", iso: "" });
+    setEditTime("");
   };
 
   useEffect(() => {
