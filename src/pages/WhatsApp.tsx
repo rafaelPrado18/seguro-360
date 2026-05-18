@@ -143,6 +143,7 @@ const WhatsApp = () => {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [showLeadDetails, setShowLeadDetails] = useState(false);
   const [editingMsg, setEditingMsg] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<ExtMessage | null>(null);
   const [editText, setEditText] = useState("");
   const [activeAction, setActiveAction] = useState<{ msgId: string; type: "reactions" | "menu" } | null>(null);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
