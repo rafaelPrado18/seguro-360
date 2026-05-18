@@ -12,7 +12,7 @@ import {
   Search, Send, Paperclip, Smile, MoreVertical, Phone, Download,
   Image, FileText, Mic, Check, CheckCheck, Clock, Archive, Tag, Link2,
   MessageSquare, User, Plus, Pencil, Trash2, Heart, ThumbsUp,
-  Laugh, MicOff, Play, Pause, X, Target, Square, FileStack, Loader2,
+  Laugh, MicOff, Play, Pause, X, Target, Square, FileStack, Loader2, Reply,
 } from "lucide-react";
 import { LeadDetailsPanel } from "@/components/whatsapp/LeadDetailsPanel";
 import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
