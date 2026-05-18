@@ -542,7 +542,18 @@ const Ponto = () => {
                       groupedHistory.map(g => {
                         const cell = (type: PunchType) => {
                           const rec = g.records.find(r => r.type === type);
-                          if (!rec) return <span className="text-muted-foreground">—</span>;
+                          if (!rec) {
+                            return (
+                              <div className="flex items-center gap-1">
+                                <span className="text-muted-foreground">—</span>
+                                {isAdmin && (
+                                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => openCreate(g.userId, g.userName, g.date, type)}>
+                                    <Pencil className="h-3 w-3" />
+                                  </Button>
+                                )}
+                              </div>
+                            );
+                          }
                           return (
                             <div className="flex items-center gap-1">
                               <span>{rec.time.slice(0, 5)}</span>
