@@ -49,6 +49,7 @@ export interface SendMessagePayload {
   media_url?: string;
   template_id?: string;
   template_vars?: Record<string, string>;
+  messageId?: string;
 }
 
 export interface ConversationFilters {
