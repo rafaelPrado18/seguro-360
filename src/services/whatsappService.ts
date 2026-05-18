@@ -297,15 +297,29 @@ export const whatsappService = {
     return ;
   },
 
-  // MOCK - Verifica se o número possui WhatsApp.
-  // TODO: substituir pela chamada real quando o endpoint estiver disponível.
+  // Verifica se o número possui WhatsApp via API
   async checkNumberExists(telefone: string): Promise<boolean> {
-    await new Promise((r) => setTimeout(r, 600));
     const digits = telefone.replace(/\D/g, "");
-    // Regras simuladas: válido se tiver 12-13 dígitos e não terminar em "0000"
-    if (digits.length < 12 || digits.length > 13) return false;
-    if (digits.endsWith("0000")) return false;
-    return true;
+    const instanceId = whatsappInstanceId;
+    const instanceToken = whatsappInstanceToken;
+    if (!instanceId || !instanceToken) {
+      throw new Error("Instância do WhatsApp não configurada");
+    }
+    const response = await fetch(`${BASE_URL}/v1/whatsapp/verify/number`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        instanceId,
+        phoneNumber: digits,
+        authorizationBearer: `Bearer ${instanceToken}`,
+      }),
+    });
+    if (!response.ok) throw new Error("Erro ao verificar número");
+    const data = await response.json().catch(() => ({}));
+    // Considera existente se exists/valid/numberExists for true
+    return Boolean(
+      data?.exists ?? data?.valid ?? data?.numberExists ?? data?.isWhatsapp ?? data?.result ?? false
+    );
   },
 
 
