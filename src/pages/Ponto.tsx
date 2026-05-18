@@ -269,24 +269,6 @@ const Ponto = () => {
 
   const handleExportPdf = () => {
     const doc = new jsPDF();
-    // Header
-    doc.setFillColor(28, 41, 84);
-    doc.rect(0, 0, doc.internal.pageSize.getWidth(), 22, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("HataSeg - Seguros & Previdência", 14, 10);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("Relatório de Ponto", 14, 17);
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(9);
-    doc.text(
-      `Gerado em ${new Date().toLocaleString("pt-BR")}`,
-      doc.internal.pageSize.getWidth() - 14,
-      17,
-      { align: "right" }
-    );
 
     const fmtDate = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("pt-BR");
 
