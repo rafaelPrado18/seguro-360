@@ -55,6 +55,7 @@ interface NewWhatsAppLeadDialogProps {
 export function NewWhatsAppLeadDialog({ open, onOpenChange, onLeadCreated, defaultPhone, corretorResponsavel }: NewWhatsAppLeadDialogProps) {
   const [loading, setLoading] = useState(false);
   const [existingLead, setExistingLead] = useState<Lead | null>(null);
+  const [notOnWhatsapp, setNotOnWhatsapp] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -67,17 +68,23 @@ export function NewWhatsAppLeadDialog({ open, onOpenChange, onLeadCreated, defau
       const telefoneDigits = data.telefone.replace(/\D/g, "");
       const fullPhone = `55${telefoneDigits}`;
 
-      // Verificar se o lead já existe
+      // 1) Verificar se o número possui WhatsApp
+      const exists = await whatsappService.checkNumberExists(fullPhone);
+      if (!exists) {
+        setNotOnWhatsapp(true);
+        setLoading(false);
+        return;
+      }
+
+      // 2) Verificar se o lead já existe
       const foundLead = await leadsService.getLeadByPhone(fullPhone);
 
       if (foundLead) {
-        // Lead existe — verificar se é do mesmo corretor
         if (foundLead.corretor_responsavel && foundLead.corretor_responsavel !== corretorResponsavel) {
           setExistingLead(foundLead);
           setLoading(false);
           return;
         }
-        // Lead existe e é do mesmo corretor — apenas criar o contato
         toast({ title: "Lead já cadastrado", description: `${foundLead.nome} já está na sua carteira. Criando contato...` });
       }
 
@@ -174,6 +181,24 @@ export function NewWhatsAppLeadDialog({ open, onOpenChange, onLeadCreated, defau
                   Não é possível criar um novo contato para este número enquanto ele estiver atribuído a outro consultor.
                 </p>
               </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Entendi</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog informando que o número não está no WhatsApp */}
+      <AlertDialog open={notOnWhatsapp} onOpenChange={setNotOnWhatsapp}>
+        <AlertDialogContent className="sm:max-w-[420px]">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <AlertDialogTitle>Número não encontrado no WhatsApp</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription>
+              O número informado não possui uma conta ativa no WhatsApp. Verifique o número e tente novamente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
