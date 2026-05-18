@@ -108,6 +108,7 @@ export const whatsappService = {
       userId: payload.userId,
       chatId: payload.chatId,
       message: payload.message,
+      ...(payload.messageId ? { messageId: payload.messageId } : {}),
       ...(resolvedInstanceId ? { instanceId: resolvedInstanceId } : {}),
       ...(whatsappInstanceToken ? { instanceToken: whatsappInstanceToken } : {}),
     });
