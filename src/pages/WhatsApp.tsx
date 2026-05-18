@@ -751,7 +751,10 @@ const WhatsApp = () => {
 
                           {/* Actions on hover */}
                           {!msg.deleted && !editingMsg && (
-                            <div className={`absolute top-0 ${msg.direcao === "enviada" ? "-left-20" : "-right-20"} hidden group-hover:flex items-center gap-0.5`}>
+                            <div className={`absolute top-0 ${msg.direcao === "enviada" ? "-left-28" : "-right-28"} hidden group-hover:flex items-center gap-0.5`}>
+                              <Button variant="ghost" size="icon" className="h-6 w-6" title="Responder" onClick={() => setReplyingTo(msg)}>
+                                <Reply className="h-3 w-3 text-muted-foreground" />
+                              </Button>
                               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setActiveAction(prev => prev?.msgId === msg.id && prev.type === "reactions" ? null : { msgId: msg.id, type: "reactions" })}>
                                 <Smile className="h-3 w-3 text-muted-foreground" />
                               </Button>
