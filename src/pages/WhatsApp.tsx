@@ -213,6 +213,38 @@ const WhatsApp = () => {
   const contacts = [...(conversationsData?.data || [])].sort((a, b) => {
     return parseMsgDate(b.ultima_mensagem_at) - parseMsgDate(a.ultima_mensagem_at);
   });
+
+  // Detect newly arrived contacts and alert
+  const knownContactIdsRef = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    if (!conversationsData?.data) return;
+    const currentIds = new Set(conversationsData.data.map((c) => c.id));
+    if (knownContactIdsRef.current === null) {
+      knownContactIdsRef.current = currentIds;
+      return;
+    }
+    const newOnes = conversationsData.data.filter((c) => !knownContactIdsRef.current!.has(c.id));
+    if (newOnes.length > 0) {
+      newOnes.forEach((c) => {
+        toast({
+          title: "Novo contato no WhatsApp",
+          description: `${c.nome || c.telefone} acabou de iniciar uma conversa`,
+        });
+      });
+      try {
+        const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) {
+          const ctx = new AudioCtx();
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.connect(g); g.connect(ctx.destination);
+          o.frequency.value = 880; g.gain.value = 0.05;
+          o.start(); o.stop(ctx.currentTime + 0.2);
+        }
+      } catch { /* noop */ }
+    }
+    knownContactIdsRef.current = currentIds;
+  }, [conversationsData]);
   const filteredContacts = searchQuery.trim()
     ? contacts.filter(c =>
         c.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
