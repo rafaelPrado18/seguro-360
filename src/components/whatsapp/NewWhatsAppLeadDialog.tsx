@@ -188,6 +188,24 @@ export function NewWhatsAppLeadDialog({ open, onOpenChange, onLeadCreated, defau
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Dialog informando que o número não está no WhatsApp */}
+      <AlertDialog open={notOnWhatsapp} onOpenChange={setNotOnWhatsapp}>
+        <AlertDialogContent className="sm:max-w-[420px]">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <AlertDialogTitle>Número não encontrado no WhatsApp</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription>
+              O número informado não possui uma conta ativa no WhatsApp. Verifique o número e tente novamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Entendi</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
