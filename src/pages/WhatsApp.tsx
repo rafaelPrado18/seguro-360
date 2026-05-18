@@ -293,7 +293,10 @@ const WhatsApp = () => {
 
     const rawPhone = selectedContact.telefone.replace(/\D/g, "");
     const chatId = rawPhone.includes("@") ? rawPhone : `${rawPhone}@c.us`;
-    const text = messageInput;
+    const quotePrefix = replyingTo
+      ? `> ${(replyingTo.conteudo || "").split("\n").join("\n> ").slice(0, 300)}\n\n`
+      : "";
+    const text = quotePrefix + messageInput;
 
     // Optimistic: show message immediately
     const optimisticMsg: ExtMessage = {
