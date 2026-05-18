@@ -661,7 +661,9 @@ const WhatsApp = () => {
                       <div key={msg.id} className={`flex ${msg.direcao === "enviada" ? "justify-end" : "justify-start"} group`}>
                         <div className="relative">
                           {/* Message bubble */}
-                          <div className={`max-w-[400px] rounded-lg px-3 py-2 ${
+                          <div
+                            onDoubleClick={() => !msg.deleted && setReplyingTo(msg)}
+                            className={`max-w-[400px] rounded-lg px-3 py-2 cursor-default select-text ${
                             msg.deleted
                               ? "bg-muted/50 text-muted-foreground italic border border-border"
                               : msg.direcao === "enviada"
