@@ -12,7 +12,7 @@ import {
   Search, Send, Paperclip, Smile, MoreVertical, Phone, Download,
   Image, FileText, Mic, Check, CheckCheck, Clock, Archive, Tag, Link2,
   MessageSquare, User, Plus, Pencil, Trash2, Heart, ThumbsUp,
-  Laugh, MicOff, Play, Pause, X, Target, Square, FileStack, Loader2,
+  Laugh, MicOff, Play, Pause, X, Target, Square, FileStack, Loader2, Reply,
 } from "lucide-react";
 import { LeadDetailsPanel } from "@/components/whatsapp/LeadDetailsPanel";
 import { NewLeadDialog } from "@/components/leads/NewLeadDialog";
@@ -143,6 +143,7 @@ const WhatsApp = () => {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [showLeadDetails, setShowLeadDetails] = useState(false);
   const [editingMsg, setEditingMsg] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<ExtMessage | null>(null);
   const [editText, setEditText] = useState("");
   const [activeAction, setActiveAction] = useState<{ msgId: string; type: "reactions" | "menu" } | null>(null);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
@@ -292,7 +293,10 @@ const WhatsApp = () => {
 
     const rawPhone = selectedContact.telefone.replace(/\D/g, "");
     const chatId = rawPhone.includes("@") ? rawPhone : `${rawPhone}@c.us`;
-    const text = messageInput;
+    const quotePrefix = replyingTo
+      ? `> ${(replyingTo.conteudo || "").split("\n").join("\n> ").slice(0, 300)}\n\n`
+      : "";
+    const text = quotePrefix + messageInput;
 
     // Optimistic: show message immediately
     const optimisticMsg: ExtMessage = {
@@ -309,6 +313,7 @@ const WhatsApp = () => {
     };
     setOptimisticMsgs(prev => [...prev, optimisticMsg]);
     setMessageInput("");
+    setReplyingTo(null);
 
     sendMessageMutation.mutate(
       { chatId, tipo: "text", userId, message: text, ...(instanceId ? { instanceId } : {}) },
@@ -656,7 +661,9 @@ const WhatsApp = () => {
                       <div key={msg.id} className={`flex ${msg.direcao === "enviada" ? "justify-end" : "justify-start"} group`}>
                         <div className="relative">
                           {/* Message bubble */}
-                          <div className={`max-w-[400px] rounded-lg px-3 py-2 ${
+                          <div
+                            onDoubleClick={() => !msg.deleted && setReplyingTo(msg)}
+                            className={`max-w-[400px] rounded-lg px-3 py-2 cursor-default select-text ${
                             msg.deleted
                               ? "bg-muted/50 text-muted-foreground italic border border-border"
                               : msg.direcao === "enviada"
@@ -744,7 +751,10 @@ const WhatsApp = () => {
 
                           {/* Actions on hover */}
                           {!msg.deleted && !editingMsg && (
-                            <div className={`absolute top-0 ${msg.direcao === "enviada" ? "-left-20" : "-right-20"} hidden group-hover:flex items-center gap-0.5`}>
+                            <div className={`absolute top-0 ${msg.direcao === "enviada" ? "-left-28" : "-right-28"} hidden group-hover:flex items-center gap-0.5`}>
+                              <Button variant="ghost" size="icon" className="h-6 w-6" title="Responder" onClick={() => setReplyingTo(msg)}>
+                                <Reply className="h-3 w-3 text-muted-foreground" />
+                              </Button>
                               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setActiveAction(prev => prev?.msgId === msg.id && prev.type === "reactions" ? null : { msgId: msg.id, type: "reactions" })}>
                                 <Smile className="h-3 w-3 text-muted-foreground" />
                               </Button>
@@ -804,6 +814,20 @@ const WhatsApp = () => {
                   </div>
                 ) : (
                   <div className="max-w-2xl mx-auto">
+                    {replyingTo && (
+                      <div className="flex items-start gap-2 mb-2 p-2 rounded-md bg-muted border-l-4 border-primary">
+                        <Reply className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-semibold text-primary">
+                            Respondendo a {replyingTo.direcao === "enviada" ? "você" : (selectedContact?.nome || "contato")}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">{replyingTo.conteudo || "(mídia)"}</p>
+                        </div>
+                        <button onClick={() => setReplyingTo(null)} className="text-muted-foreground hover:text-foreground flex-shrink-0">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
                     {/* Preview area for pending files */}
                     {pendingFiles.length > 0 && (
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
