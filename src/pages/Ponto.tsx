@@ -122,22 +122,23 @@ const Ponto = () => {
 
   const handleSaveEdit = async () => {
     if (!editing) return;
-    const punchId = editing.punchId || editing._id;
-    if (!punchId) {
-      toast({ title: "Registro sem ID", variant: "destructive" });
-      return;
-    }
     const time = editTime.length === 5 ? `${editTime}:00` : editTime;
     const iso = new Date(`${editing.date}T${time}`).toISOString();
+    const punchId = editing.punchId || editing._id;
     setSavingEdit(true);
     try {
-      await pontoService.update({ ...editing, punchId, time, iso });
-      toast({ title: "Registro atualizado" });
+      if (punchId) {
+        await pontoService.update({ ...editing, punchId, time, iso });
+        toast({ title: "Registro atualizado" });
+      } else {
+        await pontoService.create({ ...editing, time, iso });
+        toast({ title: "Registro criado" });
+      }
       setEditing(null);
       await fetchRecords();
     } catch (e) {
       console.error(e);
-      toast({ title: "Erro ao atualizar registro", variant: "destructive" });
+      toast({ title: "Erro ao salvar registro", variant: "destructive" });
     } finally {
       setSavingEdit(false);
     }
@@ -146,6 +147,11 @@ const Ponto = () => {
   const openEdit = (rec: PunchRecord) => {
     setEditing(rec);
     setEditTime(rec.time.slice(0, 5));
+  };
+
+  const openCreate = (userId: string, userName: string, date: string, type: PunchType) => {
+    setEditing({ userId, userName, date, type, time: "", iso: "" });
+    setEditTime("");
   };
 
   useEffect(() => {
@@ -536,7 +542,18 @@ const Ponto = () => {
                       groupedHistory.map(g => {
                         const cell = (type: PunchType) => {
                           const rec = g.records.find(r => r.type === type);
-                          if (!rec) return <span className="text-muted-foreground">—</span>;
+                          if (!rec) {
+                            return (
+                              <div className="flex items-center gap-1">
+                                <span className="text-muted-foreground">—</span>
+                                {isAdmin && (
+                                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => openCreate(g.userId, g.userName, g.date, type)}>
+                                    <Pencil className="h-3 w-3" />
+                                  </Button>
+                                )}
+                              </div>
+                            );
+                          }
                           return (
                             <div className="flex items-center gap-1">
                               <span>{rec.time.slice(0, 5)}</span>
