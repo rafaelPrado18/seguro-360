@@ -5,6 +5,10 @@ export function useWhatsAppConversations(name?: string) {
   return useQuery({
     queryKey: ["whatsapp", "conversations", name],
     queryFn: () => whatsappService.getConversations(name),
+    refetchInterval: 10000,
+    refetchIntervalInBackground: true,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
   });
 }
 
