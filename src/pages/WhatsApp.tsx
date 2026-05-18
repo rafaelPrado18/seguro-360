@@ -313,6 +313,7 @@ const WhatsApp = () => {
     };
     setOptimisticMsgs(prev => [...prev, optimisticMsg]);
     setMessageInput("");
+    setReplyingTo(null);
 
     sendMessageMutation.mutate(
       { chatId, tipo: "text", userId, message: text, ...(instanceId ? { instanceId } : {}) },
