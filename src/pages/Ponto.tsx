@@ -256,17 +256,42 @@ const Ponto = () => {
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(r);
     });
+
+    // When admin views "Todos os usuários", ensure every active collaborator
+    // appears for every day in the range, even with no punches.
+    if (isAdmin && filterUser === "__all__" && agents.length > 0 && startDate && endDate) {
+      const start = new Date(startDate + "T00:00:00");
+      const end = new Date(endDate + "T00:00:00");
+      const dates: string[] = [];
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        dates.push(format(d, "yyyy-MM-dd"));
+      }
+      agents
+        .filter(a => a.isActive !== false)
+        .forEach(a => {
+          const uid = a.userId || a.agentId;
+          dates.forEach(date => {
+            const key = `${uid}__${date}`;
+            if (!map.has(key)) map.set(key, []);
+          });
+        });
+    }
+
     return Array.from(map.entries())
       .map(([key, recs]) => {
         const [userId, date] = key.split("__");
-        return { userId, userName: recs[0].userName, date, records: recs };
+        const name =
+          recs[0]?.userName ||
+          agents.find(a => a.userId === userId || a.agentId === userId)?.name ||
+          userId;
+        return { userId, userName: name, date, records: recs };
       })
       .sort((a, b) => {
         const nameCmp = a.userName.localeCompare(b.userName, "pt-BR", { sensitivity: "base" });
         if (nameCmp !== 0) return nameCmp;
         return a.date.localeCompare(b.date);
       });
-  }, [records]);
+  }, [records, isAdmin, filterUser, agents, startDate, endDate]);
 
   const allUsers = useMemo(() => {
     const map = new Map<string, string>();
