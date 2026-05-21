@@ -107,6 +107,10 @@ const Usuarios = () => {
       function: u.function,
       vinculo: u.vinculo,
       birthDate: u.birthDate ? u.birthDate.split("T")[0] : "",
+      workSchedule:
+        Array.isArray(u.workSchedule) && u.workSchedule.length === 7
+          ? u.workSchedule.map(n => Number(n) || 0)
+          : [...DEFAULT_SCHEDULE],
     });
     setDialogOpen(true);
   };
