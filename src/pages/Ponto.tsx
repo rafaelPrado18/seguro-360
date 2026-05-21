@@ -97,18 +97,9 @@ function diffHours(records: PunchRecord[]): string {
   return formatHM(ms);
 }
 
-function overtime(records: PunchRecord[], skip = false): string {
-  if (skip) return "—";
-  const ms = totalWorkedMs(records);
-  if (ms == null) return "—";
-  const extra = ms - standardMsForDate(records[0]?.date);
-  if (extra <= 0) return "0h 0m";
-  return formatHM(extra);
-}
-
-function atraso(records: PunchRecord[]): string {
-  const e = records.find(r => r.type === "entrada");
+function rawAtrasoMs(records: PunchRecord[]): number {
   let diff = 0;
+  const e = records.find(r => r.type === "entrada");
   if (e) {
     const d = new Date(e.iso);
     const expected = new Date(d);
@@ -117,9 +108,34 @@ function atraso(records: PunchRecord[]): string {
     if (entryDiff > ENTRY_TOLERANCE_MS) diff += entryDiff;
   }
   diff += lunchOverflowMs(records);
-  if (!e && diff === 0) return "—";
-  if (diff <= 0) return "0h 0m";
-  return formatHM(diff);
+  return diff;
+}
+
+function rawExtraMs(records: PunchRecord[]): number {
+  const ms = totalWorkedMs(records);
+  if (ms == null) return 0;
+  return Math.max(0, ms - standardMsForDate(records[0]?.date));
+}
+
+function netExtraAtraso(records: PunchRecord[]): { extra: number; atraso: number } {
+  const extra = rawExtraMs(records);
+  const atraso = rawAtrasoMs(records);
+  if (extra >= atraso) return { extra: extra - atraso, atraso: 0 };
+  return { extra: 0, atraso: atraso - extra };
+}
+
+function overtime(records: PunchRecord[], skip = false): string {
+  if (skip) return "—";
+  const ms = totalWorkedMs(records);
+  if (ms == null) return "—";
+  return formatHM(netExtraAtraso(records).extra);
+}
+
+function atraso(records: PunchRecord[]): string {
+  const e = records.find(r => r.type === "entrada");
+  const { atraso: a } = netExtraAtraso(records);
+  if (!e && a === 0) return "—";
+  return formatHM(a);
 }
 
 const Ponto = () => {
@@ -357,19 +373,10 @@ const Ponto = () => {
       let totalAtrasoMs = 0;
       groups.forEach(g => {
         const ms = totalWorkedMs(g.records);
-        if (ms != null) {
-          totalMs += ms;
-          if (!isCorretorNovo(g.userId)) totalExtraMs += Math.max(0, ms - standardMsForDate(g.date));
-        }
-        const e = g.records.find(r => r.type === "entrada");
-        if (e) {
-          const d = new Date(e.iso);
-          const expected = new Date(d);
-          expected.setHours(EXPECTED_ENTRY_HOUR, EXPECTED_ENTRY_MIN, 0, 0);
-          const diff = d.getTime() - expected.getTime();
-          if (diff > ENTRY_TOLERANCE_MS) totalAtrasoMs += diff;
-        }
-        totalAtrasoMs += lunchOverflowMs(g.records);
+        if (ms != null) totalMs += ms;
+        const { extra, atraso: a } = netExtraAtraso(g.records);
+        if (!isCorretorNovo(g.userId)) totalExtraMs += extra;
+        totalAtrasoMs += a;
       });
 
       autoTable(doc, {
