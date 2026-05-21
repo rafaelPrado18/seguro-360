@@ -104,7 +104,7 @@ const GerenciarStatus = () => {
     }
     setFormData(prev => ({
       ...prev,
-      substatus: [...prev.substatus, { id: crypto.randomUUID(), label, key, send_message: false, template_id: null }],
+      substatus: [...prev.substatus, { id: crypto.randomUUID(), label, key, send_message: false, template_id: null, delay_days: 0, send_time: null }],
     }));
     setNewSubLabel("");
   };
@@ -432,7 +432,7 @@ const GerenciarStatus = () => {
                           />
                         </div>
                         {sub.send_message && (
-                          <div className="pl-3">
+                          <div className="pl-3 space-y-2">
                             <Select
                               value={sub.template_id || "none"}
                               onValueChange={(v) => updateSubStatus(sub.id!, { template_id: v === "none" ? null : v })}
@@ -452,6 +452,28 @@ const GerenciarStatus = () => {
                                 ))}
                               </SelectContent>
                             </Select>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="space-y-1">
+                                <Label className="text-[10px] text-muted-foreground">Após (dias)</Label>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  value={sub.delay_days ?? 0}
+                                  onChange={(e) => updateSubStatus(sub.id!, { delay_days: Math.max(0, Number(e.target.value) || 0) })}
+                                  className="h-8 text-xs"
+                                  placeholder="0"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-[10px] text-muted-foreground">Horário</Label>
+                                <Input
+                                  type="time"
+                                  value={sub.send_time ?? ""}
+                                  onChange={(e) => updateSubStatus(sub.id!, { send_time: e.target.value || null })}
+                                  className="h-8 text-xs"
+                                />
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>
