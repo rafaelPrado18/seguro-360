@@ -65,8 +65,76 @@ function lunchOverflowMs(records: PunchRecord[]): number {
   return dur > LUNCH_ALLOWED_MS ? dur - LUNCH_ALLOWED_MS : 0;
 }
 
+// ===== Feriados São Paulo Capital =====
+function easterSunday(year: number): Date {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const L = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * L) / 451);
+  const month = Math.floor((h + L - 7 * m + 114) / 31);
+  const day = ((h + L - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+
+function addDays(date: Date, days: number): Date {
+  const r = new Date(date);
+  r.setDate(r.getDate() + days);
+  return r;
+}
+
+function fmtMD(d: Date): string {
+  return `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+const FIXED_HOLIDAYS_SP: Record<string, string> = {
+  "01-01": "Confraternização Universal",
+  "01-25": "Aniversário de São Paulo",
+  "04-21": "Tiradentes",
+  "05-01": "Dia do Trabalho",
+  "07-09": "Revolução Constitucionalista",
+  "09-07": "Independência do Brasil",
+  "10-12": "Nossa Sra. Aparecida",
+  "11-02": "Finados",
+  "11-15": "Proclamação da República",
+  "11-20": "Consciência Negra",
+  "12-25": "Natal",
+};
+
+function getHolidayName(dateStr?: string): string | null {
+  if (!dateStr) return null;
+  const d = new Date(dateStr + "T00:00:00");
+  const md = fmtMD(d);
+  if (FIXED_HOLIDAYS_SP[md]) return FIXED_HOLIDAYS_SP[md];
+  const easter = easterSunday(d.getFullYear());
+  const movable: Array<[Date, string]> = [
+    [addDays(easter, -48), "Carnaval"],
+    [addDays(easter, -47), "Carnaval"],
+    [addDays(easter, -2), "Sexta-feira Santa"],
+    [addDays(easter, 60), "Corpus Christi"],
+  ];
+  for (const [date, name] of movable) {
+    if (date.getFullYear() === d.getFullYear() && date.getMonth() === d.getMonth() && date.getDate() === d.getDate()) {
+      return name;
+    }
+  }
+  return null;
+}
+
+function isHoliday(dateStr?: string): boolean {
+  return getHolidayName(dateStr) !== null;
+}
+
 function standardMsForDate(dateStr?: string): number {
   if (!dateStr) return STANDARD_WORK_MS;
+  if (isHoliday(dateStr)) return 0;
   const d = new Date(dateStr + "T00:00:00");
   return d.getDay() === 5 ? FRIDAY_WORK_MS : STANDARD_WORK_MS;
 }
@@ -98,6 +166,7 @@ function diffHours(records: PunchRecord[]): string {
 }
 
 function rawAtrasoMs(records: PunchRecord[]): number {
+  if (isHoliday(records[0]?.date)) return 0;
   let diff = 0;
   const e = records.find(r => r.type === "entrada");
   if (e) {
@@ -684,7 +753,12 @@ const Ponto = () => {
                         return (
                           <TableRow key={`${g.userId}-${g.date}`}>
                             <TableCell className="font-medium">
-                              {new Date(g.date + "T00:00:00").toLocaleDateString("pt-BR")}
+                              <div className="flex items-center gap-2">
+                                {new Date(g.date + "T00:00:00").toLocaleDateString("pt-BR")}
+                                {getHolidayName(g.date) && (
+                                  <Badge variant="secondary" className="text-xs">{getHolidayName(g.date)}</Badge>
+                                )}
+                              </div>
                             </TableCell>
                             {isAdmin && <TableCell>{g.userName}</TableCell>}
                             <TableCell>{cell("entrada")}</TableCell>
