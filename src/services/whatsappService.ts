@@ -40,6 +40,11 @@ export interface WhatsAppTemplate {
   status: "aprovado" | "pendente" | "rejeitado";
 }
 
+const normalizeTemplateId = (template: Partial<WhatsAppTemplate>) => {
+  if (template.id) return template.id;
+  return [template.nome, template.categoria, template.status].filter(Boolean).join("::");
+};
+
 export interface SendMessagePayload {
   chatId: string;
   tipo: WhatsAppMessage["tipo"];
@@ -191,7 +196,12 @@ export const whatsappService = {
     });
     if (!response.ok) throw new Error("Erro ao buscar templates");
     const result = await response.json();
-    return result.data || result;
+    const templates = result.data || result;
+    return templates.map((template: WhatsAppTemplate) => ({
+      ...template,
+      id: normalizeTemplateId(template),
+      variaveis: template.variaveis || [],
+    }));
   },
 
   // POST /v1/create/template - Criar template
