@@ -753,7 +753,12 @@ const Ponto = () => {
                         return (
                           <TableRow key={`${g.userId}-${g.date}`}>
                             <TableCell className="font-medium">
-                              {new Date(g.date + "T00:00:00").toLocaleDateString("pt-BR")}
+                              <div className="flex items-center gap-2">
+                                {new Date(g.date + "T00:00:00").toLocaleDateString("pt-BR")}
+                                {getHolidayName(g.date) && (
+                                  <Badge variant="secondary" className="text-xs">{getHolidayName(g.date)}</Badge>
+                                )}
+                              </div>
                             </TableCell>
                             {isAdmin && <TableCell>{g.userName}</TableCell>}
                             <TableCell>{cell("entrada")}</TableCell>
