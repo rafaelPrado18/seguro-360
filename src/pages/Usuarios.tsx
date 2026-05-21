@@ -147,6 +147,7 @@ const Usuarios = () => {
         status: "offline",
         isActive: true,
         registrationDate: new Date().toISOString(),
+        workSchedule: form.workSchedule,
       };
       createMutation.mutate(newAgent, {
         onSuccess: () => {
