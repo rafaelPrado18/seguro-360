@@ -373,19 +373,10 @@ const Ponto = () => {
       let totalAtrasoMs = 0;
       groups.forEach(g => {
         const ms = totalWorkedMs(g.records);
-        if (ms != null) {
-          totalMs += ms;
-          if (!isCorretorNovo(g.userId)) totalExtraMs += Math.max(0, ms - standardMsForDate(g.date));
-        }
-        const e = g.records.find(r => r.type === "entrada");
-        if (e) {
-          const d = new Date(e.iso);
-          const expected = new Date(d);
-          expected.setHours(EXPECTED_ENTRY_HOUR, EXPECTED_ENTRY_MIN, 0, 0);
-          const diff = d.getTime() - expected.getTime();
-          if (diff > ENTRY_TOLERANCE_MS) totalAtrasoMs += diff;
-        }
-        totalAtrasoMs += lunchOverflowMs(g.records);
+        if (ms != null) totalMs += ms;
+        const { extra, atraso: a } = netExtraAtraso(g.records);
+        if (!isCorretorNovo(g.userId)) totalExtraMs += extra;
+        totalAtrasoMs += a;
       });
 
       autoTable(doc, {
