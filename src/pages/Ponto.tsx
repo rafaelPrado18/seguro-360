@@ -132,10 +132,14 @@ function isHoliday(dateStr?: string): boolean {
   return getHolidayName(dateStr) !== null;
 }
 
-function standardMsForDate(dateStr?: string): number {
+function standardMsForDate(dateStr?: string, scheduleHours?: number[]): number {
   if (!dateStr) return STANDARD_WORK_MS;
   if (isHoliday(dateStr)) return 0;
   const d = new Date(dateStr + "T00:00:00");
+  if (Array.isArray(scheduleHours) && scheduleHours.length === 7) {
+    const h = Number(scheduleHours[d.getDay()]) || 0;
+    return h * 3600000;
+  }
   return d.getDay() === 5 ? FRIDAY_WORK_MS : STANDARD_WORK_MS;
 }
 
