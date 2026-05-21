@@ -38,7 +38,12 @@ function stripSubstatusIds(data: any) {
   const { substatus, ...rest } = data;
   return {
     ...rest,
-    substatus: substatus?.map(({ label, key }: LeadSubStatusPayload) => ({ label, key })) || [],
+    substatus: substatus?.map(({ label, key, send_message, template_id }: LeadSubStatusPayload) => ({
+      label,
+      key,
+      send_message: send_message ?? false,
+      template_id: template_id ?? null,
+    })) || [],
   };
 }
 
