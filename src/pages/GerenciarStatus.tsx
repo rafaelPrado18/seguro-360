@@ -104,7 +104,7 @@ const GerenciarStatus = () => {
     }
     setFormData(prev => ({
       ...prev,
-      substatus: [...prev.substatus, { id: crypto.randomUUID(), label, key, send_message: false, template_id: null, delay_days: 0, send_time: null }],
+      substatus: [...prev.substatus, { id: crypto.randomUUID(), label, key, send_message: false, template_id: null, delay_days: 0, send_time: null, send_count: 1 }],
     }));
     setNewSubLabel("");
   };
