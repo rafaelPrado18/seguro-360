@@ -108,12 +108,17 @@ function overtime(records: PunchRecord[], skip = false): string {
 
 function atraso(records: PunchRecord[]): string {
   const e = records.find(r => r.type === "entrada");
-  if (!e) return "—";
-  const d = new Date(e.iso);
-  const expected = new Date(d);
-  expected.setHours(EXPECTED_ENTRY_HOUR, EXPECTED_ENTRY_MIN, 0, 0);
-  const diff = d.getTime() - expected.getTime();
-  if (diff <= ENTRY_TOLERANCE_MS) return "0h 0m";
+  let diff = 0;
+  if (e) {
+    const d = new Date(e.iso);
+    const expected = new Date(d);
+    expected.setHours(EXPECTED_ENTRY_HOUR, EXPECTED_ENTRY_MIN, 0, 0);
+    const entryDiff = d.getTime() - expected.getTime();
+    if (entryDiff > ENTRY_TOLERANCE_MS) diff += entryDiff;
+  }
+  diff += lunchOverflowMs(records);
+  if (!e && diff === 0) return "—";
+  if (diff <= 0) return "0h 0m";
   return formatHM(diff);
 }
 
