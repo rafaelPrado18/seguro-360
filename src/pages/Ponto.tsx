@@ -243,6 +243,15 @@ const Ponto = () => {
     );
   };
 
+  const getSchedule = (userId: string): number[] | undefined => {
+    const a = agents.find(ag => ag.userId === userId || ag.agentId === userId);
+    if (a?.workSchedule && Array.isArray(a.workSchedule) && a.workSchedule.length === 7) {
+      return a.workSchedule.map(n => Number(n) || 0);
+    }
+    return undefined;
+  };
+
+
   const handleSaveEdit = async () => {
     if (!editing) return;
     const time = editTime.length === 5 ? `${editTime}:00` : editTime;
