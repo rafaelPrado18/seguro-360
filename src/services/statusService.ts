@@ -48,9 +48,9 @@ function stripSubstatusIds(data: any) {
       label,
       key,
       send_message: send_message ?? false,
-      template_id: template_id ?? null,
+      template_id: template_id ?? "",
       delay_days: delay_days ?? 0,
-      send_time: send_time ?? null,
+      send_time: send_time ?? "",
       send_count: send_count ?? 1,
     })) || [],
   };
