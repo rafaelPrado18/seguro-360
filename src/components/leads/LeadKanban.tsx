@@ -157,7 +157,10 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                         </Button>
                       </div>
                       <p className="text-sm font-medium text-foreground truncate">{lead.nome ?? "Sem nome"}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{lead.ramo_interesse ?? "—"}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                        <span className="font-medium text-foreground/80">Ramo:</span> {lead.ramo_interesse || "—"}
+                        {lead.modelo ? <> · <span className="font-medium text-foreground/80">Veículo:</span> {lead.modelo}</> : null}
+                      </p>
                       <div className="flex items-center justify-between mt-0.5">
                         <p className="text-[11px] text-muted-foreground">{lead.created_at ?? "—"}</p>
                         {lead.origem && (
@@ -165,7 +168,6 @@ export function LeadKanban({ leads, columns, onStatusChange, corretorFilter, onL
                         )}
                       </div>
                       <div className="flex items-center justify-between mt-2">
-                        <span className="text-xs font-medium text-foreground">{lead.modelo || "Sem placa"}</span>
                         <span className="text-[11px] text-muted-foreground">{lead.telefone || "Sem telefone"}</span>
                       </div>
                       {(col.tipo === "ganho" || col.tipo === "perdido") && (
