@@ -7,6 +7,8 @@ export interface LeadSubStatus {
   key: string;
   send_message?: boolean;
   template_id?: string | null;
+  delay_days?: number;
+  send_time?: string | null;
 }
 
 export interface LeadSubStatusPayload {
@@ -14,6 +16,8 @@ export interface LeadSubStatusPayload {
   key: string;
   send_message?: boolean;
   template_id?: string | null;
+  delay_days?: number;
+  send_time?: string | null;
 }
 
 export interface LeadStatus {
