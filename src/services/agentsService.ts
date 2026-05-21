@@ -11,6 +11,8 @@ export interface Agent {
   function: string;
   birthDate: string;
   registrationDate: string;
+  // Carga horária por dia da semana (índice 0=domingo … 6=sábado), em horas
+  workSchedule?: number[];
 }
 
 function getCookie(name) {

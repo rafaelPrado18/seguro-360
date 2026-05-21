@@ -132,10 +132,14 @@ function isHoliday(dateStr?: string): boolean {
   return getHolidayName(dateStr) !== null;
 }
 
-function standardMsForDate(dateStr?: string): number {
+function standardMsForDate(dateStr?: string, scheduleHours?: number[]): number {
   if (!dateStr) return STANDARD_WORK_MS;
   if (isHoliday(dateStr)) return 0;
   const d = new Date(dateStr + "T00:00:00");
+  if (Array.isArray(scheduleHours) && scheduleHours.length === 7) {
+    const h = Number(scheduleHours[d.getDay()]) || 0;
+    return h * 3600000;
+  }
   return d.getDay() === 5 ? FRIDAY_WORK_MS : STANDARD_WORK_MS;
 }
 
@@ -180,29 +184,29 @@ function rawAtrasoMs(records: PunchRecord[]): number {
   return diff;
 }
 
-function rawExtraMs(records: PunchRecord[]): number {
+function rawExtraMs(records: PunchRecord[], scheduleHours?: number[]): number {
   const ms = totalWorkedMs(records);
   if (ms == null) return 0;
-  return Math.max(0, ms - standardMsForDate(records[0]?.date));
+  return Math.max(0, ms - standardMsForDate(records[0]?.date, scheduleHours));
 }
 
-function netExtraAtraso(records: PunchRecord[]): { extra: number; atraso: number } {
-  const extra = rawExtraMs(records);
+function netExtraAtraso(records: PunchRecord[], scheduleHours?: number[]): { extra: number; atraso: number } {
+  const extra = rawExtraMs(records, scheduleHours);
   const atraso = rawAtrasoMs(records);
   if (extra >= atraso) return { extra: extra - atraso, atraso: 0 };
   return { extra: 0, atraso: atraso - extra };
 }
 
-function overtime(records: PunchRecord[], skip = false): string {
+function overtime(records: PunchRecord[], skip = false, scheduleHours?: number[]): string {
   if (skip) return "—";
   const ms = totalWorkedMs(records);
   if (ms == null) return "—";
-  return formatHM(netExtraAtraso(records).extra);
+  return formatHM(netExtraAtraso(records, scheduleHours).extra);
 }
 
-function atraso(records: PunchRecord[]): string {
+function atraso(records: PunchRecord[], scheduleHours?: number[]): string {
   const e = records.find(r => r.type === "entrada");
-  const { atraso: a } = netExtraAtraso(records);
+  const { atraso: a } = netExtraAtraso(records, scheduleHours);
   if (!e && a === 0) return "—";
   return formatHM(a);
 }
@@ -238,6 +242,15 @@ const Ponto = () => {
       fn.includes("vend")
     );
   };
+
+  const getSchedule = (userId: string): number[] | undefined => {
+    const a = agents.find(ag => ag.userId === userId || ag.agentId === userId);
+    if (a?.workSchedule && Array.isArray(a.workSchedule) && a.workSchedule.length === 7) {
+      return a.workSchedule.map(n => Number(n) || 0);
+    }
+    return undefined;
+  };
+
 
   const handleSaveEdit = async () => {
     if (!editing) return;
@@ -451,7 +464,7 @@ const Ponto = () => {
       groups.forEach(g => {
         const ms = totalWorkedMs(g.records);
         if (ms != null) totalMs += ms;
-        const { extra, atraso: a } = netExtraAtraso(g.records);
+        const { extra, atraso: a } = netExtraAtraso(g.records, getSchedule(g.userId));
         if (!isCorretorNovo(g.userId)) totalExtraMs += extra;
         totalAtrasoMs += a;
       });
@@ -482,8 +495,8 @@ const Ponto = () => {
           t("retorno_almoco"),
           t("saida"),
           diffHours(g.records),
-          overtime(g.records, isCorretorNovo(g.userId)),
-          atraso(g.records),
+          overtime(g.records, isCorretorNovo(g.userId), getSchedule(g.userId)),
+          atraso(g.records, getSchedule(g.userId)),
         ];
       });
 
@@ -774,8 +787,8 @@ const Ponto = () => {
                             <TableCell>{cell("retorno_almoco")}</TableCell>
                             <TableCell>{cell("saida")}</TableCell>
                             <TableCell className="font-semibold">{diffHours(g.records)}</TableCell>
-                            <TableCell className="text-emerald-600 font-medium">{overtime(g.records, isCorretorNovo(g.userId))}</TableCell>
-                            <TableCell className="text-destructive font-medium">{atraso(g.records)}</TableCell>
+                            <TableCell className="text-emerald-600 font-medium">{overtime(g.records, isCorretorNovo(g.userId), getSchedule(g.userId))}</TableCell>
+                            <TableCell className="text-destructive font-medium">{atraso(g.records, getSchedule(g.userId))}</TableCell>
                           </TableRow>
                         );
                       })
