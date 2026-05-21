@@ -166,6 +166,7 @@ function diffHours(records: PunchRecord[]): string {
 }
 
 function rawAtrasoMs(records: PunchRecord[]): number {
+  if (isHoliday(records[0]?.date)) return 0;
   let diff = 0;
   const e = records.find(r => r.type === "entrada");
   if (e) {
