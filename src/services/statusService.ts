@@ -9,6 +9,7 @@ export interface LeadSubStatus {
   template_id?: string | null;
   delay_days?: number;
   send_time?: string | null;
+  send_count?: number;
 }
 
 export interface LeadSubStatusPayload {
@@ -18,6 +19,7 @@ export interface LeadSubStatusPayload {
   template_id?: string | null;
   delay_days?: number;
   send_time?: string | null;
+  send_count?: number;
 }
 
 export interface LeadStatus {
@@ -42,13 +44,14 @@ function stripSubstatusIds(data: any) {
   const { substatus, ...rest } = data;
   return {
     ...rest,
-    substatus: substatus?.map(({ label, key, send_message, template_id, delay_days, send_time }: LeadSubStatusPayload) => ({
+    substatus: substatus?.map(({ label, key, send_message, template_id, delay_days, send_time, send_count }: LeadSubStatusPayload) => ({
       label,
       key,
       send_message: send_message ?? false,
       template_id: template_id ?? null,
       delay_days: delay_days ?? 0,
       send_time: send_time ?? null,
+      send_count: send_count ?? 1,
     })) || [],
   };
 }
