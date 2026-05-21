@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -103,9 +104,16 @@ const GerenciarStatus = () => {
     }
     setFormData(prev => ({
       ...prev,
-      substatus: [...prev.substatus, { id: crypto.randomUUID(), label, key }],
+      substatus: [...prev.substatus, { id: crypto.randomUUID(), label, key, send_message: false, template_id: null }],
     }));
     setNewSubLabel("");
+  };
+
+  const updateSubStatus = (id: string, patch: Partial<LeadSubStatus>) => {
+    setFormData(prev => ({
+      ...prev,
+      substatus: prev.substatus.map(s => (s.id === id ? { ...s, ...patch } : s)),
+    }));
   };
 
   const removeSubStatus = (id: string) => {
@@ -402,15 +410,50 @@ const GerenciarStatus = () => {
                 </p>
                 
                 {formData.substatus.length > 0 && (
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     {formData.substatus.map((sub) => (
-                      <div key={sub.id} className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted/50 border border-border/50">
-                        <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: formData.bgColor }} />
-                        <span className="text-xs text-foreground flex-1">{sub.label}</span>
-                        <code className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground font-mono">{sub.key}</code>
-                        <button onClick={() => removeSubStatus(sub.id)} className="text-destructive hover:text-destructive/80">
-                          <X className="h-3 w-3" />
-                        </button>
+                      <div key={sub.id} className="space-y-2 px-3 py-2 rounded-md bg-muted/50 border border-border/50">
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: formData.bgColor }} />
+                          <span className="text-xs text-foreground flex-1">{sub.label}</span>
+                          <code className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground font-mono">{sub.key}</code>
+                          <button onClick={() => removeSubStatus(sub.id!)} className="text-destructive hover:text-destructive/80">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between gap-2 pl-3">
+                          <Label className="text-[10px] flex items-center gap-1.5 text-muted-foreground">
+                            <MessageSquare className="h-3 w-3 text-accent" />
+                            Enviar mensagem ao entrar
+                          </Label>
+                          <Switch
+                            checked={!!sub.send_message}
+                            onCheckedChange={(v) => updateSubStatus(sub.id!, { send_message: v, ...(v ? {} : { template_id: null }) })}
+                          />
+                        </div>
+                        {sub.send_message && (
+                          <div className="pl-3">
+                            <Select
+                              value={sub.template_id || "none"}
+                              onValueChange={(v) => updateSubStatus(sub.id!, { template_id: v === "none" ? null : v })}
+                            >
+                              <SelectTrigger className="h-8 text-xs">
+                                <SelectValue placeholder="Selecione um template" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">Nenhum template</SelectItem>
+                                {templates.filter(t => t.status === "aprovado").map(t => (
+                                  <SelectItem key={t.id} value={t.id}>
+                                    <span className="flex items-center gap-2">
+                                      {t.nome}
+                                      <span className="text-muted-foreground text-[10px]">({t.categoria})</span>
+                                    </span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
