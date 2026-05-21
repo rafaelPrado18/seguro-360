@@ -126,6 +126,21 @@ const GerenciarStatus = () => {
   const handleSave = () => {
     if (!formData.label.trim() || !formData.key.trim()) return;
 
+    for (const sub of formData.substatus) {
+      if (sub.send_message) {
+        if (!sub.template_id) {
+          toast({ title: "Template obrigatório", description: `Selecione um template para o substatus "${sub.label}".`, variant: "destructive" });
+          return;
+        }
+        if (!sub.send_time) {
+          toast({ title: "Horário obrigatório", description: `Defina o horário de envio para o substatus "${sub.label}".`, variant: "destructive" });
+          return;
+        }
+      }
+    }
+
+
+
     const statusData = {
       label: formData.label,
       key: formData.key,
