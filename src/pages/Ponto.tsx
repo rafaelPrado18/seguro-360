@@ -464,7 +464,7 @@ const Ponto = () => {
       groups.forEach(g => {
         const ms = totalWorkedMs(g.records);
         if (ms != null) totalMs += ms;
-        const { extra, atraso: a } = netExtraAtraso(g.records);
+        const { extra, atraso: a } = netExtraAtraso(g.records, getSchedule(g.userId));
         if (!isCorretorNovo(g.userId)) totalExtraMs += extra;
         totalAtrasoMs += a;
       });
