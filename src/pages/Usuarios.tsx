@@ -217,7 +217,7 @@ const Usuarios = () => {
                 <UserPlus className="h-4 w-4 mr-2" /> Novo Usuário
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingAgent ? "Editar Usuário" : "Novo Usuário"}</DialogTitle>
               </DialogHeader>
