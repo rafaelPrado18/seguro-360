@@ -442,7 +442,7 @@ const GerenciarStatus = () => {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="none">Nenhum template</SelectItem>
-                                {templates.filter(t => t.status === "aprovado").map(t => (
+                                {templates.map(t => (
                                   <SelectItem key={t.id} value={t.id}>
                                     <span className="flex items-center gap-2">
                                       {t.nome}
