@@ -88,7 +88,7 @@ const GerenciarStatus = () => {
       tipo: status.tipo,
       template_id: status.template_id,
       ordem: status.ordem,
-      substatus: status.substatus || [],
+      substatus: (status.substatus || []).map(s => ({ ...s, id: s.id || crypto.randomUUID() })),
     });
     setNewSubLabel("");
     setIsDialogOpen(true);
