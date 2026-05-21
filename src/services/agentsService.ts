@@ -2,6 +2,8 @@ export interface Agent {
   userId: string;
   agentId: string;
   name: string;
+  username?: string;
+  password?: string;
   email: string;
   telefone: string;
   documentNumber: string;
