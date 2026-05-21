@@ -104,7 +104,7 @@ const GerenciarStatus = () => {
     }
     setFormData(prev => ({
       ...prev,
-      substatus: [...prev.substatus, { id: crypto.randomUUID(), label, key, send_message: false, template_id: null, delay_days: 0, send_time: null }],
+      substatus: [...prev.substatus, { id: crypto.randomUUID(), label, key, send_message: false, template_id: null, delay_days: 0, send_time: null, send_count: 1 }],
     }));
     setNewSubLabel("");
   };
@@ -449,7 +449,7 @@ const GerenciarStatus = () => {
                                 ))}
                               </SelectContent>
                             </Select>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-3 gap-2">
                               <div className="space-y-1">
                                 <Label className="text-[10px] text-muted-foreground">Após (dias)</Label>
                                 <Input
@@ -468,6 +468,17 @@ const GerenciarStatus = () => {
                                   value={sub.send_time ?? ""}
                                   onChange={(e) => updateSubStatus(sub.id!, { send_time: e.target.value || null })}
                                   className="h-8 text-xs"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-[10px] text-muted-foreground">Qtd. envios</Label>
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  value={sub.send_count ?? 1}
+                                  onChange={(e) => updateSubStatus(sub.id!, { send_count: Math.max(1, Number(e.target.value) || 1) })}
+                                  className="h-8 text-xs"
+                                  placeholder="1"
                                 />
                               </div>
                             </div>
