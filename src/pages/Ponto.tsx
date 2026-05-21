@@ -787,8 +787,8 @@ const Ponto = () => {
                             <TableCell>{cell("retorno_almoco")}</TableCell>
                             <TableCell>{cell("saida")}</TableCell>
                             <TableCell className="font-semibold">{diffHours(g.records)}</TableCell>
-                            <TableCell className="text-emerald-600 font-medium">{overtime(g.records, isCorretorNovo(g.userId))}</TableCell>
-                            <TableCell className="text-destructive font-medium">{atraso(g.records)}</TableCell>
+                            <TableCell className="text-emerald-600 font-medium">{overtime(g.records, isCorretorNovo(g.userId), getSchedule(g.userId))}</TableCell>
+                            <TableCell className="text-destructive font-medium">{atraso(g.records, getSchedule(g.userId))}</TableCell>
                           </TableRow>
                         );
                       })
