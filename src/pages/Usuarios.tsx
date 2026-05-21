@@ -40,6 +40,8 @@ const VINCULO_LABELS: Record<string, string> = {
 
 interface AgentForm {
   name: string;
+  username: string;
+  password: string;
   email: string;
   telefone: string;
   documentNumber: string;
@@ -54,6 +56,8 @@ const WEEK_DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 const EMPTY_FORM: AgentForm = {
   name: "",
+  username: "",
+  password: "",
   email: "",
   telefone: "",
   documentNumber: "",
