@@ -5,11 +5,15 @@ export interface LeadSubStatus {
   id?: string;
   label: string;
   key: string;
+  send_message?: boolean;
+  template_id?: string | null;
 }
 
 export interface LeadSubStatusPayload {
   label: string;
   key: string;
+  send_message?: boolean;
+  template_id?: string | null;
 }
 
 export interface LeadStatus {
