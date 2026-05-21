@@ -51,9 +51,16 @@ function firstDayOfMonth() {
 }
 
 const STANDARD_WORK_MS = 8 * 3600000;
+const FRIDAY_WORK_MS = 7 * 3600000;
 const EXPECTED_ENTRY_HOUR = 9;
 const EXPECTED_ENTRY_MIN = 0;
 const ENTRY_TOLERANCE_MS = 15 * 60000;
+
+function standardMsForDate(dateStr?: string): number {
+  if (!dateStr) return STANDARD_WORK_MS;
+  const d = new Date(dateStr + "T00:00:00");
+  return d.getDay() === 5 ? FRIDAY_WORK_MS : STANDARD_WORK_MS;
+}
 
 function totalWorkedMs(records: PunchRecord[]): number | null {
   const get = (t: PunchType) => records.find(r => r.type === t);
@@ -85,7 +92,7 @@ function overtime(records: PunchRecord[], skip = false): string {
   if (skip) return "—";
   const ms = totalWorkedMs(records);
   if (ms == null) return "—";
-  const extra = ms - STANDARD_WORK_MS;
+  const extra = ms - standardMsForDate(records[0]?.date);
   if (extra <= 0) return "0h 0m";
   return formatHM(extra);
 }
@@ -313,7 +320,7 @@ const Ponto = () => {
         const ms = totalWorkedMs(g.records);
         if (ms != null) {
           totalMs += ms;
-          if (!isCorretorNovo(g.userId)) totalExtraMs += Math.max(0, ms - STANDARD_WORK_MS);
+          if (!isCorretorNovo(g.userId)) totalExtraMs += Math.max(0, ms - standardMsForDate(g.date));
         }
         const e = g.records.find(r => r.type === "entrada");
         if (e) {
