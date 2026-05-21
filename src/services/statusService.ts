@@ -42,11 +42,13 @@ function stripSubstatusIds(data: any) {
   const { substatus, ...rest } = data;
   return {
     ...rest,
-    substatus: substatus?.map(({ label, key, send_message, template_id }: LeadSubStatusPayload) => ({
+    substatus: substatus?.map(({ label, key, send_message, template_id, delay_days, send_time }: LeadSubStatusPayload) => ({
       label,
       key,
       send_message: send_message ?? false,
       template_id: template_id ?? null,
+      delay_days: delay_days ?? 0,
+      send_time: send_time ?? null,
     })) || [],
   };
 }
