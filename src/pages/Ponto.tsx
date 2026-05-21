@@ -92,7 +92,7 @@ function overtime(records: PunchRecord[], skip = false): string {
   if (skip) return "—";
   const ms = totalWorkedMs(records);
   if (ms == null) return "—";
-  const extra = ms - STANDARD_WORK_MS;
+  const extra = ms - standardMsForDate(records[0]?.date);
   if (extra <= 0) return "0h 0m";
   return formatHM(extra);
 }
