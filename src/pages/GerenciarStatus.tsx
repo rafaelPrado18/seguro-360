@@ -444,10 +444,7 @@ const GerenciarStatus = () => {
                                 <SelectItem value="none">Nenhum template</SelectItem>
                                 {templates.map(t => (
                                   <SelectItem key={t.id} value={t.id}>
-                                    <span className="flex items-center gap-2">
-                                      {t.nome}
-                                      <span className="text-muted-foreground text-[10px]">({t.categoria})</span>
-                                    </span>
+                                    {t.nome} {t.categoria ? `(${t.categoria})` : ""}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -511,10 +508,7 @@ const GerenciarStatus = () => {
                     <SelectItem value="none">Nenhum template</SelectItem>
                     {templates.map(t => (
                       <SelectItem key={t.id} value={t.id}>
-                        <span className="flex items-center gap-2">
-                          {t.nome}
-                          <span className="text-muted-foreground text-[10px]">({t.categoria})</span>
-                        </span>
+                        {t.nome} {t.categoria ? `(${t.categoria})` : ""}
                       </SelectItem>
                     ))}
                   </SelectContent>
