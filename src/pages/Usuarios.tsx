@@ -249,6 +249,31 @@ const Usuarios = () => {
                   <Label className="text-xs">Email</Label>
                   <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="email@hataseg.com" className="h-9 text-sm" />
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Usuário (login)</Label>
+                    <Input
+                      value={form.username}
+                      onChange={e => setForm(f => ({ ...f, username: e.target.value.trim() }))}
+                      placeholder="ex: jsilva"
+                      autoComplete="off"
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">
+                      Senha {editingAgent && <span className="text-muted-foreground">(deixe em branco para manter)</span>}
+                    </Label>
+                    <Input
+                      type="password"
+                      value={form.password}
+                      onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                      placeholder={editingAgent ? "••••••" : "Mínimo 6 caracteres"}
+                      autoComplete="new-password"
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Telefone</Label>
                   <Input value={form.telefone} onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} placeholder="(11) 99999-0000" className="h-9 text-sm" />
