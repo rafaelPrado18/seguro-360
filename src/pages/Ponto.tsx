@@ -55,6 +55,15 @@ const FRIDAY_WORK_MS = 7 * 3600000;
 const EXPECTED_ENTRY_HOUR = 9;
 const EXPECTED_ENTRY_MIN = 0;
 const ENTRY_TOLERANCE_MS = 15 * 60000;
+const LUNCH_ALLOWED_MS = 60 * 60000;
+
+function lunchOverflowMs(records: PunchRecord[]): number {
+  const sa = records.find(r => r.type === "saida_almoco");
+  const ra = records.find(r => r.type === "retorno_almoco");
+  if (!sa || !ra) return 0;
+  const dur = new Date(ra.iso).getTime() - new Date(sa.iso).getTime();
+  return dur > LUNCH_ALLOWED_MS ? dur - LUNCH_ALLOWED_MS : 0;
+}
 
 function standardMsForDate(dateStr?: string): number {
   if (!dateStr) return STANDARD_WORK_MS;
@@ -99,12 +108,17 @@ function overtime(records: PunchRecord[], skip = false): string {
 
 function atraso(records: PunchRecord[]): string {
   const e = records.find(r => r.type === "entrada");
-  if (!e) return "—";
-  const d = new Date(e.iso);
-  const expected = new Date(d);
-  expected.setHours(EXPECTED_ENTRY_HOUR, EXPECTED_ENTRY_MIN, 0, 0);
-  const diff = d.getTime() - expected.getTime();
-  if (diff <= ENTRY_TOLERANCE_MS) return "0h 0m";
+  let diff = 0;
+  if (e) {
+    const d = new Date(e.iso);
+    const expected = new Date(d);
+    expected.setHours(EXPECTED_ENTRY_HOUR, EXPECTED_ENTRY_MIN, 0, 0);
+    const entryDiff = d.getTime() - expected.getTime();
+    if (entryDiff > ENTRY_TOLERANCE_MS) diff += entryDiff;
+  }
+  diff += lunchOverflowMs(records);
+  if (!e && diff === 0) return "—";
+  if (diff <= 0) return "0h 0m";
   return formatHM(diff);
 }
 
@@ -355,6 +369,7 @@ const Ponto = () => {
           const diff = d.getTime() - expected.getTime();
           if (diff > ENTRY_TOLERANCE_MS) totalAtrasoMs += diff;
         }
+        totalAtrasoMs += lunchOverflowMs(g.records);
       });
 
       autoTable(doc, {
