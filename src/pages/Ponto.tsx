@@ -204,9 +204,9 @@ function overtime(records: PunchRecord[], skip = false, scheduleHours?: number[]
   return formatHM(netExtraAtraso(records, scheduleHours).extra);
 }
 
-function atraso(records: PunchRecord[]): string {
+function atraso(records: PunchRecord[], scheduleHours?: number[]): string {
   const e = records.find(r => r.type === "entrada");
-  const { atraso: a } = netExtraAtraso(records);
+  const { atraso: a } = netExtraAtraso(records, scheduleHours);
   if (!e && a === 0) return "—";
   return formatHM(a);
 }
