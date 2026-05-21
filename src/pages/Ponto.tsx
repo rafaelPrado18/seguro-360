@@ -369,6 +369,7 @@ const Ponto = () => {
           const diff = d.getTime() - expected.getTime();
           if (diff > ENTRY_TOLERANCE_MS) totalAtrasoMs += diff;
         }
+        totalAtrasoMs += lunchOverflowMs(g.records);
       });
 
       autoTable(doc, {
