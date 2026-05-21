@@ -55,6 +55,15 @@ const FRIDAY_WORK_MS = 7 * 3600000;
 const EXPECTED_ENTRY_HOUR = 9;
 const EXPECTED_ENTRY_MIN = 0;
 const ENTRY_TOLERANCE_MS = 15 * 60000;
+const LUNCH_ALLOWED_MS = 60 * 60000;
+
+function lunchOverflowMs(records: PunchRecord[]): number {
+  const sa = records.find(r => r.type === "saida_almoco");
+  const ra = records.find(r => r.type === "retorno_almoco");
+  if (!sa || !ra) return 0;
+  const dur = new Date(ra.iso).getTime() - new Date(sa.iso).getTime();
+  return dur > LUNCH_ALLOWED_MS ? dur - LUNCH_ALLOWED_MS : 0;
+}
 
 function standardMsForDate(dateStr?: string): number {
   if (!dateStr) return STANDARD_WORK_MS;
