@@ -105,6 +105,8 @@ const Usuarios = () => {
     setEditingAgent(u);
     setForm({
       name: u.name,
+      username: u.username || "",
+      password: "",
       email: u.email,
       telefone: u.telefone,
       documentNumber: u.documentNumber || "",
