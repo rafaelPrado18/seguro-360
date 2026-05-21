@@ -225,10 +225,18 @@ const Ponto = () => {
     agentsService.getAgents().then(setAgents).catch(() => {});
   }, []);
 
+  // Comerciais (corretores) não acumulam hora extra, inclusive em plantão de feriado
   const isCorretorNovo = (userId: string) => {
     const a = agents.find(ag => ag.userId === userId || ag.agentId === userId);
     const fn = (a?.function || "").toLowerCase();
-    return fn === "corretor" || fn === "corretor_renovacao" || fn.includes("novo") || fn.includes("renova");
+    return (
+      fn === "corretor" ||
+      fn === "corretor_renovacao" ||
+      fn.includes("novo") ||
+      fn.includes("renova") ||
+      fn.includes("comercial") ||
+      fn.includes("vend")
+    );
   };
 
   const handleSaveEdit = async () => {
