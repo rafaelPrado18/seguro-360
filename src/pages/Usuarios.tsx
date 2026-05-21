@@ -122,14 +122,25 @@ const Usuarios = () => {
   };
 
   const handleSave = () => {
-    if (!form.name.trim() || !form.email.trim()) {
-      toast({ title: "Preencha nome e email", variant: "destructive" });
+    if (!form.name.trim() || !form.email.trim() || !form.username.trim()) {
+      toast({ title: "Preencha nome, usuário e email", variant: "destructive" });
+      return;
+    }
+    if (!editingAgent && form.password.length < 6) {
+      toast({ title: "Senha deve ter pelo menos 6 caracteres", variant: "destructive" });
       return;
     }
 
     if (editingAgent) {
+      // Em edição, só envia senha se preenchida
+      const { password, ...rest } = form;
+      const data: Partial<Agent> = {
+        ...rest,
+        birthDate: form.birthDate ? `${form.birthDate}T00:00:00` : "",
+      };
+      if (password.trim()) data.password = password;
       updateMutation.mutate(
-        { id: editingAgent.agentId, data: { ...form, birthDate: form.birthDate ? `${form.birthDate}T00:00:00` : "" } },
+        { id: editingAgent.agentId, data },
         {
           onSuccess: () => {
             toast({ title: "Usuário atualizado com sucesso" });
@@ -144,6 +155,8 @@ const Usuarios = () => {
         userId: userId,
         agentId: '1',
         name: form.name,
+        username: form.username,
+        password: form.password,
         email: form.email,
         telefone: form.telefone,
         documentNumber: form.documentNumber,
