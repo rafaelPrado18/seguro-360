@@ -46,7 +46,11 @@ interface AgentForm {
   function: string;
   vinculo: string;
   birthDate: string;
+  workSchedule: number[]; // 0=Dom ... 6=Sab, em horas
 }
+
+const DEFAULT_SCHEDULE = [0, 8, 8, 8, 8, 7, 0];
+const WEEK_DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 const EMPTY_FORM: AgentForm = {
   name: "",
@@ -56,6 +60,7 @@ const EMPTY_FORM: AgentForm = {
   function: "corretor",
   vinculo: "clt",
   birthDate: "",
+  workSchedule: [...DEFAULT_SCHEDULE],
 };
 
 function getCookie(name) {
