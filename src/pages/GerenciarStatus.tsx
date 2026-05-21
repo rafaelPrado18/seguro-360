@@ -103,9 +103,16 @@ const GerenciarStatus = () => {
     }
     setFormData(prev => ({
       ...prev,
-      substatus: [...prev.substatus, { id: crypto.randomUUID(), label, key }],
+      substatus: [...prev.substatus, { id: crypto.randomUUID(), label, key, send_message: false, template_id: null }],
     }));
     setNewSubLabel("");
+  };
+
+  const updateSubStatus = (id: string, patch: Partial<LeadSubStatus>) => {
+    setFormData(prev => ({
+      ...prev,
+      substatus: prev.substatus.map(s => (s.id === id ? { ...s, ...patch } : s)),
+    }));
   };
 
   const removeSubStatus = (id: string) => {
