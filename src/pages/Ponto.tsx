@@ -184,24 +184,24 @@ function rawAtrasoMs(records: PunchRecord[]): number {
   return diff;
 }
 
-function rawExtraMs(records: PunchRecord[]): number {
+function rawExtraMs(records: PunchRecord[], scheduleHours?: number[]): number {
   const ms = totalWorkedMs(records);
   if (ms == null) return 0;
-  return Math.max(0, ms - standardMsForDate(records[0]?.date));
+  return Math.max(0, ms - standardMsForDate(records[0]?.date, scheduleHours));
 }
 
-function netExtraAtraso(records: PunchRecord[]): { extra: number; atraso: number } {
-  const extra = rawExtraMs(records);
+function netExtraAtraso(records: PunchRecord[], scheduleHours?: number[]): { extra: number; atraso: number } {
+  const extra = rawExtraMs(records, scheduleHours);
   const atraso = rawAtrasoMs(records);
   if (extra >= atraso) return { extra: extra - atraso, atraso: 0 };
   return { extra: 0, atraso: atraso - extra };
 }
 
-function overtime(records: PunchRecord[], skip = false): string {
+function overtime(records: PunchRecord[], skip = false, scheduleHours?: number[]): string {
   if (skip) return "—";
   const ms = totalWorkedMs(records);
   if (ms == null) return "—";
-  return formatHM(netExtraAtraso(records).extra);
+  return formatHM(netExtraAtraso(records, scheduleHours).extra);
 }
 
 function atraso(records: PunchRecord[]): string {
