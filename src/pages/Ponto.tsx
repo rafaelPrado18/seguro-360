@@ -495,8 +495,8 @@ const Ponto = () => {
           t("retorno_almoco"),
           t("saida"),
           diffHours(g.records),
-          overtime(g.records, isCorretorNovo(g.userId)),
-          atraso(g.records),
+          overtime(g.records, isCorretorNovo(g.userId), getSchedule(g.userId)),
+          atraso(g.records, getSchedule(g.userId)),
         ];
       });
 
