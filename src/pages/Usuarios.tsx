@@ -273,6 +273,33 @@ const Usuarios = () => {
                   <Label className="text-xs">Data de Nascimento</Label>
                   <Input type="date" value={form.birthDate} onChange={e => setForm(f => ({ ...f, birthDate: e.target.value }))} className="h-9 text-sm" />
                 </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Carga horária por dia (horas)</Label>
+                  <div className="grid grid-cols-7 gap-1.5">
+                    {WEEK_DAYS.map((d, i) => (
+                      <div key={d} className="flex flex-col items-center gap-1">
+                        <span className="text-[10px] text-muted-foreground">{d}</span>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={24}
+                          step={0.5}
+                          value={form.workSchedule[i]}
+                          onChange={e => {
+                            const v = Number(e.target.value);
+                            setForm(f => {
+                              const ws = [...f.workSchedule];
+                              ws[i] = isNaN(v) ? 0 : v;
+                              return { ...f, workSchedule: ws };
+                            });
+                          }}
+                          className="h-8 text-xs text-center px-1"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Use 0 para folga. Padrão: Seg-Qui 8h, Sex 7h, Sáb/Dom 0h.</p>
+                </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
