@@ -397,7 +397,7 @@ const Ponto = () => {
         });
     }
 
-    return Array.from(map.entries())
+    const rows = Array.from(map.entries())
       .map(([key, recs]) => {
         const [userId, date] = key.split("__");
         const name =
@@ -405,12 +405,34 @@ const Ponto = () => {
           agents.find(a => a.userId === userId || a.agentId === userId)?.name ||
           userId;
         return { userId, userName: name, date, records: recs };
-      })
+      });
+
+    // Deduplicate rows that represent the same person on the same day,
+    // e.g. when the records' userId differs in case/format from the agent's id.
+    const dedup = new Map<string, typeof rows[number]>();
+    rows.forEach(row => {
+      const normName = (row.userName || "").trim().toLowerCase();
+      const dedupKey = `${normName}__${row.date}`;
+      const existing = dedup.get(dedupKey);
+      if (!existing) {
+        dedup.set(dedupKey, row);
+      } else {
+        // Keep the entry with actual punches; merge records if both have any.
+        const merged = {
+          ...existing,
+          records: [...existing.records, ...row.records],
+        };
+        dedup.set(dedupKey, merged);
+      }
+    });
+
+    return Array.from(dedup.values())
       .sort((a, b) => {
         const nameCmp = a.userName.localeCompare(b.userName, "pt-BR", { sensitivity: "base" });
         if (nameCmp !== 0) return nameCmp;
         return a.date.localeCompare(b.date);
       });
+
   }, [records, isAdmin, filterUser, agents, startDate, endDate]);
 
   const allUsers = useMemo(() => {
