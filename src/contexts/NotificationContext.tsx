@@ -76,7 +76,34 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const notifications: Notification[] = (apiEvents || []).map(mapEventToNotification);
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  // Sound + toast for new events
+  // Request browser notification permission on mount
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      if (Notification.permission === "default") {
+        Notification.requestPermission().catch(() => {});
+      }
+    }
+  }, []);
+
+  const showBrowserNotification = (title: string, body: string, leadId?: string) => {
+    try {
+      if (!("Notification" in window) || Notification.permission !== "granted") return;
+      const n = new Notification(title, {
+        body,
+        icon: "/favicon.ico",
+        badge: "/favicon.ico",
+        tag: leadId || `notif-${Date.now()}`,
+        requireInteraction: true,
+      });
+      n.onclick = () => {
+        window.focus();
+        if (leadId) window.location.href = `/leads`;
+        n.close();
+      };
+    } catch {}
+  };
+
+  // Sound + toast + browser notification for new events
   useEffect(() => {
     if (apiEvents && apiEvents.length > 0) {
       const prevIds = prevEventIdsRef.current;
@@ -88,20 +115,23 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         const msgEvents = newEvents.filter(e => e.type === "mensagens_novas");
 
         if (leadEvents.length > 0) {
-          toast.success(`${leadEvents.length} novo${leadEvents.length > 1 ? "s" : ""} lead${leadEvents.length > 1 ? "s" : ""}!`, {
-            description: leadEvents.map(e => e.message).join(", "),
-          });
+          const title = `${leadEvents.length} novo${leadEvents.length > 1 ? "s" : ""} lead${leadEvents.length > 1 ? "s" : ""}!`;
+          const desc = leadEvents.map(e => e.message).join(", ");
+          toast.success(title, { description: desc });
+          leadEvents.forEach(e => showBrowserNotification(e.title || "Novo lead", e.message, e.leadId));
         }
         if (msgEvents.length > 0) {
-          toast.info(`${msgEvents.length} nova${msgEvents.length > 1 ? "s" : ""} mensagen${msgEvents.length > 1 ? "s" : ""}!`, {
-            description: msgEvents.map(e => e.message).join(", "),
-          });
+          const title = `${msgEvents.length} nova${msgEvents.length > 1 ? "s" : ""} mensagen${msgEvents.length > 1 ? "s" : ""}!`;
+          const desc = msgEvents.map(e => e.message).join(", ");
+          toast.info(title, { description: desc });
+          msgEvents.forEach(e => showBrowserNotification(e.title || "Nova mensagem", e.message, e.leadId));
         }
       }
 
       prevEventIdsRef.current = new Set(apiEvents.map(e => e.id));
     }
   }, [apiEvents]);
+
 
   const markAsRead = (id: string) => {
     markReadMutation.mutate(id);
