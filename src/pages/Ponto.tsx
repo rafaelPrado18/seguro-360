@@ -618,6 +618,16 @@ const Ponto = () => {
           </TabsList>
 
           <TabsContent value="hoje" className="space-y-6">
+            {isPj && !isAdmin && (
+              <Card className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+                <CardContent className="py-6 text-center">
+                  <p className="text-sm font-medium">Colaboradores com vínculo PJ não registram ponto.</p>
+                </CardContent>
+              </Card>
+            )}
+            {!isPj && (
+            <>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {PUNCH_ORDER.map(type => {
                 const rec = myToday.find(r => r.type === type);
