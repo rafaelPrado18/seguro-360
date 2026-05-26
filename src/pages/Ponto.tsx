@@ -433,6 +433,10 @@ const Ponto = () => {
     });
 
     return Array.from(dedup.values())
+      .filter(row => {
+        const ag = agents.find(a => a.userId === row.userId || a.agentId === row.userId);
+        return (ag?.vinculo || "").toLowerCase() !== "pj";
+      })
       .sort((a, b) => {
         const nameCmp = a.userName.localeCompare(b.userName, "pt-BR", { sensitivity: "base" });
         if (nameCmp !== 0) return nameCmp;
