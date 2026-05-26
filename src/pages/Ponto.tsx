@@ -229,6 +229,12 @@ const Ponto = () => {
     agentsService.getAgents().then(setAgents).catch(() => {});
   }, []);
 
+  const currentAgent = useMemo(
+    () => agents.find(a => a.userId === currentUser.id || a.agentId === currentUser.id),
+    [agents, currentUser.id]
+  );
+  const isPj = (currentAgent?.vinculo || "").toLowerCase() === "pj";
+
   // Comerciais (corretores) não acumulam hora extra, inclusive em plantão de feriado
   const isCorretorNovo = (userId: string) => {
     const a = agents.find(ag => ag.userId === userId || ag.agentId === userId);
