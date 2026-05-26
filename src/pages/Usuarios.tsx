@@ -243,7 +243,7 @@ const Usuarios = () => {
               <div className="space-y-4 py-2">
                 <div className="space-y-1.5">
                   <Label className="text-xs">Nome Completo</Label>
-                  <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Nome do corretor" className="h-9 text-sm" />
+                  <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value.toUpperCase() }))} placeholder="NOME DO CORRETOR" className="h-9 text-sm uppercase" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Email</Label>
