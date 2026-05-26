@@ -136,6 +136,7 @@ const Usuarios = () => {
       const { password, ...rest } = form;
       const data: Partial<Agent> = {
         ...rest,
+        name: form.name.toUpperCase(),
         birthDate: form.birthDate ? `${form.birthDate}T00:00:00` : "",
       };
       if (password.trim()) data.password = password;
