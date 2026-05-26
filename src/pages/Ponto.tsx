@@ -690,6 +690,8 @@ const Ponto = () => {
                 </div>
               </CardContent>
             </Card>
+            </>
+            )}
           </TabsContent>
 
           <TabsContent value="historico" className="space-y-4">
