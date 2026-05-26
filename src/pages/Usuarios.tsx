@@ -104,7 +104,7 @@ const Usuarios = () => {
   const openEdit = (u: Agent) => {
     setEditingAgent(u);
     setForm({
-      name: u.name,
+      name: (u.name || "").toUpperCase(),
       username: u.username || "",
       password: "",
       email: u.email,
@@ -136,6 +136,7 @@ const Usuarios = () => {
       const { password, ...rest } = form;
       const data: Partial<Agent> = {
         ...rest,
+        name: form.name.toUpperCase(),
         birthDate: form.birthDate ? `${form.birthDate}T00:00:00` : "",
       };
       if (password.trim()) data.password = password;
@@ -154,7 +155,7 @@ const Usuarios = () => {
       const newAgent: Agent = {
         userId: userId,
         agentId: '1',
-        name: form.name,
+        name: form.name.toUpperCase(),
         username: form.username,
         password: form.password,
         email: form.email,
@@ -243,7 +244,7 @@ const Usuarios = () => {
               <div className="space-y-4 py-2">
                 <div className="space-y-1.5">
                   <Label className="text-xs">Nome Completo</Label>
-                  <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Nome do corretor" className="h-9 text-sm" />
+                  <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value.toUpperCase() }))} placeholder="NOME DO CORRETOR" className="h-9 text-sm uppercase" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Email</Label>

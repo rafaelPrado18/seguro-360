@@ -229,6 +229,12 @@ const Ponto = () => {
     agentsService.getAgents().then(setAgents).catch(() => {});
   }, []);
 
+  const currentAgent = useMemo(
+    () => agents.find(a => a.userId === currentUser.id || a.agentId === currentUser.id),
+    [agents, currentUser.id]
+  );
+  const isPj = (currentAgent?.vinculo || "").toLowerCase() === "pj";
+
   // Comerciais (corretores) não acumulam hora extra, inclusive em plantão de feriado
   const isCorretorNovo = (userId: string) => {
     const a = agents.find(ag => ag.userId === userId || ag.agentId === userId);
@@ -330,6 +336,10 @@ const Ponto = () => {
   }, [myToday]);
 
   const handlePunch = async (type: PunchType) => {
+    if (isPj) {
+      toast({ title: "Colaboradores PJ não registram ponto", variant: "destructive" });
+      return;
+    }
     if (myToday.some(r => r.type === type)) {
       toast({ title: "Batida já registrada", description: PUNCH_LABEL[type], variant: "destructive" });
       return;
@@ -387,7 +397,7 @@ const Ponto = () => {
         dates.push(format(d, "yyyy-MM-dd"));
       }
       agents
-        .filter(a => a.isActive !== false)
+        .filter(a => a.isActive !== false && (a.vinculo || "").toLowerCase() !== "pj")
         .forEach(a => {
           const uid = a.userId || a.agentId;
           dates.forEach(date => {
@@ -427,6 +437,10 @@ const Ponto = () => {
     });
 
     return Array.from(dedup.values())
+      .filter(row => {
+        const ag = agents.find(a => a.userId === row.userId || a.agentId === row.userId);
+        return (ag?.vinculo || "").toLowerCase() !== "pj";
+      })
       .sort((a, b) => {
         const nameCmp = a.userName.localeCompare(b.userName, "pt-BR", { sensitivity: "base" });
         if (nameCmp !== 0) return nameCmp;
@@ -604,6 +618,16 @@ const Ponto = () => {
           </TabsList>
 
           <TabsContent value="hoje" className="space-y-6">
+            {isPj && !isAdmin && (
+              <Card className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+                <CardContent className="py-6 text-center">
+                  <p className="text-sm font-medium">Colaboradores com vínculo PJ não registram ponto.</p>
+                </CardContent>
+              </Card>
+            )}
+            {!isPj && (
+            <>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {PUNCH_ORDER.map(type => {
                 const rec = myToday.find(r => r.type === type);
@@ -666,6 +690,8 @@ const Ponto = () => {
                 </div>
               </CardContent>
             </Card>
+            </>
+            )}
           </TabsContent>
 
           <TabsContent value="historico" className="space-y-4">
