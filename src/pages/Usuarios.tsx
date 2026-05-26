@@ -104,7 +104,7 @@ const Usuarios = () => {
   const openEdit = (u: Agent) => {
     setEditingAgent(u);
     setForm({
-      name: u.name,
+      name: (u.name || "").toUpperCase(),
       username: u.username || "",
       password: "",
       email: u.email,
