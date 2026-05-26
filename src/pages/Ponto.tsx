@@ -336,6 +336,10 @@ const Ponto = () => {
   }, [myToday]);
 
   const handlePunch = async (type: PunchType) => {
+    if (isPj) {
+      toast({ title: "Colaboradores PJ não registram ponto", variant: "destructive" });
+      return;
+    }
     if (myToday.some(r => r.type === type)) {
       toast({ title: "Batida já registrada", description: PUNCH_LABEL[type], variant: "destructive" });
       return;
