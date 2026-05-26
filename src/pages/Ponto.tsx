@@ -393,7 +393,7 @@ const Ponto = () => {
         dates.push(format(d, "yyyy-MM-dd"));
       }
       agents
-        .filter(a => a.isActive !== false)
+        .filter(a => a.isActive !== false && (a.vinculo || "").toLowerCase() !== "pj")
         .forEach(a => {
           const uid = a.userId || a.agentId;
           dates.forEach(date => {
