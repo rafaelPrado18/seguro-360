@@ -154,7 +154,7 @@ const Usuarios = () => {
       const newAgent: Agent = {
         userId: userId,
         agentId: '1',
-        name: form.name,
+        name: form.name.toUpperCase(),
         username: form.username,
         password: form.password,
         email: form.email,
