@@ -114,19 +114,21 @@ const Sinistros = () => {
   return (
     <AppLayout>
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <div>
             <h2 className="text-2xl font-bold text-foreground">Sinistros</h2>
             <p className="text-sm text-muted-foreground">{sinistros.length} sinistros registrados</p>
           </div>
-          <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => setNovoDialogOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Novo Sinistro
-          </Button>
-          <Button variant="outline" className="gap-2" onClick={handleExport}>
-            <Download className="h-4 w-4" />
-            Exportar Relatório
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" className="gap-2" onClick={handleExport}>
+              <Download className="h-4 w-4" />
+              Exportar Relatório
+            </Button>
+            <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => setNovoDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+              Novo Sinistro
+            </Button>
+          </div>
         </div>
 
         {/* Filters bar */}
