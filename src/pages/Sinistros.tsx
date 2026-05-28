@@ -115,7 +115,7 @@ const Sinistros = () => {
     loadSinistros(); // Refresh from API
   };
 
-  const handleExport = () => {
+  const handleExportPDF = () => {
     if (!filtered.length) {
       toast({ title: "Sem dados", description: "Não há sinistros para exportar com os filtros atuais", variant: "destructive" });
       return;
@@ -148,6 +148,44 @@ const Sinistros = () => {
 
     doc.save(`sinistros_${new Date().toISOString().slice(0, 10)}.pdf`);
     toast({ title: "Relatório exportado", description: `${filtered.length} sinistros exportados em PDF` });
+  };
+
+  const handleExportExcel = () => {
+    if (!filtered.length) {
+      toast({ title: "Sem dados", description: "Não há sinistros para exportar com os filtros atuais", variant: "destructive" });
+      return;
+    }
+    const statusLabel = (id: string) => SINISTRO_COLUMNS.find(c => c.id === id)?.label || id;
+    const data = filtered.map(s => ({
+      ID: s.id,
+      Cliente: s.cliente,
+      Telefone: s.telefone,
+      Seguradora: s.seguradora,
+      "Nº Apólice": s.apolice || "",
+      Tipo: s.tipo,
+      Status: statusLabel(s.status),
+      Prioridade: s.prioridade,
+      "Data Abertura": s.dataAbertura,
+      "Data Tratativa": s.dataTratativa || "",
+      Valor: s.valor,
+      Oficina: s.oficina || "",
+      Observações: s.observacoes || "",
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sinistros");
+
+    // Ajustar larguras das colunas
+    const colWidths = [
+      { wch: 12 }, { wch: 25 }, { wch: 16 }, { wch: 18 },
+      { wch: 16 }, { wch: 16 }, { wch: 22 }, { wch: 12 },
+      { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 20 }, { wch: 35 },
+    ];
+    ws['!cols'] = colWidths;
+
+    XLSX.writeFile(wb, `sinistros_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast({ title: "Relatório exportado", description: `${filtered.length} sinistros exportados em Excel` });
   };
 
   return (
