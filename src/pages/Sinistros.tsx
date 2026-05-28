@@ -123,6 +123,10 @@ const Sinistros = () => {
             <Plus className="h-4 w-4" />
             Novo Sinistro
           </Button>
+          <Button variant="outline" className="gap-2" onClick={handleExport}>
+            <Download className="h-4 w-4" />
+            Exportar Relatório
+          </Button>
         </div>
 
         {/* Filters bar */}
