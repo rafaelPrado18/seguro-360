@@ -93,8 +93,9 @@ const Sinistros = () => {
   const filtered = sinistros.filter(s => {
     const matchSearch = !search || s.cliente.toLowerCase().includes(search.toLowerCase()) || s.id.includes(search);
     const matchStatus = statusFilter === "all" || s.status === statusFilter;
+    const matchSeguradora = seguradoraFilter === "all" || s.seguradora === seguradoraFilter;
     const matchDate = !dateFilter || (s.dataTratativa || s.dataAbertura || "").includes(dateFilter);
-    return matchSearch && matchStatus && matchDate;
+    return matchSearch && matchStatus && matchSeguradora && matchDate;
   });
 
   const handleStatusChange = async (sinistroId: string, newStatus: string) => {
