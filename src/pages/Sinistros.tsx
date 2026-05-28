@@ -3,7 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plus, Filter, Loader2 } from "lucide-react";
+import { Search, Plus, Filter, Loader2, Download } from "lucide-react";
 import { SinistroKanban, type SinistroItem, type SinistroKanbanColumn } from "@/components/sinistros/SinistroKanban";
 import { SinistroDetailSheet } from "@/components/sinistros/SinistroDetailSheet";
 import { NovoSinistroDialog } from "@/components/sinistros/NovoSinistroDialog";
