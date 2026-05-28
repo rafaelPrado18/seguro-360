@@ -40,12 +40,15 @@ const FILTER_OPTIONS = [
 const Sinistros = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [seguradoraFilter, setSeguradoraFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
   const [sinistros, setSinistros] = useState<SinistroItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedSinistro, setSelectedSinistro] = useState<SinistroItem | null>(null);
   const [novoDialogOpen, setNovoDialogOpen] = useState(false);
+
+  const seguradoras = Array.from(new Set(sinistros.map(s => s.seguradora).filter(Boolean))).sort();
 
   const loadSinistros = async () => {
     try {
@@ -90,8 +93,9 @@ const Sinistros = () => {
   const filtered = sinistros.filter(s => {
     const matchSearch = !search || s.cliente.toLowerCase().includes(search.toLowerCase()) || s.id.includes(search);
     const matchStatus = statusFilter === "all" || s.status === statusFilter;
+    const matchSeguradora = seguradoraFilter === "all" || s.seguradora === seguradoraFilter;
     const matchDate = !dateFilter || (s.dataTratativa || s.dataAbertura || "").includes(dateFilter);
-    return matchSearch && matchStatus && matchDate;
+    return matchSearch && matchStatus && matchSeguradora && matchDate;
   });
 
   const handleStatusChange = async (sinistroId: string, newStatus: string) => {
@@ -237,6 +241,18 @@ const Sinistros = () => {
               <SelectItem value="all">Todos os status</SelectItem>
               {SINISTRO_COLUMNS.map(c => (
                 <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={seguradoraFilter} onValueChange={setSeguradoraFilter}>
+            <SelectTrigger className="w-[220px] h-9 text-sm">
+              <Filter className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
+              <SelectValue placeholder="Seguradora" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as seguradoras</SelectItem>
+              {seguradoras.map(seg => (
+                <SelectItem key={seg} value={seg}>{seg}</SelectItem>
               ))}
             </SelectContent>
           </Select>
