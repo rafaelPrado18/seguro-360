@@ -9,10 +9,9 @@ export interface SinistroTerceiro {
   nome: string;
   telefone: string;
   cpf: string;
-  cep: string;
-  endereco: string;
-  email: string;
   numero_sinistro: string;
+  veiculo: string;
+  placa: string;
 }
 
 export interface SinistroCreatePayload {
