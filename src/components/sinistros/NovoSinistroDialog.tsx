@@ -27,7 +27,7 @@ import type { SinistroTerceiro } from "@/services/sinistroService";
 import type { Client, VehiclePolicy } from "@/services/clientService";
 
 const emptyTerceiro = (): SinistroTerceiro => ({
-  nome: "", telefone: "", cpf: "", cep: "", endereco: "", email: "", numero_sinistro: "",
+  nome: "", telefone: "", cpf: "", numero_sinistro: "", veiculo: "", placa: "",
 });
 
 const sinistroSchema = z.object({
@@ -430,10 +430,9 @@ export function NovoSinistroDialog({ open, onOpenChange, onSinistroCriado }: Nov
                           <Input placeholder="Nome" className="h-8 text-xs" value={t.nome} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, nome: e.target.value } : x))} />
                           <Input placeholder="Telefone" className="h-8 text-xs" value={t.telefone} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, telefone: e.target.value } : x))} />
                           <Input placeholder="CPF" className="h-8 text-xs" value={t.cpf} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, cpf: e.target.value } : x))} />
-                          <Input placeholder="CEP" className="h-8 text-xs" value={t.cep} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, cep: e.target.value } : x))} />
-                          <Input placeholder="Endereço" className="h-8 text-xs col-span-2" value={t.endereco} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, endereco: e.target.value } : x))} />
-                          <Input placeholder="E-mail" className="h-8 text-xs" value={t.email} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, email: e.target.value } : x))} />
                           <Input placeholder="Nº Sinistro" className="h-8 text-xs" value={t.numero_sinistro} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, numero_sinistro: e.target.value } : x))} />
+                          <Input placeholder="Veículo" className="h-8 text-xs" value={t.veiculo} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, veiculo: e.target.value } : x))} />
+                          <Input placeholder="Placa" className="h-8 text-xs" value={t.placa} onChange={e => setTerceiros(prev => prev.map((x, i) => i === idx ? { ...x, placa: e.target.value } : x))} />
                         </div>
                       </div>
                     ))}
