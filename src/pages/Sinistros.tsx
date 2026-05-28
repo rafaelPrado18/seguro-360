@@ -111,6 +111,33 @@ const Sinistros = () => {
     loadSinistros(); // Refresh from API
   };
 
+  const handleExport = () => {
+    if (!filtered.length) {
+      toast({ title: "Sem dados", description: "Não há sinistros para exportar com os filtros atuais", variant: "destructive" });
+      return;
+    }
+    const headers = ["ID", "Cliente", "Telefone", "Seguradora", "Apólice", "Tipo", "Status", "Prioridade", "Data Abertura", "Valor", "Oficina", "Observações"];
+    const escape = (v: unknown) => {
+      const s = String(v ?? "").replace(/"/g, '""');
+      return `"${s}"`;
+    };
+    const statusLabel = (id: string) => SINISTRO_COLUMNS.find(c => c.id === id)?.label || id;
+    const rows = filtered.map(s => [
+      s.id, s.cliente, s.telefone, s.seguradora, s.apolice || "", s.tipo,
+      statusLabel(s.status), s.prioridade, s.dataAbertura, s.valor,
+      s.oficina || "", (s.observacoes || "").replace(/\n/g, " "),
+    ].map(escape).join(","));
+    const csv = "\uFEFF" + [headers.map(escape).join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sinistros_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: "Relatório exportado", description: `${filtered.length} sinistros exportados` });
+  };
+
   return (
     <AppLayout>
       <div className="space-y-4">
