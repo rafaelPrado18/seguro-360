@@ -197,10 +197,24 @@ const Sinistros = () => {
             <p className="text-sm text-muted-foreground">{sinistros.length} sinistros registrados</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2" onClick={handleExport}>
-              <Download className="h-4 w-4" />
-              Exportar Relatório
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Download className="h-4 w-4" />
+                  Exportar Relatório
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExportPDF} className="gap-2 cursor-pointer">
+                  <FileText className="h-4 w-4 text-red-500" />
+                  Exportar PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportExcel} className="gap-2 cursor-pointer">
+                  <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                  Exportar Excel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => setNovoDialogOpen(true)}>
               <Plus className="h-4 w-4" />
               Novo Sinistro
