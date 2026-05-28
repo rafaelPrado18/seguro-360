@@ -9,7 +9,7 @@ const baseClasses =
 const headerBase = "flex items-center gap-2 px-3 py-2 text-white font-semibold text-xs uppercase tracking-wide";
 
 export const MessageNode = memo(({ data, selected }: NodeProps) => {
-  const d = data as BotFlowNodeData;
+  const d = data as unknown as BotFlowNodeData;
   return (
     <div className={`${baseClasses} ${selected ? "border-primary" : "border-border"}`}>
       <div className={`${headerBase} bg-blue-600`}>
@@ -29,7 +29,7 @@ export const MessageNode = memo(({ data, selected }: NodeProps) => {
 MessageNode.displayName = "MessageNode";
 
 export const QuestionNode = memo(({ data, selected }: NodeProps) => {
-  const d = data as BotFlowNodeData;
+  const d = data as unknown as BotFlowNodeData;
   const opts = d.options ?? [];
   return (
     <div className={`${baseClasses} ${selected ? "border-primary" : "border-border"}`}>
@@ -63,7 +63,7 @@ export const QuestionNode = memo(({ data, selected }: NodeProps) => {
 QuestionNode.displayName = "QuestionNode";
 
 export const ConditionNode = memo(({ data, selected }: NodeProps) => {
-  const d = data as BotFlowNodeData;
+  const d = data as unknown as BotFlowNodeData;
   return (
     <div className={`${baseClasses} ${selected ? "border-primary" : "border-border"}`}>
       <div className={`${headerBase} bg-amber-600`}>
@@ -90,7 +90,7 @@ export const ConditionNode = memo(({ data, selected }: NodeProps) => {
 ConditionNode.displayName = "ConditionNode";
 
 export const ActionNode = memo(({ data, selected }: NodeProps) => {
-  const d = data as BotFlowNodeData;
+  const d = data as unknown as BotFlowNodeData;
   return (
     <div className={`${baseClasses} ${selected ? "border-primary" : "border-border"}`}>
       <div className={`${headerBase} bg-emerald-600`}>
