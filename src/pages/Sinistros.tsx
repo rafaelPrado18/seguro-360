@@ -40,12 +40,15 @@ const FILTER_OPTIONS = [
 const Sinistros = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [seguradoraFilter, setSeguradoraFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
   const [sinistros, setSinistros] = useState<SinistroItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedSinistro, setSelectedSinistro] = useState<SinistroItem | null>(null);
   const [novoDialogOpen, setNovoDialogOpen] = useState(false);
+
+  const seguradoras = Array.from(new Set(sinistros.map(s => s.seguradora).filter(Boolean))).sort();
 
   const loadSinistros = async () => {
     try {
