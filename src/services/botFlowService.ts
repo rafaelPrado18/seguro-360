@@ -19,17 +19,13 @@ const orchestratorHeaders = (): HeadersInit => ({
 
 export type BotNodeType = "message" | "question" | "condition" | "action";
 
-export interface BotFlowNodeData {
+export interface BotFlowNodeData extends Record<string, unknown> {
   label: string;
-  // message
   message?: string;
-  // question
   options?: { label: string; value: string }[];
-  // condition
   variable?: string;
   operator?: "eq" | "neq" | "contains" | "gt" | "lt";
   value?: string;
-  // action
   actionType?: "create_lead" | "transfer" | "call_api" | "tag";
   actionPayload?: Record<string, string>;
 }
