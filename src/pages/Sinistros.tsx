@@ -3,7 +3,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plus, Filter, Loader2, Download } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Search, Plus, Filter, Loader2, Download, FileText, FileSpreadsheet } from "lucide-react";
 import { SinistroKanban, type SinistroItem, type SinistroKanbanColumn } from "@/components/sinistros/SinistroKanban";
 import { SinistroDetailSheet } from "@/components/sinistros/SinistroDetailSheet";
 import { NovoSinistroDialog } from "@/components/sinistros/NovoSinistroDialog";
@@ -11,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { sinistroService } from "@/services/sinistroService";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const SINISTRO_COLUMNS: SinistroKanbanColumn[] = [
   { id: "abertura", label: "Abertura do Sinistro", color: "text-info", bgColor: "bg-info" },
@@ -113,7 +115,7 @@ const Sinistros = () => {
     loadSinistros(); // Refresh from API
   };
 
-  const handleExport = () => {
+  const handleExportPDF = () => {
     if (!filtered.length) {
       toast({ title: "Sem dados", description: "Não há sinistros para exportar com os filtros atuais", variant: "destructive" });
       return;
@@ -148,6 +150,44 @@ const Sinistros = () => {
     toast({ title: "Relatório exportado", description: `${filtered.length} sinistros exportados em PDF` });
   };
 
+  const handleExportExcel = () => {
+    if (!filtered.length) {
+      toast({ title: "Sem dados", description: "Não há sinistros para exportar com os filtros atuais", variant: "destructive" });
+      return;
+    }
+    const statusLabel = (id: string) => SINISTRO_COLUMNS.find(c => c.id === id)?.label || id;
+    const data = filtered.map(s => ({
+      ID: s.id,
+      Cliente: s.cliente,
+      Telefone: s.telefone,
+      Seguradora: s.seguradora,
+      "Nº Apólice": s.apolice || "",
+      Tipo: s.tipo,
+      Status: statusLabel(s.status),
+      Prioridade: s.prioridade,
+      "Data Abertura": s.dataAbertura,
+      "Data Tratativa": s.dataTratativa || "",
+      Valor: s.valor,
+      Oficina: s.oficina || "",
+      Observações: s.observacoes || "",
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sinistros");
+
+    // Ajustar larguras das colunas
+    const colWidths = [
+      { wch: 12 }, { wch: 25 }, { wch: 16 }, { wch: 18 },
+      { wch: 16 }, { wch: 16 }, { wch: 22 }, { wch: 12 },
+      { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 20 }, { wch: 35 },
+    ];
+    ws['!cols'] = colWidths;
+
+    XLSX.writeFile(wb, `sinistros_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast({ title: "Relatório exportado", description: `${filtered.length} sinistros exportados em Excel` });
+  };
+
   return (
     <AppLayout>
       <div className="space-y-4">
@@ -157,10 +197,24 @@ const Sinistros = () => {
             <p className="text-sm text-muted-foreground">{sinistros.length} sinistros registrados</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2" onClick={handleExport}>
-              <Download className="h-4 w-4" />
-              Exportar Relatório
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Download className="h-4 w-4" />
+                  Exportar Relatório
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExportPDF} className="gap-2 cursor-pointer">
+                  <FileText className="h-4 w-4 text-red-500" />
+                  Exportar PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportExcel} className="gap-2 cursor-pointer">
+                  <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                  Exportar Excel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => setNovoDialogOpen(true)}>
               <Plus className="h-4 w-4" />
               Novo Sinistro
