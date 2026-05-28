@@ -3,7 +3,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plus, Filter, Loader2, Download } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Search, Plus, Filter, Loader2, Download, FileText, FileSpreadsheet } from "lucide-react";
 import { SinistroKanban, type SinistroItem, type SinistroKanbanColumn } from "@/components/sinistros/SinistroKanban";
 import { SinistroDetailSheet } from "@/components/sinistros/SinistroDetailSheet";
 import { NovoSinistroDialog } from "@/components/sinistros/NovoSinistroDialog";
@@ -11,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { sinistroService } from "@/services/sinistroService";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const SINISTRO_COLUMNS: SinistroKanbanColumn[] = [
   { id: "abertura", label: "Abertura do Sinistro", color: "text-info", bgColor: "bg-info" },
