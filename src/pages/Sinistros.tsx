@@ -9,6 +9,8 @@ import { SinistroDetailSheet } from "@/components/sinistros/SinistroDetailSheet"
 import { NovoSinistroDialog } from "@/components/sinistros/NovoSinistroDialog";
 import { toast } from "@/hooks/use-toast";
 import { sinistroService } from "@/services/sinistroService";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const SINISTRO_COLUMNS: SinistroKanbanColumn[] = [
   { id: "abertura", label: "Abertura do Sinistro", color: "text-info", bgColor: "bg-info" },
