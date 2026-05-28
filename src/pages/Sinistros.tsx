@@ -244,6 +244,18 @@ const Sinistros = () => {
               ))}
             </SelectContent>
           </Select>
+          <Select value={seguradoraFilter} onValueChange={setSeguradoraFilter}>
+            <SelectTrigger className="w-[220px] h-9 text-sm">
+              <Filter className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
+              <SelectValue placeholder="Seguradora" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as seguradoras</SelectItem>
+              {seguradoras.map(seg => (
+                <SelectItem key={seg} value={seg}>{seg}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Input
             type="date"
             className="h-9 text-sm w-[170px]"
