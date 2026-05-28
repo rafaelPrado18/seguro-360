@@ -9,6 +9,8 @@ import { SinistroDetailSheet } from "@/components/sinistros/SinistroDetailSheet"
 import { NovoSinistroDialog } from "@/components/sinistros/NovoSinistroDialog";
 import { toast } from "@/hooks/use-toast";
 import { sinistroService } from "@/services/sinistroService";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const SINISTRO_COLUMNS: SinistroKanbanColumn[] = [
   { id: "abertura", label: "Abertura do Sinistro", color: "text-info", bgColor: "bg-info" },
@@ -116,26 +118,34 @@ const Sinistros = () => {
       toast({ title: "Sem dados", description: "Não há sinistros para exportar com os filtros atuais", variant: "destructive" });
       return;
     }
-    const headers = ["ID", "Cliente", "Telefone", "Seguradora", "Apólice", "Tipo", "Status", "Prioridade", "Data Abertura", "Valor", "Oficina", "Observações"];
-    const escape = (v: unknown) => {
-      const s = String(v ?? "").replace(/"/g, '""');
-      return `"${s}"`;
-    };
     const statusLabel = (id: string) => SINISTRO_COLUMNS.find(c => c.id === id)?.label || id;
-    const rows = filtered.map(s => [
-      s.id, s.cliente, s.telefone, s.seguradora, s.apolice || "", s.tipo,
-      statusLabel(s.status), s.prioridade, s.dataAbertura, s.valor,
-      s.oficina || "", (s.observacoes || "").replace(/\n/g, " "),
-    ].map(escape).join(","));
-    const csv = "\uFEFF" + [headers.map(escape).join(","), ...rows].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `sinistros_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast({ title: "Relatório exportado", description: `${filtered.length} sinistros exportados` });
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const today = new Date().toLocaleDateString("pt-BR");
+
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Relatório de Sinistros", 40, 40);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Gerado em: ${today}`, 40, 58);
+    doc.text(`Total: ${filtered.length} sinistros`, pageWidth - 40, 58, { align: "right" });
+
+    autoTable(doc, {
+      startY: 75,
+      head: [["ID", "Cliente", "Telefone", "Seguradora", "Tipo", "Status", "Prioridade", "Abertura", "Valor", "Oficina"]],
+      body: filtered.map(s => [
+        s.id, s.cliente, s.telefone, s.seguradora, s.tipo,
+        statusLabel(s.status), s.prioridade, s.dataAbertura, s.valor, s.oficina || "",
+      ]),
+      styles: { fontSize: 8, cellPadding: 4, overflow: "linebreak" },
+      headStyles: { fillColor: [180, 30, 40], textColor: 255, fontStyle: "bold" },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      margin: { left: 40, right: 40 },
+    });
+
+    doc.save(`sinistros_${new Date().toISOString().slice(0, 10)}.pdf`);
+    toast({ title: "Relatório exportado", description: `${filtered.length} sinistros exportados em PDF` });
   };
 
   return (
