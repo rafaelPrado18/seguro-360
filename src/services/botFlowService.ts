@@ -28,6 +28,8 @@ export interface BotFlowNodeData extends Record<string, unknown> {
   value?: string;
   actionType?: "create_lead" | "transfer" | "call_api" | "tag";
   actionPayload?: Record<string, string>;
+  functionId?: string;
+  functionName?: string;
 }
 
 export interface BotFlowNode {
