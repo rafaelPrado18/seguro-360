@@ -3,11 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Building2, User, Bell, Shield, Database } from "lucide-react";
+import { Building2, User, Bell } from "lucide-react";
+import { BotFunctionsManager } from "@/components/botfunctions/BotFunctionsManager";
+import { useRole } from "@/contexts/RoleContext";
 
 const Configuracoes = () => {
+  const { isAdmin } = useRole();
   return (
     <AppLayout>
       <div className="space-y-6 max-w-3xl">
