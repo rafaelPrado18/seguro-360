@@ -89,6 +89,8 @@ const Configuracoes = () => {
             <Button variant="outline" size="sm" className="mt-3">Gerenciar Usuários</Button>
           </CardContent>
         </Card>
+
+        {isAdmin && <BotFunctionsManager />}
       </div>
     </AppLayout>
   );
