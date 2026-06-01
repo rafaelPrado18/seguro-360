@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, X } from "lucide-react";
 import type { Node } from "@xyflow/react";
 import type { BotFlowNodeData, BotNodeType } from "@/services/botFlowService";
+import { botFunctionService, type BotFunction } from "@/services/botFunctionService";
 
 interface Props {
   node: Node<BotFlowNodeData> | null;
