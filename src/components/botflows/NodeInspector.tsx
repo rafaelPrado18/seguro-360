@@ -17,6 +17,14 @@ interface Props {
 }
 
 export function NodeInspector({ node, onChange, onDelete, onClose }: Props) {
+  const [functions, setFunctions] = useState<BotFunction[]>([]);
+
+  useEffect(() => {
+    if (node?.type === "action") {
+      botFunctionService.list().then(setFunctions).catch(() => setFunctions([]));
+    }
+  }, [node?.id, node?.type]);
+
   if (!node) return null;
   const type = node.type as BotNodeType;
   const data = node.data;
