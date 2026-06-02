@@ -8,6 +8,7 @@ import { Plus, Trash2, X } from "lucide-react";
 import type { Node } from "@xyflow/react";
 import type { BotFlowNodeData, BotNodeType } from "@/services/botFlowService";
 import { botFunctionService, type BotFunction } from "@/services/botFunctionService";
+import { KeyValueEditor } from "@/components/shared/KeyValueEditor";
 
 interface Props {
   node: Node<BotFlowNodeData> | null;
