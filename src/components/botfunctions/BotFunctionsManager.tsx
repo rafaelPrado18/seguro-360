@@ -246,19 +246,11 @@ export function BotFunctionsManager() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Parâmetros padrão (JSON)</Label>
-                  <Textarea
-                    rows={5}
-                    className="font-mono text-xs"
-                    value={JSON.stringify(editing.defaultPayload || {}, null, 2)}
-                    onChange={(e) => {
-                      try {
-                        setEditing({ ...editing, defaultPayload: JSON.parse(e.target.value) });
-                      } catch { /* ignore */ }
-                    }}
-                  />
-                </div>
+                <KeyValueEditor
+                  label="Parâmetros padrão"
+                  value={editing.defaultPayload || {}}
+                  onChange={(next) => setEditing({ ...editing, defaultPayload: next })}
+                />
               </TabsContent>
             </Tabs>
           </div>
