@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
+import { KeyValueEditor } from "@/components/shared/KeyValueEditor";
 import { botFunctionService, type BotFunction, type BotFunctionType } from "@/services/botFunctionService";
 
 const emptyFn = (): BotFunction => ({
