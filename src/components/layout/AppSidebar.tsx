@@ -18,7 +18,7 @@ const menuItems = [
   { icon: Target, label: "Leads", path: "/leads", adminOnly: false, superAdminOnly: false, scope: "leads" },
   { icon: MessageSquare, label: "WhatsApp", path: "/whatsapp", adminOnly: false, superAdminOnly: false, scope: "whatsapp" },
   { icon: FileStack, label: "Templates", path: "/whatsapp/templates", adminOnly: false, superAdminOnly: false, scope: "whatsapp" },
-  { icon: Bot, label: "Fluxos do Bot", path: "/bot-flows", adminOnly: true, superAdminOnly: false, scope: null },
+  { icon: Bot, label: "Fluxos do Bot", path: "/bot-flows", adminOnly: false, superAdminOnly: false, scope: null },
   { icon: Smartphone, label: "Instâncias WA", path: "/whatsapp/instancias", adminOnly: true, superAdminOnly: false, scope: null },
   { icon: Users, label: "Clientes", path: "/clientes", adminOnly: false, superAdminOnly: false, scope: "clientes" },
   { icon: FileText, label: "Apólices", path: "/apolices", adminOnly: false, superAdminOnly: false, scope: "apolices" },
