@@ -8,6 +8,7 @@ import { Plus, Trash2, X } from "lucide-react";
 import type { Node } from "@xyflow/react";
 import type { BotFlowNodeData, BotNodeType } from "@/services/botFlowService";
 import { botFunctionService, type BotFunction } from "@/services/botFunctionService";
+import { KeyValueEditor } from "@/components/shared/KeyValueEditor";
 
 interface Props {
   node: Node<BotFlowNodeData> | null;
@@ -196,20 +197,11 @@ export function NodeInspector({ node, onChange, onDelete, onClose }: Props) {
               </div>
             )}
 
-            <div className="space-y-1.5">
-              <Label>Parâmetros (JSON)</Label>
-              <Textarea
-                rows={5}
-                value={JSON.stringify(data.actionPayload || {}, null, 2)}
-                onChange={(e) => {
-                  try {
-                    update({ actionPayload: JSON.parse(e.target.value) });
-                  } catch {
-                    /* ignore until valid */
-                  }
-                }}
-              />
-            </div>
+            <KeyValueEditor
+              label="Parâmetros"
+              value={data.actionPayload || {}}
+              onChange={(next) => update({ actionPayload: next })}
+            />
           </>
         )}
       </div>

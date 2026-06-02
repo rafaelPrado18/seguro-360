@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
+import { KeyValueEditor } from "@/components/shared/KeyValueEditor";
 import { botFunctionService, type BotFunction, type BotFunctionType } from "@/services/botFunctionService";
 
 const emptyFn = (): BotFunction => ({
@@ -246,19 +247,11 @@ export function BotFunctionsManager() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Parâmetros padrão (JSON)</Label>
-                  <Textarea
-                    rows={5}
-                    className="font-mono text-xs"
-                    value={JSON.stringify(editing.defaultPayload || {}, null, 2)}
-                    onChange={(e) => {
-                      try {
-                        setEditing({ ...editing, defaultPayload: JSON.parse(e.target.value) });
-                      } catch { /* ignore */ }
-                    }}
-                  />
-                </div>
+                <KeyValueEditor
+                  label="Parâmetros padrão"
+                  value={editing.defaultPayload || {}}
+                  onChange={(next) => setEditing({ ...editing, defaultPayload: next })}
+                />
               </TabsContent>
             </Tabs>
           </div>
