@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, X } from "lucide-react";
 import type { Node } from "@xyflow/react";
 import type { BotFlowNodeData, BotNodeType } from "@/services/botFlowService";
+import { botFunctionService, type BotFunction } from "@/services/botFunctionService";
 
 interface Props {
   node: Node<BotFlowNodeData> | null;
@@ -15,6 +17,14 @@ interface Props {
 }
 
 export function NodeInspector({ node, onChange, onDelete, onClose }: Props) {
+  const [functions, setFunctions] = useState<BotFunction[]>([]);
+
+  useEffect(() => {
+    if (node?.type === "action") {
+      botFunctionService.list().then(setFunctions).catch(() => setFunctions([]));
+    }
+  }, [node?.id, node?.type]);
+
   if (!node) return null;
   const type = node.type as BotNodeType;
   const data = node.data;
@@ -134,20 +144,58 @@ export function NodeInspector({ node, onChange, onDelete, onClose }: Props) {
         {type === "action" && (
           <>
             <div className="space-y-1.5">
-              <Label>Tipo de ação</Label>
+              <Label>Função cadastrada</Label>
               <Select
-                value={data.actionType || "create_lead"}
-                onValueChange={(v) => update({ actionType: v as BotFlowNodeData["actionType"] })}
+                value={data.functionId || "__none__"}
+                onValueChange={(v) => {
+                  if (v === "__none__") {
+                    update({ functionId: undefined, functionName: undefined });
+                  } else {
+                    const fn = functions.find((f) => f.id === v);
+                    update({
+                      functionId: v,
+                      functionName: fn?.nome,
+                      actionType: fn?.tipo === "internal"
+                        ? (fn.internalAction as BotFlowNodeData["actionType"])
+                        : "call_api",
+                      actionPayload: fn?.defaultPayload || {},
+                    });
+                  }
+                }}
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="create_lead">Criar lead</SelectItem>
-                  <SelectItem value="transfer">Transferir para atendente</SelectItem>
-                  <SelectItem value="call_api">Chamar API</SelectItem>
-                  <SelectItem value="tag">Adicionar tag</SelectItem>
+                  <SelectItem value="__none__">— Sem função (ação manual) —</SelectItem>
+                  {functions.filter((f) => f.ativo !== false).map((f) => (
+                    <SelectItem key={f.id} value={f.id!}>
+                      {f.nome} <span className="text-muted-foreground text-xs">({f.tipo})</span>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              <p className="text-[11px] text-muted-foreground">
+                Cadastre novas funções em Configurações → Funções do Bot.
+              </p>
             </div>
+
+            {!data.functionId && (
+              <div className="space-y-1.5">
+                <Label>Tipo de ação</Label>
+                <Select
+                  value={data.actionType || "create_lead"}
+                  onValueChange={(v) => update({ actionType: v as BotFlowNodeData["actionType"] })}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="create_lead">Criar lead</SelectItem>
+                    <SelectItem value="transfer">Transferir para atendente</SelectItem>
+                    <SelectItem value="call_api">Chamar API</SelectItem>
+                    <SelectItem value="tag">Adicionar tag</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             <div className="space-y-1.5">
               <Label>Parâmetros (JSON)</Label>
               <Textarea
